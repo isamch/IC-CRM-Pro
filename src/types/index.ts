@@ -50,7 +50,7 @@ export interface DashboardStats {
 }
 
 // نظام الأدوار
-export type UserRole = 'admin' | 'sales_manager';
+export type UserRole = 'admin' | 'sales_manager' | 'sales_representative';
 
 // نظام الصلاحيات
 export interface Permissions {

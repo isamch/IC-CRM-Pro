@@ -71,7 +71,8 @@ const UserForm: React.FC<{
         onChange={(value) => setFormData({ ...formData, role: value as UserRole })}
         options={[
           { value: 'admin', label: 'مدير النظام' },
-          { value: 'sales_manager', label: 'مدير المبيعات' }
+          { value: 'sales_manager', label: 'مدير المبيعات' },
+          { value: 'sales_representative', label: 'مندوب المبيعات' }
         ]}
         required
       />
@@ -154,13 +155,29 @@ export const Users: React.FC = () => {
   };
 
   const getRoleLabel = (role: UserRole) => {
-    return role === 'admin' ? 'مدير النظام' : 'مدير المبيعات';
+    switch (role) {
+      case 'admin':
+        return 'مدير النظام';
+      case 'sales_manager':
+        return 'مدير المبيعات';
+      case 'sales_representative':
+        return 'مندوب المبيعات';
+      default:
+        return 'غير محدد';
+    }
   };
 
   const getRoleColor = (role: UserRole) => {
-    return role === 'admin' 
-      ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
-      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+    switch (role) {
+      case 'admin':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'sales_manager':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'sales_representative':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
   };
 
   return (
@@ -204,7 +221,8 @@ export const Users: React.FC = () => {
               options={[
                 { value: 'all', label: 'جميع الأدوار' },
                 { value: 'admin', label: 'مدير النظام' },
-                { value: 'sales_manager', label: 'مدير المبيعات' }
+                { value: 'sales_manager', label: 'مدير المبيعات' },
+                { value: 'sales_representative', label: 'مندوب المبيعات' }
               ]}
               className="sm:w-48"
             />

@@ -202,6 +202,28 @@ export const mockUsers: User[] = [
       language: 'ar',
       timezone: 'Asia/Riyadh'
     }
+  },
+  {
+    id: '3',
+    name: 'سارة أحمد',
+    email: 'sarah@crm.com',
+    role: 'sales_representative',
+    phone: '+966 54 321 9876',
+    department: 'المبيعات',
+    joinDate: '2023-03-15',
+    lastLogin: '2024-01-20T08:45:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
   }
 ];
 

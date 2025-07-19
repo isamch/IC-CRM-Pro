@@ -78,7 +78,11 @@ const ClientForm: React.FC<{
             onChange={(value) => setFormData({ ...formData, assignedTo: value })}
             options={mockUsers.map(user => ({
               value: user.id,
-              label: `${user.name} (${user.role === 'admin' ? 'مدير' : 'مدير مبيعات'})`
+              label: `${user.name} (${
+                user.role === 'admin' ? 'مدير النظام' :
+                user.role === 'sales_manager' ? 'مدير المبيعات' :
+                user.role === 'sales_representative' ? 'مندوب المبيعات' : 'غير محدد'
+              })`
             }))}
             required
           />

@@ -54,14 +54,14 @@ export const salesManagerPermissions: Permissions = {
     create: true,
     edit: true,
     delete: true,
-    viewAll: true,
+    viewAll: true, // يرى عملاء فريقه
   },
   deals: {
     view: true,
     create: true,
     edit: true,
     delete: true,
-    viewAll: true,
+    viewAll: true, // يرى عقود فريقه
   },
   tasks: {
     view: true,
@@ -69,12 +69,53 @@ export const salesManagerPermissions: Permissions = {
     edit: true,
     delete: true,
     assign: true,
-    viewAll: true,
+    viewAll: true, // يرى مهام فريقه
   },
   reports: {
     view: true,
     export: false,
-    viewAll: false, // يرى تقارير المبيعات فقط
+    viewAll: false, // يرى تقارير فريقه فقط
+  },
+  settings: {
+    view: false,
+    edit: false,
+  },
+};
+
+// صلاحيات مندوب المبيعات (Sales Representative)
+export const salesRepresentativePermissions: Permissions = {
+  users: {
+    view: false,
+    create: false,
+    edit: false,
+    delete: false,
+  },
+  clients: {
+    view: true,
+    create: true,
+    edit: true,
+    delete: true,
+    viewAll: false, // يرى عملاءه فقط
+  },
+  deals: {
+    view: true,
+    create: true,
+    edit: true,
+    delete: true,
+    viewAll: false, // يرى عقوده فقط
+  },
+  tasks: {
+    view: true,
+    create: true,
+    edit: true,
+    delete: true,
+    assign: false,
+    viewAll: false, // يرى مهامه فقط
+  },
+  reports: {
+    view: true,
+    export: false,
+    viewAll: false, // يرى تقاريره فقط
   },
   settings: {
     view: false,
@@ -89,8 +130,10 @@ export const getPermissionsForRole = (role: UserRole): Permissions => {
       return adminPermissions;
     case 'sales_manager':
       return salesManagerPermissions;
+    case 'sales_representative':
+      return salesRepresentativePermissions;
     default:
-      return salesManagerPermissions; // افتراضي
+      return salesRepresentativePermissions; // افتراضي
   }
 };
 
