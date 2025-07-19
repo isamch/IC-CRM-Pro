@@ -41,34 +41,34 @@ export const adminPermissions: Permissions = {
   },
 };
 
-// صلاحيات مدير المبيعات (Sales Manager)
+// صلاحيات مدير المبيعات (Sales Manager) - إدارة إدارية
 export const salesManagerPermissions: Permissions = {
   users: {
-    view: false,
-    create: false,
-    edit: false,
-    delete: false,
+    view: true, // يمكنه رؤية فريقه فقط
+    create: false, // لا يمكنه إنشاء مستخدمين جدد
+    edit: true, // يمكنه تعديل بيانات فريقه فقط
+    delete: false, // لا يمكنه حذف المستخدمين
   },
   clients: {
     view: true,
-    create: true,
-    edit: true,
-    delete: true,
+    create: false, // لا يضيف عملاء مباشرة
+    edit: false, // لا يعدل بيانات العملاء
+    delete: false,
     viewAll: true, // يرى عملاء فريقه
   },
   deals: {
     view: true,
-    create: true,
-    edit: true,
-    delete: true,
+    create: false, // لا يضيف عقود مباشرة
+    edit: false, // لا يعدل العقود
+    delete: false,
     viewAll: true, // يرى عقود فريقه
   },
   tasks: {
     view: true,
-    create: true,
+    create: true, // يمكنه إنشاء مهام لفريقه
     edit: true,
     delete: true,
-    assign: true,
+    assign: true, // يمكنه تخصيص المهام لفريقه
     viewAll: true, // يرى مهام فريقه
   },
   reports: {
@@ -82,7 +82,7 @@ export const salesManagerPermissions: Permissions = {
   },
 };
 
-// صلاحيات مندوب المبيعات (Sales Representative)
+// صلاحيات مندوب المبيعات (Sales Representative) - تنفيذ عملي
 export const salesRepresentativePermissions: Permissions = {
   users: {
     view: false,
@@ -92,24 +92,24 @@ export const salesRepresentativePermissions: Permissions = {
   },
   clients: {
     view: true,
-    create: true,
-    edit: true,
-    delete: true,
+    create: true, // يضيف عملاء جدد
+    edit: true, // يعدل بيانات عملائه
+    delete: true, // يحذف عملائه
     viewAll: false, // يرى عملاءه فقط
   },
   deals: {
     view: true,
-    create: true,
-    edit: true,
-    delete: true,
+    create: true, // يضيف عقود جديدة
+    edit: true, // يعدل عقوده
+    delete: true, // يحذف عقوده
     viewAll: false, // يرى عقوده فقط
   },
   tasks: {
     view: true,
-    create: true,
-    edit: true,
-    delete: true,
-    assign: false,
+    create: true, // يضيف مهام جديدة
+    edit: true, // يعدل مهامه
+    delete: true, // يحذف مهامه
+    assign: false, // لا يخصص مهام للآخرين
     viewAll: false, // يرى مهامه فقط
   },
   reports: {

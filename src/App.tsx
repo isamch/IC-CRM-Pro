@@ -11,6 +11,7 @@ import { Users } from './pages/Users';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
+import { TeamManagement } from './pages/TeamManagement';
 
 const pageComponents = {
   dashboard: Dashboard,
@@ -18,6 +19,7 @@ const pageComponents = {
   deals: Deals,
   tasks: Tasks,
   users: Users,
+  team: TeamManagement,
   profile: Profile,
   settings: Settings,
 };
@@ -28,6 +30,7 @@ const pageTitles = {
   deals: 'العقود',
   tasks: 'المهام',
   users: 'المستخدمين',
+  team: 'إدارة الفريق',
   profile: 'الملف الشخصي',
   settings: 'الإعدادات',
 };

@@ -4,47 +4,73 @@ import { getPermissionsForRole } from '../utils/permissions';
 export const mockClients: Client[] = [
   {
     id: '1',
-    name: 'John Smith',
-    email: 'john.smith@techcorp.com',
-    phone: '+1 (555) 123-4567',
-    company: 'TechCorp Solutions',
+    name: 'أحمد محمد',
+    email: 'ahmed@company.com',
+    phone: '+966501234567',
+    company: 'شركة التقنية المتقدمة',
+    position: 'مدير المبيعات',
+    status: 'active',
+    notes: 'عميل مهم، مهتم بالمنتجات الجديدة',
+    assignedTo: '2', // مخصص لمدير المبيعات
+    createdBy: '1', // أنشأه المدير
     createdAt: '2024-01-15',
-    lastContact: '2024-01-20',
-    assignedTo: '1', // مخصص للمدير
-    createdBy: '1' // أنشأه المدير
+    lastContact: '2024-01-20'
   },
   {
     id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.j@innovatetech.com',
-    phone: '+1 (555) 987-6543',
-    company: 'InnovateTech',
-    createdAt: '2024-01-10',
-    lastContact: '2024-01-18',
-    assignedTo: '2', // مخصص لمدير المبيعات
-    createdBy: '2' // أنشأته فاطمة
+    name: 'فاطمة علي',
+    email: 'fatima@techcorp.com',
+    phone: '+966507654321',
+    company: 'تيك كورب',
+    position: 'المدير التنفيذي',
+    status: 'prospect',
+    notes: 'عميل محتمل، يحتاج متابعة',
+    assignedTo: '3', // مخصص لمندوب المبيعات
+    createdBy: '3', // أنشأه مندوب المبيعات
+    createdAt: '2024-01-18',
+    lastContact: '2024-01-22'
   },
   {
     id: '3',
-    name: 'Michael Chen',
-    email: 'mchen@datastream.io',
-    phone: '+1 (555) 456-7890',
-    company: 'DataStream Inc',
-    createdAt: '2024-01-05',
-    lastContact: '2024-01-19',
-    assignedTo: '1', // مخصص للمدير
-    createdBy: '1' // أنشأه المدير
+    name: 'خالد عبدالله',
+    email: 'khalid@innovate.com',
+    phone: '+966509876543',
+    company: 'شركة الابتكار',
+    position: 'مدير المشتريات',
+    status: 'active',
+    notes: 'عميل نشط، يطلب عروض دورية',
+    assignedTo: '3', // مخصص لمندوب المبيعات
+    createdBy: '3', // أنشأه مندوب المبيعات
+    createdAt: '2024-01-10',
+    lastContact: '2024-01-25'
   },
   {
     id: '4',
-    name: 'Emily Rodriguez',
-    email: 'emily@cloudnine.com',
-    phone: '+1 (555) 321-9876',
-    company: 'CloudNine Solutions',
-    createdAt: '2024-01-12',
-    lastContact: '2024-01-17',
+    name: 'نورا سعد',
+    email: 'nora@future.com',
+    phone: '+966501112223',
+    company: 'شركة المستقبل',
+    position: 'مدير التسويق',
+    status: 'lead',
+    notes: 'عميل رائد، يحتاج تطوير',
     assignedTo: '2', // مخصص لمدير المبيعات
-    createdBy: '2' // أنشأته فاطمة
+    createdBy: '1', // أنشأه المدير
+    createdAt: '2024-01-12',
+    lastContact: '2024-01-19'
+  },
+  {
+    id: '5',
+    name: 'عمر حسن',
+    email: 'omar@digital.com',
+    phone: '+966504445556',
+    company: 'الشركة الرقمية',
+    position: 'المدير العام',
+    status: 'inactive',
+    notes: 'عميل غير نشط، يحتاج إعادة تفعيل',
+    assignedTo: '3', // مخصص لمندوب المبيعات
+    createdBy: '3', // أنشأه مندوب المبيعات
+    createdAt: '2024-01-05',
+    lastContact: '2024-01-15'
   }
 ];
 

@@ -4,11 +4,13 @@ export interface Client {
   email: string;
   phone: string;
   company: string;
-  avatar?: string;
+  position?: string; // المنصب الوظيفي
+  status: 'active' | 'inactive' | 'prospect' | 'lead'; // حالة العميل
+  notes?: string; // ملاحظات
+  assignedTo?: string; // معرف المستخدم المخصص له العميل
+  createdBy?: string; // معرف منشئ العميل
   createdAt: string;
   lastContact?: string;
-  assignedTo?: string; // من يملك هذا العميل
-  createdBy?: string; // من أنشأ هذا العميل
 }
 
 export interface Deal {

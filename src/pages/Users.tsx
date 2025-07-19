@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Plus, Search, Edit, Trash2, User, Mail, Phone, Building, Shield, UserCheck, UserX } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Edit, User, Mail, Phone, Building, Shield, UserCheck, UserX } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
-import { CanView, CanCreate, CanEdit, CanDelete } from '../components/auth/PermissionGuard';
+import { CanView, CanEdit } from '../components/auth/PermissionGuard';
+import { useAuth } from '../contexts/AuthContext';
 import { mockUsers } from '../data/mockData';
 import { User as UserType, UserRole } from '../types';
 import { getPermissionsForRole } from '../utils/permissions';
@@ -15,22 +16,35 @@ const UserForm: React.FC<{
   onSave: (user: Partial<UserType>) => void;
   onCancel: () => void;
 }> = ({ user, onSave, onCancel }) => {
+  const { user: currentUser } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
     department: user?.department || '',
-    role: user?.role || 'sales_manager' as UserRole,
+    role: user?.role || 'sales_representative' as UserRole,
     isActive: user?.isActive ?? true
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const userData = {
-      ...formData,
-      permissions: getPermissionsForRole(formData.role)
-    };
-    onSave(userData);
+    onSave(formData);
+  };
+
+  // تحديد الأدوار المتاحة حسب صلاحيات المستخدم الحالي
+  const getAvailableRoles = () => {
+    if (currentUser?.role === 'admin') {
+      return [
+        { value: 'admin', label: 'مدير النظام' },
+        { value: 'sales_manager', label: 'مدير المبيعات' },
+        { value: 'sales_representative', label: 'مندوب المبيعات' }
+      ];
+    } else if (currentUser?.role === 'sales_manager') {
+      return [
+        { value: 'sales_representative', label: 'مندوب المبيعات' }
+      ];
+    }
+    return [];
   };
 
   return (
@@ -69,11 +83,7 @@ const UserForm: React.FC<{
         label="الدور"
         value={formData.role}
         onChange={(value) => setFormData({ ...formData, role: value as UserRole })}
-        options={[
-          { value: 'admin', label: 'مدير النظام' },
-          { value: 'sales_manager', label: 'مدير المبيعات' },
-          { value: 'sales_representative', label: 'مندوب المبيعات' }
-        ]}
+        options={getAvailableRoles()}
         required
       />
       
@@ -86,16 +96,38 @@ const UserForm: React.FC<{
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
         <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          الحساب مفعل
+          المستخدم مفعل
         </label>
       </div>
+
+      {/* ملاحظة للمدير */}
+      {currentUser?.role === 'admin' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            💡 <strong>ملاحظة:</strong> يمكنك إنشاء أي نوع من المستخدمين وتحديد صلاحياتهم.
+          </p>
+        </div>
+      )}
+
+      {/* ملاحظة لمدير المبيعات */}
+      {currentUser?.role === 'sales_manager' && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            ⚠️ <strong>تنبيه:</strong> يمكنك فقط إضافة مندوبي مبيعات لفريقك. 
+            لا يمكنك إنشاء مدراء أو مديري مبيعات آخرين.
+          </p>
+        </div>
+      )}
       
       <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline" onClick={onCancel}>
           إلغاء
         </Button>
         <Button type="submit">
-          {user ? 'تحديث المستخدم' : 'إضافة مستخدم'}
+          {user?.role === 'sales_manager'
+            ? (user ? 'تحديث العضو' : 'إضافة العضو')
+            : (user ? 'تحديث المستخدم' : 'إضافة المستخدم')
+          }
         </Button>
       </div>
     </form>
@@ -103,17 +135,41 @@ const UserForm: React.FC<{
 };
 
 export const Users: React.FC = () => {
-  const [users, setUsers] = useState(mockUsers);
+  const { user } = useAuth();
+  const [users, setUsers] = useState<UserType[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | undefined>();
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.department?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+  // تحميل المستخدمين حسب الصلاحيات
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      // المدير يرى جميع المستخدمين
+      setUsers(mockUsers);
+    } else if (user?.role === 'sales_manager') {
+      // مدير المبيعات يرى فريقه فقط (مندوبي المبيعات)
+      setUsers(mockUsers.filter(u => u.role === 'sales_representative'));
+    } else {
+      setUsers([]);
+    }
+  }, [user]);
+
+  const filteredUsers = users.filter(userItem => {
+    const matchesSearch = userItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         userItem.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (userItem.department?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    
+    // تصفية الأدوار حسب صلاحيات المستخدم الحالي
+    let matchesRole = true;
+    if (user?.role === 'sales_manager') {
+      // مدير المبيعات يرى فقط مندوبي المبيعات
+      matchesRole = userItem.role === 'sales_representative';
+    } else if (user?.role === 'admin') {
+      // المدير يرى جميع الأدوار
+      matchesRole = roleFilter === 'all' || userItem.role === roleFilter;
+    }
+    
     return matchesSearch && matchesRole;
   });
 
@@ -138,14 +194,17 @@ export const Users: React.FC = () => {
         ...userData as Omit<UserType, 'id'>,
         joinDate: new Date().toISOString().split('T')[0],
         lastLogin: new Date().toISOString(),
+        permissions: getPermissionsForRole(userData.role || 'sales_representative'),
+        preferences: {
+          theme: 'light',
+          notifications: { email: true, push: true, desktop: true },
+          language: 'ar',
+          timezone: 'Asia/Riyadh'
+        }
       };
       setUsers([...users, newUser]);
     }
     setShowModal(false);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter(u => u.id !== userId));
   };
 
   const handleToggleUserStatus = (userId: string) => {
@@ -187,17 +246,23 @@ export const Users: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              إدارة المستخدمين ({users.length})
+              {user?.role === 'sales_manager' 
+                ? `إدارة الفريق (${filteredUsers.length})` 
+                : `إدارة المستخدمين (${filteredUsers.length})`
+              }
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              إدارة حسابات المستخدمين وأدوارهم
+              {user?.role === 'sales_manager' 
+                ? 'إدارة أعضاء فريق المبيعات وتعديل بياناتهم' 
+                : 'إدارة جميع المستخدمين في النظام'
+              }
             </p>
           </div>
-          <CanCreate permission="users">
+          <CanEdit permission="users">
             <Button icon={Plus} onClick={handleAddUser}>
-              إضافة مستخدم
+              {user?.role === 'sales_manager' ? 'إضافة عضو' : 'إضافة مستخدم'}
             </Button>
-          </CanCreate>
+          </CanEdit>
         </div>
 
         {/* Search and Filters */}
@@ -218,12 +283,23 @@ export const Users: React.FC = () => {
             <Select
               value={roleFilter}
               onChange={setRoleFilter}
-              options={[
-                { value: 'all', label: 'جميع الأدوار' },
-                { value: 'admin', label: 'مدير النظام' },
-                { value: 'sales_manager', label: 'مدير المبيعات' },
-                { value: 'sales_representative', label: 'مندوب المبيعات' }
-              ]}
+              options={
+                user?.role === 'admin' 
+                  ? [
+                      { value: 'all', label: 'جميع الأدوار' },
+                      { value: 'admin', label: 'مدير النظام' },
+                      { value: 'sales_manager', label: 'مدير المبيعات' },
+                      { value: 'sales_representative', label: 'مندوب المبيعات' }
+                    ]
+                  : user?.role === 'sales_manager'
+                  ? [
+                      { value: 'all', label: 'جميع الأعضاء' },
+                      { value: 'sales_representative', label: 'مندوب المبيعات' }
+                    ]
+                  : [
+                      { value: 'all', label: 'جميع الأدوار' }
+                    ]
+              }
               className="sm:w-48"
             />
           </div>
@@ -247,25 +323,14 @@ export const Users: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex space-x-1">
-                  <CanEdit permission="users">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      icon={Edit}
-                      onClick={() => handleEditUser(user)}
-                    />
-                  </CanEdit>
-                  <CanDelete permission="users">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      icon={Trash2}
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    />
-                  </CanDelete>
-                </div>
+                <CanEdit permission="users">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    icon={Edit}
+                    onClick={() => handleEditUser(user)}
+                  />
+                </CanEdit>
               </div>
               
               <div className="mt-4 space-y-2">
@@ -320,17 +385,25 @@ export const Users: React.FC = () => {
           <Card className="text-center py-12">
             <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              لم يتم العثور على مستخدمين
+              {user?.role === 'sales_manager' 
+                ? 'لم يتم العثور على أعضاء في الفريق' 
+                : 'لم يتم العثور على مستخدمين'
+              }
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {searchTerm || roleFilter !== 'all' ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة أول مستخدم'}
+              {searchTerm || roleFilter !== 'all' 
+                ? 'جرب تغيير معايير البحث' 
+                : user?.role === 'sales_manager'
+                ? 'ابدأ بإضافة أول عضو للفريق'
+                : 'ابدأ بإضافة أول مستخدم'
+              }
             </p>
             {!searchTerm && roleFilter === 'all' && (
-              <CanCreate permission="users">
+              <CanEdit permission="users">
                 <Button icon={Plus} onClick={handleAddUser}>
-                  إضافة مستخدم
+                  {user?.role === 'sales_manager' ? 'إضافة عضو' : 'إضافة مستخدم'}
                 </Button>
-              </CanCreate>
+              </CanEdit>
             )}
           </Card>
         )}
@@ -339,7 +412,11 @@ export const Users: React.FC = () => {
         <Modal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          title={editingUser ? 'تعديل المستخدم' : 'إضافة مستخدم جديد'}
+          title={
+            user?.role === 'sales_manager'
+              ? (editingUser ? 'تعديل العضو' : 'إضافة عضو جديد')
+              : (editingUser ? 'تعديل المستخدم' : 'إضافة مستخدم جديد')
+          }
         >
           <UserForm
             user={editingUser}

@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
-import { CanView, CanCreate, CanEdit, CanDelete } from '../components/auth/PermissionGuard';
+import { CanView, CanCreate } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { mockClients, mockUsers } from '../data/mockData';
 import { Client } from '../types';
@@ -21,26 +21,45 @@ const ClientForm: React.FC<{
     email: client?.email || '',
     phone: client?.phone || '',
     company: client?.company || '',
-    assignedTo: client?.assignedTo || user?.id || ''
+    position: client?.position || '',
+    assignedTo: client?.assignedTo || user?.id || '',
+    status: client?.status || 'active',
+    notes: client?.notes || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const clientData = {
       ...formData,
-      assignedTo: formData.assignedTo || user?.id,
-      createdBy: client?.createdBy || user?.id // الحفاظ على منشئ العميل الأصلي
+      createdBy: client?.createdBy || user?.id, // منشئ العميل
+      assignedTo: formData.assignedTo || user?.id // المخصص له العميل
     };
     onSave(clientData);
   };
 
-  // المدير يمكنه تخصيص العملاء لأي مستخدم
-  const canAssignUsers = user?.role === 'admin';
+  // الحصول على قائمة المستخدمين المتاحين للتخصيص
+  const availableUsers = mockUsers.filter(u => 
+    u.role === 'sales_representative' || u.role === 'sales_manager'
+  );
+
+  // الحصول على اسم المنصب بناءً على الدور
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'مدير النظام';
+      case 'sales_manager':
+        return 'مدير المبيعات';
+      case 'sales_representative':
+        return 'مندوب المبيعات';
+      default:
+        return 'غير محدد';
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
-        label="الاسم الكامل"
+        label="اسم العميل"
         value={formData.name}
         onChange={(value) => setFormData({ ...formData, name: value })}
         placeholder="أدخل اسم العميل"
@@ -68,36 +87,90 @@ const ClientForm: React.FC<{
         placeholder="أدخل اسم الشركة"
         required
       />
+      <Input
+        label="المنصب"
+        value={formData.position}
+        onChange={(value) => setFormData({ ...formData, position: value })}
+        placeholder="أدخل المنصب الوظيفي"
+      />
       
-      {/* تخصيص المستخدم - للمدير فقط */}
-      {canAssignUsers && (
-        <div className="space-y-2">
-          <Select
-            label="تخصيص للمستخدم"
-            value={formData.assignedTo}
-            onChange={(value) => setFormData({ ...formData, assignedTo: value })}
-            options={mockUsers.map(user => ({
-              value: user.id,
-              label: `${user.name} (${
-                user.role === 'admin' ? 'مدير النظام' :
-                user.role === 'sales_manager' ? 'مدير المبيعات' :
-                user.role === 'sales_representative' ? 'مندوب المبيعات' : 'غير محدد'
-              })`
-            }))}
-            required
-          />
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            💡 يمكنك تخصيص العميل لأي مستخدم. هذا مفيد عند إعادة توزيع العمل أو تغيير المسؤوليات.
+      {/* تخصيص العميل - للمدير فقط */}
+      {user?.role === 'admin' && (
+        <Select
+          label="تخصيص العميل"
+          value={formData.assignedTo}
+          onChange={(value) => setFormData({ ...formData, assignedTo: value })}
+          options={availableUsers.map(user => ({
+            value: user.id,
+            label: `${user.name} (${getRoleLabel(user.role)})`
+          }))}
+          required
+        />
+      )}
+      
+      {/* ملاحظة للمدير حول التخصيص */}
+      {user?.role === 'admin' && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            💡 <strong>ملاحظة:</strong> يمكنك تخصيص العميل لأي مندوب مبيعات أو مدير مبيعات. 
+            سيتم تخصيص العميل تلقائياً لك إذا لم تختر أحداً.
           </p>
         </div>
       )}
+      
+      {/* ملاحظة لمدير المبيعات */}
+      {user?.role === 'sales_manager' && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            ⚠️ <strong>تنبيه:</strong> كمدير مبيعات، يمكنك فقط مراقبة العملاء. 
+            لا يمكنك إضافة أو تعديل العملاء مباشرة. 
+            يمكنك تخصيص المهام لفريقك ومتابعة أدائهم.
+          </p>
+        </div>
+      )}
+      
+      {/* ملاحظة لمندوب المبيعات */}
+      {user?.role === 'sales_representative' && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+          <p className="text-sm text-green-800 dark:text-green-200">
+            ✅ <strong>معلومات:</strong> سيتم تخصيص هذا العميل لك تلقائياً. 
+            يمكنك إدارة علاقتك مع العميل وإضافة التفاصيل المطلوبة.
+          </p>
+        </div>
+      )}
+      
+      <Select
+        label="حالة العميل"
+        value={formData.status}
+        onChange={(value) => setFormData({ ...formData, status: value })}
+        options={[
+          { value: 'active', label: 'نشط' },
+          { value: 'inactive', label: 'غير نشط' },
+          { value: 'prospect', label: 'عميل محتمل' },
+          { value: 'lead', label: 'عميل رائد' }
+        ]}
+        required
+      />
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          ملاحظات
+        </label>
+        <textarea
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          placeholder="أدخل أي ملاحظات إضافية..."
+          rows={3}
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+        />
+      </div>
       
       <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline" onClick={onCancel}>
           إلغاء
         </Button>
         <Button type="submit">
-          {client ? 'تحديث العميل' : 'إضافة عميل'}
+          {client ? 'تحديث العميل' : 'إضافة العميل'}
         </Button>
       </div>
     </form>
@@ -166,6 +239,20 @@ export const Clients: React.FC = () => {
     return createdUser ? createdUser.name : 'غير محدد';
   };
 
+  // التحقق من إمكانية التعديل
+  const canEditClient = (client: Client) => {
+    if (user?.role === 'admin') return true;
+    if (user?.role === 'sales_representative' && client.assignedTo === user?.id) return true;
+    return false;
+  };
+
+  // التحقق من إمكانية الحذف
+  const canDeleteClient = (client: Client) => {
+    if (user?.role === 'admin') return true;
+    if (user?.role === 'sales_representative' && client.assignedTo === user?.id) return true;
+    return false;
+  };
+
   return (
     <CanView permission="clients">
       <div className="p-6 space-y-6">
@@ -176,7 +263,10 @@ export const Clients: React.FC = () => {
               العملاء ({filteredClients.length})
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              إدارة علاقات العملاء
+              {user?.role === 'sales_manager' 
+                ? 'مراقبة عملاء فريق المبيعات' 
+                : 'إدارة علاقات العملاء'
+              }
             </p>
           </div>
           <CanCreate permission="clients">
@@ -228,15 +318,15 @@ export const Clients: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex space-x-1">
-                  <CanEdit permission="clients">
+                  {canEditClient(client) && (
                     <Button 
                       variant="ghost" 
                       size="sm"
                       icon={Edit}
                       onClick={() => handleEditClient(client)}
                     />
-                  </CanEdit>
-                  <CanDelete permission="clients">
+                  )}
+                  {canDeleteClient(client) && (
                     <Button 
                       variant="ghost" 
                       size="sm"
@@ -244,7 +334,7 @@ export const Clients: React.FC = () => {
                       onClick={() => handleDeleteClient(client.id)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                     />
-                  </CanDelete>
+                  )}
                 </div>
               </div>
               
@@ -261,7 +351,7 @@ export const Clients: React.FC = () => {
                   <Building className="w-4 h-4" />
                   <span>{client.company}</span>
                 </div>
-                {/* عرض المستخدم المخصص - للمدير فقط */}
+                {/* عرض المستخدم المخصص - للمدير ومدير المبيعات */}
                 {user?.permissions.clients.viewAll && (
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                     <UserPlus className="w-4 h-4" />
@@ -269,7 +359,7 @@ export const Clients: React.FC = () => {
                   </div>
                 )}
                 {/* عرض منشئ العميل - للمدير فقط */}
-                {user?.permissions.clients.viewAll && (
+                {user?.role === 'admin' && (
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                     <Users className="w-4 h-4" />
                     <span>أنشأه: {getCreatedByUserName(client.createdBy)}</span>
