@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Plus, 
@@ -6,11 +7,7 @@ import {
   Trash2, 
   Search, 
   MapPin, 
-  UserPlus, 
-  Eye,
-  Calendar,
-  Target,
-  CheckCircle
+  Eye
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -18,7 +15,7 @@ import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { CanView, CanCreate, CanEdit, CanDelete } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
-import { mockTeams, mockUsers, mockClients, mockDeals, mockTasks } from '../data/mockData';
+import { mockTeams, mockUsers } from '../data/mockData';
 import { Team } from '../types';
 
 const TeamForm: React.FC<{
@@ -99,168 +96,13 @@ const TeamForm: React.FC<{
   );
 };
 
-const TeamDetails: React.FC<{
-  team: Team;
-  onClose: () => void;
-}> = ({ team, onClose }) => {
-  // الحصول على أعضاء الفريق
-  const teamMembers = mockUsers.filter(user => user.teamId === team.id);
-  const manager = mockUsers.find(user => user.id === team.managerId);
-
-  // الحصول على إحصائيات الفريق
-  const getTeamStats = () => {
-    const teamMemberIds = teamMembers.map(member => member.id);
-    const clients = mockClients.filter(c => teamMemberIds.includes(c.assignedTo || '')).length;
-    const deals = mockDeals.filter(d => teamMemberIds.includes(d.assignedTo || '')).length;
-    const tasks = mockTasks.filter(t => teamMemberIds.includes(t.assignee || '')).length;
-    const completedTasks = mockTasks.filter(t => 
-      teamMemberIds.includes(t.assignee || '') && t.status === 'done'
-    ).length;
-    
-    return { clients, deals, tasks, completedTasks };
-  };
-
-  const stats = getTeamStats();
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center space-x-4">
-        <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-          <Users className="w-8 h-8 text-white" />
-        </div>
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {team.name}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            {team.region} • {manager?.name}
-          </p>
-        </div>
-      </div>
-
-      {/* Team Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3">
-            <MapPin className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-700 dark:text-gray-300">{team.region}</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Users className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-700 dark:text-gray-300">{teamMembers.length} عضو</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Calendar className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-700 dark:text-gray-300">
-              تم الإنشاء: {new Date(team.createdAt).toLocaleDateString('ar-SA')}
-            </span>
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-              team.isActive 
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-            }`}>
-              {team.isActive ? 'نشط' : 'غير نشط'}
-            </span>
-          </div>
-          {team.description && (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {team.description}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Performance Stats */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">إحصائيات الفريق</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Users className="w-5 h-5 text-blue-500" />
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats.clients}</span>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">العملاء</p>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Target className="w-5 h-5 text-green-500" />
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats.deals}</span>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">العقود</p>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Calendar className="w-5 h-5 text-purple-500" />
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats.tasks}</span>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">المهام</p>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <CheckCircle className="w-5 h-5 text-orange-500" />
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completedTasks}</span>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">مكتملة</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Team Members */}
-      <div>
-        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">أعضاء الفريق</h4>
-        <div className="space-y-3">
-          {teamMembers.map((member) => (
-            <div key={member.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white">{member.name}</h5>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{member.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  member.isActive 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                }`}>
-                  {member.isActive ? 'نشط' : 'غير نشط'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex justify-end space-x-3">
-        <Button variant="outline" onClick={onClose}>
-          إغلاق
-        </Button>
-        <Button icon={UserPlus}>
-          إضافة عضو
-        </Button>
-      </div>
-    </div>
-  );
-};
-
 export const Teams: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [teams, setTeams] = useState<Team[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>();
-  const [selectedTeam, setSelectedTeam] = useState<Team | undefined>();
 
   // تحميل الفرق حسب الصلاحيات
   useEffect(() => {
@@ -292,8 +134,7 @@ export const Teams: React.FC = () => {
   };
 
   const handleViewDetails = (team: Team) => {
-    setSelectedTeam(team);
-    setShowDetailsModal(true);
+    navigate(`/teams/${team.id}`);
   };
 
   const handleSaveTeam = (teamData: Partial<Team>) => {
@@ -480,20 +321,6 @@ export const Teams: React.FC = () => {
             onSave={handleSaveTeam}
             onCancel={() => setShowModal(false)}
           />
-        </Modal>
-
-        {/* Details Modal */}
-        <Modal
-          isOpen={showDetailsModal}
-          onClose={() => setShowDetailsModal(false)}
-          title="تفاصيل الفريق"
-        >
-          {selectedTeam && (
-            <TeamDetails
-              team={selectedTeam}
-              onClose={() => setShowDetailsModal(false)}
-            />
-          )}
         </Modal>
       </div>
     </CanView>

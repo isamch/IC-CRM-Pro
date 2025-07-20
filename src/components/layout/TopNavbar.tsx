@@ -1,19 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sun, Moon, Bell, Search, User, Settings, LogOut, UserCircle } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Sun, Moon, Bell, Search, User, Settings, LogOut, UserCircle, Menu } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 
 interface TopNavbarProps {
-  pageTitle: string;
-  onPageChange?: (page: string) => void;
+  onToggleSidebar: () => void;
 }
 
-export const TopNavbar: React.FC<TopNavbarProps> = ({ pageTitle, onPageChange }) => {
+const getPageTitle = (pathname: string): string => {
+  if (pathname.startsWith('/teams/')) return 'تفاصيل الفريق';
+  const titles: { [key: string]: string } = {
+    '/dashboard': 'لوحة التحكم',
+    '/users': 'المستخدمين',
+    '/teams': 'الفرق',
+    '/clients': 'العملاء',
+    '/deals': 'العقود',
+    '/tasks': 'المهام',
+    '/profile': 'الملف الشخصي',
+    '/settings': 'الإعدادات'
+  };
+  return titles[pathname] || 'لوحة التحكم';
+};
+
+export const TopNavbar: React.FC<TopNavbarProps> = ({ onToggleSidebar }) => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -31,10 +48,10 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ pageTitle, onPageChange })
 
   const handleProfileMenuClick = (action: string) => {
     setIsProfileDropdownOpen(false);
-    if (action === 'profile' && onPageChange) {
-      onPageChange('profile');
-    } else if (action === 'settings' && onPageChange) {
-      onPageChange('settings');
+    if (action === 'profile') {
+      navigate('/profile');
+    } else if (action === 'settings') {
+      navigate('/settings');
     } else if (action === 'logout') {
       logout();
     }
@@ -43,10 +60,16 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ pageTitle, onPageChange })
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
       <div className="flex items-center justify-between">
-        {/* Page Title */}
-        <div>
+        {/* Left Side - Menu Button and Page Title */}
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {pageTitle}
+            {getPageTitle(location.pathname)}
           </h1>
         </div>
 
