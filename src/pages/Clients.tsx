@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Mail, Phone, Building, Edit, Trash2, Users, UserPlus, Edit2 } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Edit2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -249,13 +249,6 @@ export const Clients: React.FC = () => {
     return assignedUser ? assignedUser.name : 'غير محدد';
   };
 
-  // الحصول على اسم منشئ العميل
-  const getCreatedByUserName = (createdBy?: string) => {
-    if (!createdBy) return 'غير محدد';
-    const createdUser = mockUsers.find(u => u.id === createdBy);
-    return createdUser ? createdUser.name : 'غير محدد';
-  };
-
   // التحقق من إمكانية التعديل
   const canEditClient = (client: Client) => {
     if (user?.role === 'admin') return true;
@@ -322,109 +315,98 @@ export const Clients: React.FC = () => {
           </div>
         </Card>
 
-        {/* Clients Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClients.map((client) => (
-            <Card key={client.id} className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
+        {/* Clients Table */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+            <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الصورة</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">اسم العميل</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الشركة</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">البريد الإلكتروني</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رقم الهاتف</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">المندوب المكلف</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الحالة</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+              {filteredClients.map((client) => (
+                <tr key={client.id} className="hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors">
+                  <td className="px-4 py-2">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-base font-bold text-white">
                       {client.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      <Link to={`/clients/${client.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
-                        {client.name}
-                      </Link>
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {client.company}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex space-x-1">
-                  {canEditClient(client) && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      icon={Edit}
-                      onClick={() => handleEditClient(client)}
-                    />
-                  )}
-                  {canDeleteClient(client) && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      icon={Trash2}
-                      onClick={() => handleDeleteClient(client.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    />
-                  )}
-                </div>
-              </div>
-              
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Mail className="w-4 h-4" />
-                  <span>{client.email}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Phone className="w-4 h-4" />
-                  <span>{client.phone}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Building className="w-4 h-4" />
-                  <span>{client.company}</span>
-                </div>
-                {/* عرض المستخدم المخصص - للمدير ومدير المبيعات */}
-                {user?.permissions.clients.viewAll && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                    <UserPlus className="w-4 h-4" />
-                    <span>مخصص لـ: {client.assignedTo ? (
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-300">
+                    <Link to={`/clients/${client.id}`}>{client.name}</Link>
+                  </td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{client.company}</td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{client.email}</td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{client.phone}</td>
+                  <td className="px-4 py-2">
+                    {client.assignedTo ? (
                       <Link to={`/sales-reps/${client.assignedTo}`} className="text-blue-600 dark:text-blue-300 hover:underline">
                         {getAssignedUserName(client.assignedTo)}
                       </Link>
-                    ) : 'غير محدد'}</span>
-                    {user?.role === 'sales_manager' && availableReps.length > 0 && (
-                      <button
-                        className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                        title="تغيير المندوب المكلف"
-                        onClick={() => handleOpenAssign(client)}
-                      >
-                        <Edit2 className="w-4 h-4 text-blue-500" />
-                      </button>
-                    )}
-                  </div>
-                )}
-                {/* عرض منشئ العميل - للمدير فقط */}
-                {user?.role === 'admin' && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Users className="w-4 h-4" />
-                    <span>أنشأه: {getCreatedByUserName(client.createdBy)}</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  تم الإضافة: {new Date(client.createdAt).toLocaleDateString('ar-SA')}
-                </p>
-                {client.lastContact && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    آخر تواصل: {new Date(client.lastContact).toLocaleDateString('ar-SA')}
-                  </p>
-                )}
-              </div>
-            </Card>
-          ))}
+                    ) : 'غير محدد'}
+                  </td>
+                  <td className="px-4 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      client.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      client.status === 'inactive' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                      client.status === 'prospect' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                    }`}>
+                      {client.status === 'active' ? 'نشط' : client.status === 'inactive' ? 'غير نشط' : client.status === 'prospect' ? 'عميل محتمل' : 'عميل رائد'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    <div className="flex items-center gap-1">
+                      {canEditClient(client) && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          icon={Edit}
+                          onClick={() => handleEditClient(client)}
+                        />
+                      )}
+                      {canDeleteClient(client) && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          icon={Trash2}
+                          onClick={() => handleDeleteClient(client.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        />
+                      )}
+                      {user?.permissions.clients.viewAll && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={Edit2}
+                          onClick={() => handleOpenAssign(client)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredClients.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    لا يوجد عملاء مطابقين للبحث.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* No results */}
         {filteredClients.length === 0 && (
           <Card className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            {/* Users icon was removed, so this line is now empty */}
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               لم يتم العثور على عملاء
             </h3>
