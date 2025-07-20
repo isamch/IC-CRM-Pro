@@ -17,7 +17,7 @@ export const mockTeams: Team[] = [
     id: '2',
     name: 'فريق جدة',
     region: 'جدة',
-    managerId: '2', // علي حسن (سنضيفه)
+    managerId: '4', // علي حسن
     description: 'فريق مبيعات منطقة جدة والمناطق المحيطة',
     isActive: true,
     createdAt: '2024-01-05',
@@ -27,7 +27,7 @@ export const mockTeams: Team[] = [
     id: '3',
     name: 'فريق الدمام',
     region: 'الدمام',
-    managerId: '5', // محمد عبدالله (سنضيفه)
+    managerId: '5', // محمد عبدالله
     description: 'فريق مبيعات المنطقة الشرقية',
     isActive: true,
     createdAt: '2024-01-10',
