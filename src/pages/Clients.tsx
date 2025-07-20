@@ -335,7 +335,9 @@ export const Clients: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {client.name}
+                      <Link to={`/clients/${client.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                        {client.name}
+                      </Link>
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {client.company}
