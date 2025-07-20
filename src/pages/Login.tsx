@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -12,6 +13,7 @@ export const Login: React.FC = () => {
   const [error, setError] = useState('');
   
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +22,10 @@ export const Login: React.FC = () => {
 
     try {
       const success = await login(email, password);
-      if (!success) {
+      if (success) {
+        // Redirect to dashboard after successful login
+        navigate('/dashboard');
+      } else {
         setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
       }
     } catch {
@@ -30,9 +35,26 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (userEmail: string, userPassword: string) => {
+  const handleQuickLogin = async (userEmail: string, userPassword: string) => {
     setEmail(userEmail);
     setPassword(userPassword);
+    
+    // Auto-login after setting credentials
+    setLoading(true);
+    setError('');
+    
+    try {
+      const success = await login(userEmail, userPassword);
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError('فشل في تسجيل الدخول السريع');
+      }
+    } catch {
+      setError('حدث خطأ في تسجيل الدخول السريع');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -148,13 +170,28 @@ export const Login: React.FC = () => {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400 font-medium">مدير المبيعات</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-400 font-medium">مدير فريق الرياض</p>
                   <p className="text-xs text-blue-600 dark:text-blue-500">sales@crm.com / demo123</p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleQuickLogin('sales@crm.com', 'demo123')}
+                  className="text-xs"
+                >
+                  تسجيل سريع
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-blue-700 dark:text-blue-400 font-medium">مدير فريق جدة</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-500">ali@crm.com / demo123</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickLogin('ali@crm.com', 'demo123')}
                   className="text-xs"
                 >
                   تسجيل سريع

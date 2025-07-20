@@ -1,430 +1,457 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, User, Mail, Phone, Building, Shield, UserCheck, UserX } from 'lucide-react';
-import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
-import { Modal } from '../components/ui/Modal';
-import { CanView, CanEdit } from '../components/auth/PermissionGuard';
+import React, { useState } from 'react';
+import { User, Trash2, Eye, UserCheck, Plus, Search, Ban, UserMinus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { mockUsers } from '../data/mockData';
-import { User as UserType, UserRole } from '../types';
-import { getPermissionsForRole } from '../utils/permissions';
-
-const UserForm: React.FC<{
-  user?: UserType;
-  onSave: (user: Partial<UserType>) => void;
-  onCancel: () => void;
-}> = ({ user, onSave, onCancel }) => {
-  const { user: currentUser } = useAuth();
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    department: user?.department || '',
-    role: user?.role || 'sales_representative' as UserRole,
-    isActive: user?.isActive ?? true
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  // تحديد الأدوار المتاحة حسب صلاحيات المستخدم الحالي
-  const getAvailableRoles = () => {
-    if (currentUser?.role === 'admin') {
-      return [
-        { value: 'admin', label: 'مدير النظام' },
-        { value: 'sales_manager', label: 'مدير المبيعات' },
-        { value: 'sales_representative', label: 'مندوب المبيعات' }
-      ];
-    } else if (currentUser?.role === 'sales_manager') {
-      return [
-        { value: 'sales_representative', label: 'مندوب المبيعات' }
-      ];
-    }
-    return [];
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        label="الاسم الكامل"
-        value={formData.name}
-        onChange={(value) => setFormData({ ...formData, name: value })}
-        placeholder="أدخل الاسم الكامل"
-        required
-      />
-      <Input
-        label="البريد الإلكتروني"
-        type="email"
-        value={formData.email}
-        onChange={(value) => setFormData({ ...formData, email: value })}
-        placeholder="أدخل البريد الإلكتروني"
-        required
-      />
-      <Input
-        label="رقم الهاتف"
-        type="tel"
-        value={formData.phone}
-        onChange={(value) => setFormData({ ...formData, phone: value })}
-        placeholder="أدخل رقم الهاتف"
-      />
-      <Input
-        label="القسم"
-        value={formData.department}
-        onChange={(value) => setFormData({ ...formData, department: value })}
-        placeholder="أدخل القسم"
-        required
-      />
-      
-      <Select
-        label="الدور"
-        value={formData.role}
-        onChange={(value) => setFormData({ ...formData, role: value as UserRole })}
-        options={getAvailableRoles()}
-        required
-      />
-      
-      <div className="flex items-center space-x-3">
-        <input
-          type="checkbox"
-          id="isActive"
-          checked={formData.isActive}
-          onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-        <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          المستخدم مفعل
-        </label>
-      </div>
-
-      {/* ملاحظة للمدير */}
-      {currentUser?.role === 'admin' && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            💡 <strong>ملاحظة:</strong> يمكنك إنشاء أي نوع من المستخدمين وتحديد صلاحياتهم.
-          </p>
-        </div>
-      )}
-
-      {/* ملاحظة لمدير المبيعات */}
-      {currentUser?.role === 'sales_manager' && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            ⚠️ <strong>تنبيه:</strong> يمكنك فقط إضافة مندوبي مبيعات لفريقك. 
-            لا يمكنك إنشاء مدراء أو مديري مبيعات آخرين.
-          </p>
-        </div>
-      )}
-      
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button variant="outline" onClick={onCancel}>
-          إلغاء
-        </Button>
-        <Button type="submit">
-          {user?.role === 'sales_manager'
-            ? (user ? 'تحديث العضو' : 'إضافة العضو')
-            : (user ? 'تحديث المستخدم' : 'إضافة المستخدم')
-          }
-        </Button>
-      </div>
-    </form>
-  );
-};
+import { mockTeams } from '../data/mockData';
+import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
+import { CanView } from '../components/auth/PermissionGuard';
+import { User as UserType } from '../types';
 
 export const Users: React.FC = () => {
-  const { user } = useAuth();
-  const [users, setUsers] = useState<UserType[]>([]);
+  const { user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserType | undefined>();
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
+  const [isRemoveFromTeamModalOpen, setIsRemoveFromTeamModalOpen] = useState(false);
 
-  // تحميل المستخدمين حسب الصلاحيات
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      // المدير يرى جميع المستخدمين
-      setUsers(mockUsers);
-    } else if (user?.role === 'sales_manager') {
-      // مدير المبيعات يرى فريقه فقط (مندوبي المبيعات)
-      setUsers(mockUsers.filter(u => u.role === 'sales_representative'));
-    } else {
-      setUsers([]);
+  // تصفية المستخدمين حسب دور المستخدم الحالي
+  const getFilteredUsers = () => {
+    let filteredUsers = mockUsers;
+
+    // إذا كان المستخدم الحالي مدير مبيعات، اعرض فقط مندوبي المبيعات
+    if (currentUser?.role === 'sales_manager') {
+      filteredUsers = mockUsers.filter(user => user.role === 'sales_representative');
     }
-  }, [user]);
 
-  const filteredUsers = users.filter(userItem => {
-    const matchesSearch = userItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         userItem.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (userItem.department?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    
-    // تصفية الأدوار حسب صلاحيات المستخدم الحالي
-    let matchesRole = true;
-    if (user?.role === 'sales_manager') {
-      // مدير المبيعات يرى فقط مندوبي المبيعات
-      matchesRole = userItem.role === 'sales_representative';
-    } else if (user?.role === 'admin') {
-      // المدير يرى جميع الأدوار
-      matchesRole = roleFilter === 'all' || userItem.role === roleFilter;
+    // تطبيق البحث
+    if (searchTerm) {
+      filteredUsers = filteredUsers.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.phone || '').includes(searchTerm)
+      );
     }
-    
-    return matchesSearch && matchesRole;
-  });
 
-  const handleAddUser = () => {
-    setEditingUser(undefined);
-    setShowModal(true);
+    return filteredUsers;
   };
 
-  const handleEditUser = (user: UserType) => {
-    setEditingUser(user);
-    setShowModal(true);
+  const filteredUsers = getFilteredUsers();
+
+  // الحصول على اسم الفريق
+  const getTeamName = (teamId?: string) => {
+    if (!teamId) return 'No Team';
+    const team = mockTeams.find(t => t.id === teamId);
+    return team ? team.name : 'Unknown Team';
   };
 
-  const handleSaveUser = (userData: Partial<UserType>) => {
-    if (editingUser) {
-      setUsers(users.map(u => 
-        u.id === editingUser.id ? { ...u, ...userData } : u
-      ));
-    } else {
-      const newUser: UserType = {
-        id: Date.now().toString(),
-        ...userData as Omit<UserType, 'id'>,
-        joinDate: new Date().toISOString().split('T')[0],
-        lastLogin: new Date().toISOString(),
-        permissions: getPermissionsForRole(userData.role || 'sales_representative'),
-        preferences: {
-          theme: 'light',
-          notifications: { email: true, push: true, desktop: true },
-          language: 'ar',
-          timezone: 'Asia/Riyadh'
-        }
-      };
-      setUsers([...users, newUser]);
+  // التحقق من إمكانية التعديل على المستخدم
+  const canEditUser = (user: UserType) => {
+    if (currentUser?.role === 'admin') return true;
+    if (currentUser?.role === 'sales_manager') {
+      // يمكن لمدير المبيعات التعديل فقط على أعضاء فريقه
+      return user.teamId === currentUser.teamId && user.role === 'sales_representative';
     }
-    setShowModal(false);
+    return false;
   };
 
-  const handleToggleUserStatus = (userId: string) => {
-    setUsers(users.map(user =>
-      user.id === userId ? { ...user, isActive: !user.isActive } : user
-    ));
+  const handleViewUser = (user: UserType) => {
+    setSelectedUser(user);
+    setIsViewModalOpen(true);
   };
 
-  const getRoleLabel = (role: UserRole) => {
-    switch (role) {
-      case 'admin':
-        return 'مدير النظام';
-      case 'sales_manager':
-        return 'مدير المبيعات';
-      case 'sales_representative':
-        return 'مندوب المبيعات';
-      default:
-        return 'غير محدد';
-    }
+  const handleDeleteUser = (user: UserType) => {
+    if (!canEditUser(user)) return;
+    setSelectedUser(user);
+    setIsDeleteModalOpen(true);
   };
 
-  const getRoleColor = (role: UserRole) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-      case 'sales_manager':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'sales_representative':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-    }
+  const handleSuspendUser = (user: UserType) => {
+    if (!canEditUser(user)) return;
+    setSelectedUser(user);
+    setIsSuspendModalOpen(true);
+  };
+
+  const handleRemoveFromTeam = (user: UserType) => {
+    if (!canEditUser(user)) return;
+    setSelectedUser(user);
+    setIsRemoveFromTeamModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    // هنا سيتم حذف المستخدم
+    console.log('Deleting user:', selectedUser?.name);
+    setIsDeleteModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const confirmSuspend = () => {
+    // هنا سيتم إيقاف المستخدم
+    console.log('Suspending user:', selectedUser?.name);
+    setIsSuspendModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const confirmRemoveFromTeam = () => {
+    // هنا سيتم إزالة المستخدم من الفريق
+    console.log('Removing user from team:', selectedUser?.name);
+    setIsRemoveFromTeamModalOpen(false);
+    setSelectedUser(null);
   };
 
   return (
-    <CanView permission="users">
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {user?.role === 'sales_manager' 
-                ? `إدارة الفريق (${filteredUsers.length})` 
-                : `إدارة المستخدمين (${filteredUsers.length})`
-              }
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              {user?.role === 'sales_manager' 
-                ? 'إدارة أعضاء فريق المبيعات وتعديل بياناتهم' 
-                : 'إدارة جميع المستخدمين في النظام'
-              }
+    <div className="p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Users Management
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          {currentUser?.role === 'sales_manager' 
+            ? 'Manage your team members and sales representatives'
+            : 'Manage all users in the system'
+          }
+        </p>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search users by name, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <CanView permission="users">
+          <Button className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add User
+          </Button>
+        </CanView>
+      </div>
+
+      {/* Users Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Team
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Last Login
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.name}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {user.email}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      user.role === 'admin' 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : user.role === 'sales_manager'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    }`}>
+                      {user.role === 'admin' ? 'Admin' : 
+                       user.role === 'sales_manager' ? 'Sales Manager' : 
+                       'Sales Representative'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {getTeamName(user.teamId)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      user.isActive 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-2">
+                      {/* View User Button */}
+                      <div className="relative group">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewUser(user)}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                          View Details
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                      
+                      {canEditUser(user) && (
+                        <>
+                          {/* Remove from Team Button */}
+                          {user.teamId && currentUser?.role === 'sales_manager' && (
+                            <div className="relative group">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveFromTeam(user)}
+                                className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                              >
+                                <UserMinus className="w-4 h-4" />
+                              </Button>
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                Remove from Team
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Suspend/Activate Button */}
+                          <div className="relative group">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSuspendUser(user)}
+                              className={`${
+                                user.isActive 
+                                  ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20'
+                                  : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20'
+                              }`}
+                            >
+                              {user.isActive ? <Ban className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                              {user.isActive ? 'Suspend User' : 'Activate User'}
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                          
+                          {/* Delete User Button (Admin Only) */}
+                          {currentUser?.role === 'admin' && (
+                            <div className="relative group">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user)}
+                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                Delete User
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {filteredUsers.length === 0 && (
+          <div className="text-center py-12">
+            <User className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No users found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {searchTerm ? 'Try adjusting your search terms.' : 'Get started by creating a new user.'}
             </p>
           </div>
-          <CanEdit permission="users">
-            <Button icon={Plus} onClick={handleAddUser}>
-              {user?.role === 'sales_manager' ? 'إضافة عضو' : 'إضافة مستخدم'}
-            </Button>
-          </CanEdit>
-        </div>
+        )}
+      </div>
 
-        {/* Search and Filters */}
-        <Card padding="sm">
-          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="البحث في المستخدمين..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              />
-            </div>
-            <Select
-              value={roleFilter}
-              onChange={setRoleFilter}
-              options={
-                user?.role === 'admin' 
-                  ? [
-                      { value: 'all', label: 'جميع الأدوار' },
-                      { value: 'admin', label: 'مدير النظام' },
-                      { value: 'sales_manager', label: 'مدير المبيعات' },
-                      { value: 'sales_representative', label: 'مندوب المبيعات' }
-                    ]
-                  : user?.role === 'sales_manager'
-                  ? [
-                      { value: 'all', label: 'جميع الأعضاء' },
-                      { value: 'sales_representative', label: 'مندوب المبيعات' }
-                    ]
-                  : [
-                      { value: 'all', label: 'جميع الأدوار' }
-                    ]
-              }
-              className="sm:w-48"
-            />
-          </div>
-        </Card>
-
-        {/* Users Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map((user) => (
-            <Card key={user.id} className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-white" />
+      {/* View User Modal */}
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        title="User Details"
+      >
+        {selectedUser && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Personal Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.name}</p>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {user.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {user.department}
-                    </p>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.phone || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Department</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.department}</p>
                   </div>
                 </div>
-                <CanEdit permission="users">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    icon={Edit}
-                    onClick={() => handleEditUser(user)}
-                  />
-                </CanEdit>
               </div>
               
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Mail className="w-4 h-4" />
-                  <span>{user.email}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Phone className="w-4 h-4" />
-                  <span>{user.phone}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Building className="w-4 h-4" />
-                  <span>{user.department}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Shield className="w-4 h-4" />
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                    {getRoleLabel(user.role)}
-                  </span>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Work Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</label>
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      {selectedUser.role === 'admin' ? 'Admin' : 
+                       selectedUser.role === 'sales_manager' ? 'Sales Manager' : 
+                       'Sales Representative'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Team</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{getTeamName(selectedUser.teamId)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Region</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.region || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Join Date</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.joinDate}</p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  {user.isActive ? (
-                    <UserCheck className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <UserX className="w-4 h-4 text-red-500" />
-                  )}
-                  <span className={`text-xs ${user.isActive ? 'text-green-600' : 'text-red-600'}`}>
-                    {user.isActive ? 'مفعل' : 'معطل'}
-                  </span>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Status & Activity</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
+                  <div className="mt-1">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      selectedUser.isActive 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {selectedUser.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                 </div>
-                <CanEdit permission="users">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleUserStatus(user.id)}
-                    className={user.isActive ? 'text-red-600' : 'text-green-600'}
-                  >
-                    {user.isActive ? 'إلغاء التفعيل' : 'تفعيل'}
-                  </Button>
-                </CanEdit>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Last Login</label>
+                  <p className="text-sm text-gray-900 dark:text-white">
+                    {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : 'Never'}
+                  </p>
+                </div>
               </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* No results */}
-        {filteredUsers.length === 0 && (
-          <Card className="text-center py-12">
-            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              {user?.role === 'sales_manager' 
-                ? 'لم يتم العثور على أعضاء في الفريق' 
-                : 'لم يتم العثور على مستخدمين'
-              }
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {searchTerm || roleFilter !== 'all' 
-                ? 'جرب تغيير معايير البحث' 
-                : user?.role === 'sales_manager'
-                ? 'ابدأ بإضافة أول عضو للفريق'
-                : 'ابدأ بإضافة أول مستخدم'
-              }
-            </p>
-            {!searchTerm && roleFilter === 'all' && (
-              <CanEdit permission="users">
-                <Button icon={Plus} onClick={handleAddUser}>
-                  {user?.role === 'sales_manager' ? 'إضافة عضو' : 'إضافة مستخدم'}
-                </Button>
-              </CanEdit>
-            )}
-          </Card>
+            </div>
+          </div>
         )}
+      </Modal>
 
-        {/* Modal */}
-        <Modal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          title={
-            user?.role === 'sales_manager'
-              ? (editingUser ? 'تعديل العضو' : 'إضافة عضو جديد')
-              : (editingUser ? 'تعديل المستخدم' : 'إضافة مستخدم جديد')
-          }
-        >
-          <UserForm
-            user={editingUser}
-            onSave={handleSaveUser}
-            onCancel={() => setShowModal(false)}
-          />
-        </Modal>
-      </div>
-    </CanView>
+      {/* Suspend User Modal */}
+      <Modal
+        isOpen={isSuspendModalOpen}
+        onClose={() => setIsSuspendModalOpen(false)}
+        title={selectedUser?.isActive ? "Suspend User" : "Activate User"}
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to {selectedUser?.isActive ? 'suspend' : 'activate'} <strong>{selectedUser?.name}</strong>?
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={() => setIsSuspendModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmSuspend} className="bg-yellow-600 hover:bg-yellow-700">
+              {selectedUser?.isActive ? 'Suspend' : 'Activate'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Remove from Team Modal */}
+      <Modal
+        isOpen={isRemoveFromTeamModalOpen}
+        onClose={() => setIsRemoveFromTeamModalOpen(false)}
+        title="Remove from Team"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to remove <strong>{selectedUser?.name}</strong> from the team?
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={() => setIsRemoveFromTeamModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmRemoveFromTeam} className="bg-orange-600 hover:bg-orange-700">
+              Remove from Team
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete User Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete User"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to delete <strong>{selectedUser?.name}</strong>? This action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-3">
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete User
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
   );
 }; 
