@@ -8,6 +8,7 @@ import { Modal } from '../components/ui/Modal';
 import { CanView } from '../components/auth/PermissionGuard';
 import { User as UserType } from '../types';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { Link } from 'react-router-dom';
 
 export const Users: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -188,7 +189,11 @@ export const Users: React.FC = () => {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.name}
+                          {user.role === 'sales_representative' ? (
+                            <Link to={`/sales-reps/${user.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                              {user.name}
+                            </Link>
+                          ) : user.name}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           {user.email}
@@ -334,7 +339,13 @@ export const Users: React.FC = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
-                    <p className="text-sm text-gray-900 dark:text-white">{selectedUser.name}</p>
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      {selectedUser.role === 'sales_representative' ? (
+                        <Link to={`/sales-reps/${selectedUser.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                          {selectedUser.name}
+                        </Link>
+                      ) : selectedUser.name}
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>

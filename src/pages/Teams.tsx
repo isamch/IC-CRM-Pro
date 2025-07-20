@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Users, 
   Plus, 
@@ -298,6 +298,24 @@ export const Teams: React.FC = () => {
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   تم الإنشاء: {new Date(team.createdAt).toLocaleDateString('ar-SA')}
                 </p>
+              </div>
+              {/* قائمة أعضاء الفريق */}
+              <div className="mt-2">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">أعضاء الفريق:</div>
+                <div className="flex flex-wrap gap-2">
+                  {mockUsers.filter(u => u.teamId === team.id && u.role === 'sales_representative').map(rep => (
+                    <Link
+                      key={rep.id}
+                      to={`/sales-reps/${rep.id}`}
+                      className="text-blue-600 dark:text-blue-300 hover:underline text-xs bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded"
+                    >
+                      {rep.name}
+                    </Link>
+                  ))}
+                  {mockUsers.filter(u => u.teamId === team.id && u.role === 'sales_representative').length === 0 && (
+                    <span className="text-gray-400">لا يوجد مندوبي مبيعات</span>
+                  )}
+                </div>
               </div>
             </Card>
           ))}

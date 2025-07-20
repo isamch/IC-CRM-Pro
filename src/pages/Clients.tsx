@@ -10,6 +10,7 @@ import { CanView, CanCreate } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { mockClients, mockUsers, mockTeams } from '../data/mockData';
 import { Client } from '../types';
+import { Link } from 'react-router-dom';
 
 const ClientForm: React.FC<{
   client?: Client;
@@ -109,7 +110,7 @@ const ClientForm: React.FC<{
           <Select
             label="تخصيص العميل"
             value={formData.assignedTo}
-            onChange={(value) => setFormData({ ...formData, assignedTo: value })}
+            onChange={(value: string) => setFormData({ ...formData, assignedTo: value })}
             options={availableUsers.map(user => ({
               value: user.id,
               label: `${user.name} (${getRoleLabel(user.role)})`
@@ -379,7 +380,11 @@ export const Clients: React.FC = () => {
                 {user?.permissions.clients.viewAll && (
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                     <UserPlus className="w-4 h-4" />
-                    <span>مخصص لـ: {getAssignedUserName(client.assignedTo)}</span>
+                    <span>مخصص لـ: {client.assignedTo ? (
+                      <Link to={`/sales-reps/${client.assignedTo}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                        {getAssignedUserName(client.assignedTo)}
+                      </Link>
+                    ) : 'غير محدد'}</span>
                     {user?.role === 'sales_manager' && availableReps.length > 0 && (
                       <button
                         className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"

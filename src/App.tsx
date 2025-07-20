@@ -14,6 +14,7 @@ import { TeamDetails } from './pages/TeamDetails';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { SalesRepDetails } from './pages/SalesRepDetails';
 import './App.css';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
                 <Route path="tasks" element={<Tasks />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="sales-reps/:repId" element={<SalesRepDetails />} />
               </Route>
             </Routes>
           </div>

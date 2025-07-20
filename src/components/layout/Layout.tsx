@@ -20,10 +20,10 @@ export const Layout: React.FC = () => {
     if (path === '/tasks') return 'tasks';
     if (path === '/profile') return 'profile';
     if (path === '/settings') return 'settings';
-    
+    // Make Users active for sales rep details page
+    if (/^\/sales-reps\/[\w-]+$/.test(path)) return 'users';
     // Default to dashboard for root path
     if (path === '/') return 'dashboard';
-    
     return 'dashboard';
   };
 
