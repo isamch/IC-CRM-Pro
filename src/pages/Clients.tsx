@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Mail, Phone, Building, Edit, Trash2, Users, UserPlus } from 'lucide-react';
+import { Plus, Search, Filter, Mail, Phone, Building, Edit, Trash2, Users, UserPlus, Edit2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -8,7 +8,7 @@ import { Modal } from '../components/ui/Modal';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { CanView, CanCreate } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
-import { mockClients, mockUsers } from '../data/mockData';
+import { mockClients, mockUsers, mockTeams } from '../data/mockData';
 import { Client } from '../types';
 
 const ClientForm: React.FC<{
@@ -38,10 +38,18 @@ const ClientForm: React.FC<{
     onSave(clientData);
   };
 
-  // الحصول على قائمة المستخدمين المتاحين للتخصيص
-  const availableUsers = mockUsers.filter(u => 
-    u.role === 'sales_representative' || u.role === 'sales_manager'
-  );
+  // Helper: get all sales reps from teams managed by this sales manager
+  let availableUsers: typeof mockUsers = [];
+  if (user?.role === 'admin') {
+    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager');
+  } else if (user?.role === 'sales_manager') {
+    // Get all team ids managed by this sales manager
+    const managedTeamIds = mockTeams.filter(team => team.managerId === user.id).map(team => team.id);
+    // Get all sales reps in those teams
+    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && managedTeamIds.includes(u.teamId || ''));
+  } else if (user?.role === 'sales_representative') {
+    availableUsers = [user];
+  }
 
   // الحصول على اسم المنصب بناءً على الدور
   const getRoleLabel = (role: string) => {
@@ -95,8 +103,8 @@ const ClientForm: React.FC<{
         placeholder="أدخل المنصب الوظيفي"
       />
       
-      {/* تخصيص العميل - للمدير فقط */}
-      {user?.role === 'admin' && (
+      {/* تخصيص العميل - للمدير أو مدير المبيعات */}
+      {(user?.role === 'admin' || user?.role === 'sales_manager') && (
         <Select
           label="تخصيص العميل"
           value={formData.assignedTo}
@@ -189,6 +197,8 @@ export const Clients: React.FC = () => {
     message: '',
     onConfirm: () => {},
   });
+  const [assignModal, setAssignModal] = useState<{ open: boolean; client?: Client }>({ open: false });
+  const [assignTo, setAssignTo] = useState('');
 
   // تصفية العملاء حسب الصلاحيات
   const visibleClients = user?.permissions.clients.viewAll 
@@ -236,6 +246,31 @@ export const Clients: React.FC = () => {
         setConfirmDialog(d => ({ ...d, isOpen: false }));
       }
     });
+  };
+
+  // Helper: get all sales reps from teams managed by this sales manager
+  let availableReps: typeof mockUsers = [];
+  if (user?.role === 'admin') {
+    availableReps = mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager');
+  } else if (user?.role === 'sales_manager') {
+    const managedTeamIds = mockTeams.filter(team => team.managerId === user.id).map(team => team.id);
+    availableReps = mockUsers.filter(u => u.role === 'sales_representative' && managedTeamIds.includes(u.teamId || ''));
+    // Add the sales manager himself if not already in the list
+    if (!availableReps.some(u => u.id === user.id)) {
+      availableReps = [user, ...availableReps];
+    }
+  } else if (user?.role === 'sales_representative') {
+    availableReps = [user];
+  }
+
+  const handleOpenAssign = (client: Client) => {
+    setAssignModal({ open: true, client });
+    setAssignTo(client.assignedTo || '');
+  };
+  const handleAssign = () => {
+    if (!assignModal.client) return;
+    setClients(prev => prev.map(c => c.id === assignModal.client!.id ? { ...c, assignedTo: assignTo } : c));
+    setAssignModal({ open: false });
   };
 
   // الحصول على اسم المستخدم المخصص له العميل
@@ -369,6 +404,15 @@ export const Clients: React.FC = () => {
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                     <UserPlus className="w-4 h-4" />
                     <span>مخصص لـ: {getAssignedUserName(client.assignedTo)}</span>
+                    {user?.role === 'sales_manager' && availableReps.length > 0 && (
+                      <button
+                        className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                        title="تغيير المندوب المكلف"
+                        onClick={() => handleOpenAssign(client)}
+                      >
+                        <Edit2 className="w-4 h-4 text-blue-500" />
+                      </button>
+                    )}
                   </div>
                 )}
                 {/* عرض منشئ العميل - للمدير فقط */}
@@ -432,6 +476,43 @@ export const Clients: React.FC = () => {
           onConfirm={confirmDialog.onConfirm}
           onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
         />
+        {/* Assign Modal */}
+        <Modal
+          isOpen={assignModal.open}
+          onClose={() => setAssignModal({ open: false })}
+          title="تغيير المندوب المكلف بالعميل"
+        >
+          {availableReps.length === 0 ? (
+            <div className="text-center text-gray-500 py-6">لا يوجد مندوبي مبيعات متاحين في فرقك.</div>
+          ) : (
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                handleAssign();
+              }}
+              className="space-y-4"
+            >
+              <Select
+                label="اختر المندوب المكلف"
+                value={assignTo}
+                onChange={setAssignTo}
+                options={availableReps.map(rep => ({
+                  value: rep.id,
+                  label: rep.id === user?.id ? `${rep.name} (أنت)` : rep.name
+                }))}
+                required
+              />
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setAssignModal({ open: false })}>
+                  إلغاء
+                </Button>
+                <Button type="submit" disabled={!assignTo}>
+                  تأكيد التعيين
+                </Button>
+              </div>
+            </form>
+          )}
+        </Modal>
       </div>
     </CanView>
   );
