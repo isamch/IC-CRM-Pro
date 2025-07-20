@@ -13,6 +13,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { CanView, CanCreate, CanEdit, CanDelete } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { mockTeams, mockUsers } from '../data/mockData';
@@ -103,6 +104,11 @@ export const Teams: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>();
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
 
   // تحميل الفرق حسب الصلاحيات
   useEffect(() => {
@@ -155,7 +161,14 @@ export const Teams: React.FC = () => {
   };
 
   const handleDeleteTeam = (teamId: string) => {
-    setTeams(teams.filter(t => t.id !== teamId));
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من حذف هذا الفريق؟ سيتم حذف جميع بياناته.',
+      onConfirm: () => {
+        setTeams(prev => prev.filter(t => t.id !== teamId));
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   // الحصول على عدد أعضاء الفريق
@@ -322,6 +335,12 @@ export const Teams: React.FC = () => {
             onCancel={() => setShowModal(false)}
           />
         </Modal>
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        />
       </div>
     </CanView>
   );

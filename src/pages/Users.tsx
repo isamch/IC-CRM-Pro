@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { CanView } from '../components/auth/PermissionGuard';
 import { User as UserType } from '../types';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 export const Users: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -16,6 +17,11 @@ export const Users: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
   const [isRemoveFromTeamModalOpen, setIsRemoveFromTeamModalOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
 
   // تصفية المستخدمين حسب دور المستخدم الحالي
   const getFilteredUsers = () => {
@@ -65,40 +71,49 @@ export const Users: React.FC = () => {
   const handleDeleteUser = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
-    setIsDeleteModalOpen(true);
+    setConfirmDialog({
+      isOpen: true,
+      message: `هل أنت متأكد من حذف المستخدم ${user.name}؟ لا يمكن التراجع عن هذه العملية.`,
+      onConfirm: () => {
+        // حذف المستخدم
+        console.log('Deleting user:', user.name);
+        setIsDeleteModalOpen(false);
+        setSelectedUser(null);
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   const handleSuspendUser = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
-    setIsSuspendModalOpen(true);
+    setConfirmDialog({
+      isOpen: true,
+      message: `هل أنت متأكد من ${user.isActive ? 'إيقاف' : 'تفعيل'} المستخدم ${user.name}؟`,
+      onConfirm: () => {
+        // إيقاف/تفعيل المستخدم
+        console.log('Suspending user:', user.name);
+        setIsSuspendModalOpen(false);
+        setSelectedUser(null);
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   const handleRemoveFromTeam = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
-    setIsRemoveFromTeamModalOpen(true);
-  };
-
-  const confirmDelete = () => {
-    // هنا سيتم حذف المستخدم
-    console.log('Deleting user:', selectedUser?.name);
-    setIsDeleteModalOpen(false);
-    setSelectedUser(null);
-  };
-
-  const confirmSuspend = () => {
-    // هنا سيتم إيقاف المستخدم
-    console.log('Suspending user:', selectedUser?.name);
-    setIsSuspendModalOpen(false);
-    setSelectedUser(null);
-  };
-
-  const confirmRemoveFromTeam = () => {
-    // هنا سيتم إزالة المستخدم من الفريق
-    console.log('Removing user from team:', selectedUser?.name);
-    setIsRemoveFromTeamModalOpen(false);
-    setSelectedUser(null);
+    setConfirmDialog({
+      isOpen: true,
+      message: `هل أنت متأكد من إزالة المستخدم ${user.name} من الفريق؟`,
+      onConfirm: () => {
+        // إزالة المستخدم من الفريق
+        console.log('Removing user from team:', user.name);
+        setIsRemoveFromTeamModalOpen(false);
+        setSelectedUser(null);
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   return (
@@ -404,7 +419,12 @@ export const Users: React.FC = () => {
             <Button variant="outline" onClick={() => setIsSuspendModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmSuspend} className="bg-yellow-600 hover:bg-yellow-700">
+            <Button onClick={() => {
+              // هنا سيتم إيقاف/تفعيل المستخدم
+              console.log('Suspending user:', selectedUser?.name);
+              setIsSuspendModalOpen(false);
+              setSelectedUser(null);
+            }} className="bg-yellow-600 hover:bg-yellow-700">
               {selectedUser?.isActive ? 'Suspend' : 'Activate'}
             </Button>
           </div>
@@ -425,7 +445,12 @@ export const Users: React.FC = () => {
             <Button variant="outline" onClick={() => setIsRemoveFromTeamModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmRemoveFromTeam} className="bg-orange-600 hover:bg-orange-700">
+            <Button onClick={() => {
+              // هنا سيتم إزالة المستخدم من الفريق
+              console.log('Removing user from team:', selectedUser?.name);
+              setIsRemoveFromTeamModalOpen(false);
+              setSelectedUser(null);
+            }} className="bg-orange-600 hover:bg-orange-700">
               Remove from Team
             </Button>
           </div>
@@ -446,12 +471,24 @@ export const Users: React.FC = () => {
             <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <Button onClick={() => {
+              // هنا سيتم حذف المستخدم
+              console.log('Deleting user:', selectedUser?.name);
+              setIsDeleteModalOpen(false);
+              setSelectedUser(null);
+            }} className="bg-red-600 hover:bg-red-700">
               Delete User
             </Button>
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+      />
     </div>
   );
 }; 

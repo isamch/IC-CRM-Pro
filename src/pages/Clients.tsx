@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { CanView, CanCreate } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { mockClients, mockUsers } from '../data/mockData';
@@ -183,6 +184,11 @@ export const Clients: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | undefined>();
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
 
   // تصفية العملاء حسب الصلاحيات
   const visibleClients = user?.permissions.clients.viewAll 
@@ -222,7 +228,14 @@ export const Clients: React.FC = () => {
   };
 
   const handleDeleteClient = (clientId: string) => {
-    setClients(clients.filter(c => c.id !== clientId));
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من حذف هذا العميل؟ لا يمكن التراجع عن هذه العملية.',
+      onConfirm: () => {
+        setClients(clients.filter(c => c.id !== clientId));
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   // الحصول على اسم المستخدم المخصص له العميل
@@ -413,6 +426,12 @@ export const Clients: React.FC = () => {
             onCancel={() => setShowModal(false)}
           />
         </Modal>
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        />
       </div>
     </CanView>
   );

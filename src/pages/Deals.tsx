@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { mockDeals, mockClients } from '../data/mockData';
 import { Deal } from '../types';
 
@@ -125,6 +126,11 @@ export const Deals: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | undefined>();
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
 
   const filteredDeals = deals.filter(deal => 
     statusFilter === 'all' || deal.status === statusFilter
@@ -156,7 +162,14 @@ export const Deals: React.FC = () => {
   };
 
   const handleDeleteDeal = (dealId: string) => {
-    setDeals(deals.filter(d => d.id !== dealId));
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من حذف هذه الصفقة؟ لا يمكن التراجع عن هذه العملية.',
+      onConfirm: () => {
+        setDeals(deals.filter(d => d.id !== dealId));
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   const formatCurrency = (amount: number) => {
@@ -318,6 +331,12 @@ export const Deals: React.FC = () => {
           onCancel={() => setShowModal(false)}
         />
       </Modal>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+      />
     </div>
   );
 };

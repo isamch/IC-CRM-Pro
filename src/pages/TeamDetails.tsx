@@ -22,6 +22,7 @@ import { CanView, CanEdit, CanDelete } from '../components/auth/PermissionGuard'
 import { useAuth } from '../contexts/AuthContext';
 import { mockTeams, mockUsers, mockClients, mockDeals, mockTasks } from '../data/mockData';
 import { Team } from '../types';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 // نموذج تعديل الفريق
 const EditTeamForm: React.FC<{
@@ -165,6 +166,11 @@ export const TeamDetails: React.FC = () => {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [localTeams, setLocalTeams] = useState(mockTeams);
   const [localUsers, setLocalUsers] = useState(mockUsers);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
 
   // تحميل بيانات الفريق
   useEffect(() => {
@@ -238,15 +244,16 @@ export const TeamDetails: React.FC = () => {
   };
 
   const handleDelete = () => {
-    if (confirm('هل أنت متأكد من حذف هذا الفريق؟ سيتم إزالة جميع الأعضاء منه.')) {
-      // إزالة الفريق من القائمة
-      setLocalTeams(prev => prev.filter(t => t.id !== team.id));
-      // إزالة الفريق من جميع الأعضاء
-      setLocalUsers(prev => prev.map(u => 
-        u.teamId === team.id ? { ...u, teamId: undefined } : u
-      ));
-      navigate('/teams');
-    }
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من حذف هذا الفريق؟ سيتم إزالة جميع الأعضاء منه.',
+      onConfirm: () => {
+        setLocalTeams(prev => prev.filter(t => t.id !== team.id));
+        setLocalUsers(prev => prev.map(u => u.teamId === team.id ? { ...u, teamId: undefined } : u));
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+        navigate('/teams');
+      }
+    });
   };
 
   const handleAddMember = (userId: string) => {
@@ -258,12 +265,14 @@ export const TeamDetails: React.FC = () => {
   };
 
   const handleRemoveMember = (userId: string) => {
-    if (confirm('هل أنت متأكد من إزالة هذا المندوب من الفريق؟')) {
-      // إزالة المندوب من الفريق
-      setLocalUsers(prev => prev.map(u => 
-        u.id === userId ? { ...u, teamId: undefined } : u
-      ));
-    }
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من إزالة هذا المندوب من الفريق؟',
+      onConfirm: () => {
+        setLocalUsers(prev => prev.map(u => u.id === userId ? { ...u, teamId: undefined } : u));
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   const handleToggleMemberStatus = (userId: string) => {
@@ -271,12 +280,14 @@ export const TeamDetails: React.FC = () => {
     if (member) {
       const newStatus = !member.isActive;
       const action = newStatus ? 'تفعيل' : 'إيقاف مؤقت';
-      
-      if (confirm(`هل أنت متأكد من ${action} هذا المندوب؟`)) {
-        setLocalUsers(prev => prev.map(u => 
-          u.id === userId ? { ...u, isActive: newStatus } : u
-        ));
-      }
+      setConfirmDialog({
+        isOpen: true,
+        message: `هل أنت متأكد من ${action} هذا المندوب؟`,
+        onConfirm: () => {
+          setLocalUsers(prev => prev.map(u => u.id === userId ? { ...u, isActive: newStatus } : u));
+          setConfirmDialog(d => ({ ...d, isOpen: false }));
+        }
+      });
     }
   };
 
@@ -574,6 +585,13 @@ export const TeamDetails: React.FC = () => {
             onCancel={() => setShowAddMemberModal(false)}
           />
         </Modal>
+
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+        />
       </div>
     </CanView>
   );

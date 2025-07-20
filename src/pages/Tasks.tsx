@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { mockTasks, mockClients, mockDeals } from '../data/mockData';
 import { Task } from '../types';
 
@@ -146,6 +147,11 @@ export const Tasks: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
 
   const filteredTasks = tasks.filter(task => {
     const statusMatch = statusFilter === 'all' || task.status === statusFilter;
@@ -179,7 +185,14 @@ export const Tasks: React.FC = () => {
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من حذف هذه المهمة؟ لا يمكن التراجع عن هذه العملية.',
+      onConfirm: () => {
+        setTasks(tasks.filter(t => t.id !== taskId));
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
+      }
+    });
   };
 
   const handleToggleStatus = (taskId: string) => {
@@ -365,6 +378,12 @@ export const Tasks: React.FC = () => {
           onCancel={() => setShowModal(false)}
         />
       </Modal>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+      />
     </div>
   );
 };

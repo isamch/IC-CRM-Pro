@@ -22,6 +22,7 @@ import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 export const Settings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -36,6 +37,12 @@ export const Settings: React.FC = () => {
   const [language, setLanguage] = useState(user?.preferences.language || 'en');
   const [timezone, setTimezone] = useState(user?.preferences.timezone || 'America/New_York');
 
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: () => {},
+  });
+
   const handleSavePreferences = () => {
     updateUser({
       preferences: {
@@ -44,6 +51,17 @@ export const Settings: React.FC = () => {
         notifications,
         language,
         timezone
+      }
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    setConfirmDialog({
+      isOpen: true,
+      message: 'هل أنت متأكد من حذف حسابك وجميع بياناتك بشكل نهائي؟ لا يمكن التراجع عن هذه العملية.',
+      onConfirm: () => {
+        // تنفيذ حذف الحساب هنا
+        setConfirmDialog(d => ({ ...d, isOpen: false }));
       }
     });
   };
@@ -309,13 +327,19 @@ export const Settings: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <Button variant="danger" size="sm">
+              <Button variant="danger" size="sm" onClick={handleDeleteAccount}>
                 Delete
               </Button>
             </div>
           </div>
         </SettingSection>
       </div>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+      />
     </div>
   );
 };
