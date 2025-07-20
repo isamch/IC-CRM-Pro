@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Select } from '../components/ui/Select';
 import { mockDeals, mockClients, mockUsers, mockTeams, mockTasks } from '../data/mockData';
+import { mockDealActivities, DealActivity } from '../data/mockData';
 import { 
   Edit2, ArrowLeft, DollarSign, Calendar, User, Building, 
   TrendingUp, Activity, Users, MapPin, Phone, Mail, 
@@ -73,40 +74,7 @@ export const DealDetails: React.FC = () => {
   };
 
   // Mock deal timeline/activities
-  const dealActivities = [
-    {
-      id: '1',
-      type: 'created',
-      title: 'تم إنشاء الصفقة',
-      description: 'تم إنشاء الصفقة بواسطة المندوب المسؤول',
-      date: '2024-01-15',
-      user: assignedUser?.name || 'غير محدد'
-    },
-    {
-      id: '2',
-      type: 'meeting',
-      title: 'اجتماع مع العميل',
-      description: 'عرض تفصيلي للمنتج والخدمات',
-      date: '2024-01-20',
-      user: assignedUser?.name || 'غير محدد'
-    },
-    {
-      id: '3',
-      type: 'proposal',
-      title: 'إرسال العرض',
-      description: 'تم إرسال العرض النهائي للعميل',
-      date: '2024-01-25',
-      user: assignedUser?.name || 'غير محدد'
-    },
-    {
-      id: '4',
-      type: 'followup',
-      title: 'متابعة',
-      description: 'مكالمة متابعة مع العميل',
-      date: '2024-02-01',
-      user: assignedUser?.name || 'غير محدد'
-    }
-  ];
+  const dealActivities: DealActivity[] = mockDealActivities.filter(activity => activity.dealId === deal.id);
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -114,8 +82,48 @@ export const DealDetails: React.FC = () => {
       case 'meeting': return '🤝';
       case 'proposal': return '📄';
       case 'followup': return '📞';
+      case 'negotiation': return '💼';
+      case 'contract_sent': return '📋';
+      case 'contract_signed': return '✍️';
+      case 'won': return '✅';
+      case 'lost': return '❌';
+      case 'note': return '📝';
       default: return '📋';
     }
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'created': return 'text-blue-600 dark:text-blue-400';
+      case 'meeting': return 'text-green-600 dark:text-green-400';
+      case 'proposal': return 'text-purple-600 dark:text-purple-400';
+      case 'followup': return 'text-orange-600 dark:text-orange-400';
+      case 'negotiation': return 'text-indigo-600 dark:text-indigo-400';
+      case 'contract_sent': return 'text-yellow-600 dark:text-yellow-400';
+      case 'contract_signed': return 'text-emerald-600 dark:text-emerald-400';
+      case 'won': return 'text-green-600 dark:text-green-400';
+      case 'lost': return 'text-red-600 dark:text-red-400';
+      case 'note': return 'text-gray-600 dark:text-gray-400';
+      default: return 'text-gray-600 dark:text-gray-400';
+    }
+  };
+
+  const formatActivityDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes} دقيقة`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours} ساعة و ${remainingMinutes} دقيقة` : `${hours} ساعة`;
   };
 
   const handleSaveDeal = (dealData: Partial<Deal>) => {
@@ -307,27 +315,45 @@ export const DealDetails: React.FC = () => {
       <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Activity className="w-5 h-5" />
-          جدول زمني للصفقة
+          جدول زمني للصفقة ({dealActivities.length} نشاط)
         </h3>
         <div className="space-y-4">
           {dealActivities.map((activity, index) => (
             <div key={activity.id} className="flex items-start gap-4">
               <div className="flex flex-col items-center">
-                <div className="text-2xl">{getActivityIcon(activity.type)}</div>
+                <div className={`text-2xl ${getActivityColor(activity.type)}`}>{getActivityIcon(activity.type)}</div>
                 {index < dealActivities.length - 1 && (
                   <div className="w-0.5 h-8 bg-gray-300 dark:bg-gray-600 mt-2"></div>
                 )}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-gray-900 dark:text-white">{activity.title}</h4>
+                  <h4 className={`font-medium ${getActivityColor(activity.type)}`}>{activity.title}</h4>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(activity.date).toLocaleDateString('ar-EG')}
+                    {formatActivityDate(activity.date)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{activity.description}</p>
+                {activity.outcome && (
+                  <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">النتيجة:</span>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{activity.outcome}</p>
+                  </div>
+                )}
+                {activity.location && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <MapPin className="w-4 h-4" />
+                    {activity.location}
+                  </div>
+                )}
+                {activity.duration && (
+                  <div className="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <Clock className="w-4 h-4" />
+                    {formatDuration(activity.duration)}
+                  </div>
+                )}
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  بواسطة: {activity.user}
+                  بواسطة: {activity.userName}
                 </div>
               </div>
             </div>

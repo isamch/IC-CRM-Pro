@@ -1,6 +1,306 @@
 import { Client, Deal, Task, DashboardStats, User, Team } from '../types';
 import { getPermissionsForRole } from '../utils/permissions';
 
+// واجهة أنشطة الصفقة
+export interface DealActivity {
+  id: string;
+  dealId: string;
+  type: 'created' | 'meeting' | 'proposal' | 'followup' | 'negotiation' | 'contract_sent' | 'contract_signed' | 'lost' | 'won' | 'note';
+  title: string;
+  description: string;
+  date: string;
+  userId: string;
+  userName: string;
+  attachments?: string[];
+  duration?: number; // بالدقائق للاجتماعات
+  location?: string; // للاجتماعات
+  outcome?: string; // للاجتماعات والمفاوضات
+}
+
+// بيانات أنشطة الصفقات
+export const mockDealActivities: DealActivity[] = [
+  // أنشطة الصفقة 1
+  {
+    id: '1',
+    dealId: '1',
+    type: 'created',
+    title: 'تم إنشاء الصفقة',
+    description: 'تم إنشاء صفقة جديدة لشركة التقنية المتقدمة',
+    date: '2024-01-15T09:00:00Z',
+    userId: '6',
+    userName: 'سارة أحمد'
+  },
+  {
+    id: '2',
+    dealId: '1',
+    type: 'meeting',
+    title: 'اجتماع أولي مع العميل',
+    description: 'اجتماع تمهيدي لفهم احتياجات الشركة ومتطلبات المشروع',
+    date: '2024-01-18T14:00:00Z',
+    userId: '6',
+    userName: 'سارة أحمد',
+    duration: 60,
+    location: 'مكتب العميل - الرياض',
+    outcome: 'تم تحديد المتطلبات الأساسية للمشروع'
+  },
+  {
+    id: '3',
+    dealId: '1',
+    type: 'proposal',
+    title: 'إرسال العرض التجاري',
+    description: 'تم إرسال العرض التجاري التفصيلي مع الأسعار والمواصفات',
+    date: '2024-01-22T11:30:00Z',
+    userId: '6',
+    userName: 'سارة أحمد',
+    attachments: ['عرض_تجاري_شركة_التقنية.pdf']
+  },
+  {
+    id: '4',
+    dealId: '1',
+    type: 'negotiation',
+    title: 'مفاوضات حول السعر والشروط',
+    description: 'جلسة مفاوضات لتحسين الشروط والأسعار',
+    date: '2024-01-25T16:00:00Z',
+    userId: '6',
+    userName: 'سارة أحمد',
+    duration: 90,
+    location: 'مقر الشركة - الرياض',
+    outcome: 'تم الاتفاق على خصم 10% مع تحسين شروط الدفع'
+  },
+  {
+    id: '5',
+    dealId: '1',
+    type: 'contract_sent',
+    title: 'إرسال العقد النهائي',
+    description: 'تم إرسال العقد النهائي للعميل للتوقيع',
+    date: '2024-01-28T10:00:00Z',
+    userId: '6',
+    userName: 'سارة أحمد',
+    attachments: ['عقد_شركة_التقنية_النهائي.pdf']
+  },
+  {
+    id: '6',
+    dealId: '1',
+    type: 'contract_signed',
+    title: 'توقيع العقد',
+    description: 'تم توقيع العقد من قبل العميل وإتمام الصفقة',
+    date: '2024-02-01T15:30:00Z',
+    userId: '6',
+    userName: 'سارة أحمد',
+    attachments: ['عقد_موقع_شركة_التقنية.pdf']
+  },
+  {
+    id: '7',
+    dealId: '1',
+    type: 'won',
+    title: 'إتمام الصفقة بنجاح',
+    description: 'تم إتمام الصفقة بنجاح وقيدها في النظام',
+    date: '2024-02-01T16:00:00Z',
+    userId: '6',
+    userName: 'سارة أحمد'
+  },
+
+  // أنشطة الصفقة 2
+  {
+    id: '8',
+    dealId: '2',
+    type: 'created',
+    title: 'تم إنشاء الصفقة',
+    description: 'تم إنشاء صفقة جديدة لشركة الخدمات المالية',
+    date: '2024-01-20T08:30:00Z',
+    userId: '7',
+    userName: 'محمد علي'
+  },
+  {
+    id: '9',
+    dealId: '2',
+    type: 'meeting',
+    title: 'عرض المنتج',
+    description: 'عرض تفصيلي للمنتجات والخدمات المقدمة',
+    date: '2024-01-23T13:00:00Z',
+    userId: '7',
+    userName: 'محمد علي',
+    duration: 75,
+    location: 'مقر الشركة - جدة',
+    outcome: 'إعجاب العميل بالمنتجات وطلب عرض أسعار'
+  },
+  {
+    id: '10',
+    dealId: '2',
+    type: 'proposal',
+    title: 'إرسال عرض الأسعار',
+    description: 'تم إرسال عرض أسعار مفصل للمنتجات المطلوبة',
+    date: '2024-01-26T09:15:00Z',
+    userId: '7',
+    userName: 'محمد علي',
+    attachments: ['عرض_أسعار_شركة_الخدمات_المالية.pdf']
+  },
+  {
+    id: '11',
+    dealId: '2',
+    type: 'followup',
+    title: 'مكالمة متابعة',
+    description: 'مكالمة متابعة لمعرفة رأي العميل في العرض',
+    date: '2024-01-29T11:00:00Z',
+    userId: '7',
+    userName: 'محمد علي',
+    outcome: 'العميل يحتاج وقت للدراسة والمراجعة'
+  },
+  {
+    id: '12',
+    dealId: '2',
+    type: 'note',
+    title: 'ملاحظة مهمة',
+    description: 'العميل مهتم بالمنتج لكن يحتاج ضمانات إضافية',
+    date: '2024-02-02T14:20:00Z',
+    userId: '7',
+    userName: 'محمد علي'
+  },
+
+  // أنشطة الصفقة 3
+  {
+    id: '13',
+    dealId: '3',
+    type: 'created',
+    title: 'تم إنشاء الصفقة',
+    description: 'تم إنشاء صفقة جديدة لشركة التصنيع الحديث',
+    date: '2024-01-25T10:00:00Z',
+    userId: '8',
+    userName: 'فاطمة محمد'
+  },
+  {
+    id: '14',
+    dealId: '3',
+    type: 'meeting',
+    title: 'اجتماع استكشافي',
+    description: 'اجتماع لاستكشاف احتياجات الشركة الصناعية',
+    date: '2024-01-28T15:30:00Z',
+    userId: '8',
+    userName: 'فاطمة محمد',
+    duration: 45,
+    location: 'مصنع الشركة - الدمام',
+    outcome: 'تم تحديد المشاكل الحالية والحلول المطلوبة'
+  },
+  {
+    id: '15',
+    dealId: '3',
+    type: 'proposal',
+    title: 'عرض الحلول',
+    description: 'عرض حلول تقنية لحل مشاكل الشركة',
+    date: '2024-02-01T12:00:00Z',
+    userId: '8',
+    userName: 'فاطمة محمد',
+    attachments: ['حلول_تقنية_شركة_التصنيع.pdf']
+  },
+  {
+    id: '16',
+    dealId: '3',
+    type: 'lost',
+    title: 'خسارة الصفقة',
+    description: 'العميل اختار منافس آخر بسبب السعر',
+    date: '2024-02-05T16:45:00Z',
+    userId: '8',
+    userName: 'فاطمة محمد',
+    outcome: 'المنافس قدم عرضاً أقل بنسبة 15%'
+  },
+
+  // أنشطة الصفقة 4
+  {
+    id: '17',
+    dealId: '4',
+    type: 'created',
+    title: 'تم إنشاء الصفقة',
+    description: 'تم إنشاء صفقة جديدة لشركة النقل السريع',
+    date: '2024-02-01T08:00:00Z',
+    userId: '9',
+    userName: 'علي أحمد'
+  },
+  {
+    id: '18',
+    dealId: '4',
+    type: 'meeting',
+    title: 'اجتماع تقني',
+    description: 'اجتماع تقني لدراسة المتطلبات التقنية',
+    date: '2024-02-04T14:00:00Z',
+    userId: '9',
+    userName: 'علي أحمد',
+    duration: 120,
+    location: 'مركز البيانات - الرياض',
+    outcome: 'تم تحديد المواصفات التقنية المطلوبة'
+  },
+  {
+    id: '19',
+    dealId: '4',
+    type: 'proposal',
+    title: 'عرض تقني ومالي',
+    description: 'عرض شامل يتضمن الجوانب التقنية والمالية',
+    date: '2024-02-08T10:30:00Z',
+    userId: '9',
+    userName: 'علي أحمد',
+    attachments: ['عرض_تقني_مالي_شركة_النقل.pdf']
+  },
+  {
+    id: '20',
+    dealId: '4',
+    type: 'negotiation',
+    title: 'مفاوضات شاملة',
+    description: 'مفاوضات حول السعر والمواصفات والجدول الزمني',
+    date: '2024-02-12T16:00:00Z',
+    userId: '9',
+    userName: 'علي أحمد',
+    duration: 180,
+    location: 'مقر الشركة - الرياض',
+    outcome: 'تم الاتفاق على خصم 8% مع تحسين المواصفات'
+  },
+
+  // أنشطة الصفقة 5
+  {
+    id: '21',
+    dealId: '5',
+    type: 'created',
+    title: 'تم إنشاء الصفقة',
+    description: 'تم إنشاء صفقة جديدة لشركة التجزئة الكبرى',
+    date: '2024-02-05T09:15:00Z',
+    userId: '10',
+    userName: 'نورا سعد'
+  },
+  {
+    id: '22',
+    dealId: '5',
+    type: 'meeting',
+    title: 'اجتماع استراتيجي',
+    description: 'اجتماع استراتيجي لدراسة احتياجات الشركة',
+    date: '2024-02-08T13:30:00Z',
+    userId: '10',
+    userName: 'نورا سعد',
+    duration: 90,
+    location: 'المقر الرئيسي - جدة',
+    outcome: 'تم تحديد الأهداف الاستراتيجية والمتطلبات'
+  },
+  {
+    id: '23',
+    dealId: '5',
+    type: 'proposal',
+    title: 'عرض استراتيجي',
+    description: 'عرض استراتيجي شامل لحلول الشركة',
+    date: '2024-02-12T11:00:00Z',
+    userId: '10',
+    userName: 'نورا سعد',
+    attachments: ['عرض_استراتيجي_شركة_التجزئة.pdf']
+  },
+  {
+    id: '24',
+    dealId: '5',
+    type: 'followup',
+    title: 'متابعة دورية',
+    description: 'مكالمة متابعة دورية مع العميل',
+    date: '2024-02-15T15:00:00Z',
+    userId: '10',
+    userName: 'نورا سعد',
+    outcome: 'العميل راضٍ عن العرض ويحتاج موافقة الإدارة'
+  }
+];
+
 // بيانات الفرق الوهمية
 export const mockTeams: Team[] = [
   // فريق نشط مع مدير وأعضاء
