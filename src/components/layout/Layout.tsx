@@ -11,7 +11,11 @@ export const Layout: React.FC = () => {
   // تحديد الصفحة النشطة من الرابط
   const getActivePage = () => {
     const path = location.pathname;
-    if (path.startsWith('/teams/')) return 'teams';
+    
+    // Debug: log the current path
+    console.log('Current path:', path);
+    
+    if (path.startsWith('/teams')) return 'teams';
     if (path === '/dashboard') return 'dashboard';
     if (path === '/users') return 'users';
     if (path === '/clients') return 'clients';
@@ -19,6 +23,10 @@ export const Layout: React.FC = () => {
     if (path === '/tasks') return 'tasks';
     if (path === '/profile') return 'profile';
     if (path === '/settings') return 'settings';
+    
+    // Default to dashboard for root path
+    if (path === '/') return 'dashboard';
+    
     return 'dashboard';
   };
 

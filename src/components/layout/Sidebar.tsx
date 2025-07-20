@@ -8,7 +8,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Shield
+  Shield,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { CanView } from '../auth/PermissionGuard';
@@ -34,7 +35,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'deals', label: 'Deals', icon: Briefcase },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'users', label: 'Users', icon: Shield, requiresPermission: 'users' },
-  { id: 'teams', label: 'Teams', icon: Users, requiresPermission: 'teams' },
+  { id: 'teams', label: 'Teams', icon: Building2, requiresPermission: 'teams' },
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
