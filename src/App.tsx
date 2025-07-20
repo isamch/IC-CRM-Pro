@@ -17,6 +17,9 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { SalesRepDetails } from './pages/SalesRepDetails';
 import './App.css';
 
+// Add a placeholder for client details
+const ClientDetails = () => <div className="p-8 text-center text-xl">تفاصيل العميل</div>;
+
 function App() {
   return (
     <ThemeProvider>
@@ -37,6 +40,7 @@ function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="sales-reps/:repId" element={<SalesRepDetails />} />
+                <Route path="clients/:clientId" element={<ClientDetails />} />
               </Route>
             </Routes>
           </div>
