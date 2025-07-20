@@ -8,6 +8,7 @@ import { Clients } from './pages/Clients';
 import { Deals } from './pages/Deals';
 import { Tasks } from './pages/Tasks';
 import { Users } from './pages/Users';
+import { Teams } from './pages/Teams';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { Login } from './pages/Login';
@@ -19,6 +20,7 @@ const pageComponents = {
   deals: Deals,
   tasks: Tasks,
   users: Users,
+  teams: Teams,
   team: TeamManagement,
   profile: Profile,
   settings: Settings,
@@ -30,6 +32,7 @@ const pageTitles = {
   deals: 'العقود',
   tasks: 'المهام',
   users: 'المستخدمين',
+  teams: 'الفرق',
   team: 'إدارة الفريق',
   profile: 'الملف الشخصي',
   settings: 'الإعدادات',

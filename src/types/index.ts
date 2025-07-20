@@ -54,6 +54,18 @@ export interface DashboardStats {
 // نظام الأدوار
 export type UserRole = 'admin' | 'sales_manager' | 'sales_representative';
 
+// نظام الفرق
+export interface Team {
+  id: string;
+  name: string;           // اسم الفريق
+  region: string;         // المنطقة الجغرافية
+  managerId: string;      // مدير الفريق
+  description?: string;   // وصف الفريق
+  isActive: boolean;      // حالة الفريق
+  createdAt: string;      // تاريخ الإنشاء
+  updatedAt?: string;     // تاريخ التحديث
+}
+
 // نظام الصلاحيات
 export interface Permissions {
   users: {
@@ -61,6 +73,13 @@ export interface Permissions {
     create: boolean;
     edit: boolean;
     delete: boolean;
+  };
+  teams: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    manageMembers: boolean; // إدارة أعضاء الفريق
   };
   clients: {
     view: boolean;
@@ -103,6 +122,9 @@ export interface User {
   avatar?: string;
   phone?: string;
   department?: string;
+  teamId?: string;        // معرف الفريق
+  region?: string;        // المنطقة الجغرافية
+  managerId?: string;     // معرف المدير المباشر
   joinDate: string;
   lastLogin?: string;
   isActive: boolean; // هل الحساب مفعل

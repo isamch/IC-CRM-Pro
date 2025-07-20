@@ -1,5 +1,39 @@
-import { Client, Deal, Task, DashboardStats, User } from '../types';
+import { Client, Deal, Task, DashboardStats, User, Team } from '../types';
 import { getPermissionsForRole } from '../utils/permissions';
+
+// بيانات الفرق الوهمية
+export const mockTeams: Team[] = [
+  {
+    id: '1',
+    name: 'فريق الرياض',
+    region: 'الرياض',
+    managerId: '2', // فاطمة علي
+    description: 'فريق مبيعات منطقة الرياض والمناطق المحيطة',
+    isActive: true,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-20'
+  },
+  {
+    id: '2',
+    name: 'فريق جدة',
+    region: 'جدة',
+    managerId: '2', // علي حسن (سنضيفه)
+    description: 'فريق مبيعات منطقة جدة والمناطق المحيطة',
+    isActive: true,
+    createdAt: '2024-01-05',
+    updatedAt: '2024-01-18'
+  },
+  {
+    id: '3',
+    name: 'فريق الدمام',
+    region: 'الدمام',
+    managerId: '5', // محمد عبدالله (سنضيفه)
+    description: 'فريق مبيعات المنطقة الشرقية',
+    isActive: true,
+    createdAt: '2024-01-10',
+    updatedAt: '2024-01-15'
+  }
+];
 
 export const mockClients: Client[] = [
   {
@@ -214,6 +248,9 @@ export const mockUsers: User[] = [
     role: 'sales_manager',
     phone: '+966 55 987 6543',
     department: 'المبيعات',
+    teamId: '1', // فريق الرياض
+    region: 'الرياض',
+    managerId: '1', // المدير العام
     joinDate: '2023-02-01',
     lastLogin: '2024-01-20T09:15:00Z',
     isActive: true,
@@ -236,6 +273,9 @@ export const mockUsers: User[] = [
     role: 'sales_representative',
     phone: '+966 54 321 9876',
     department: 'المبيعات',
+    teamId: '1', // فريق الرياض
+    region: 'الرياض',
+    managerId: '2', // فاطمة علي
     joinDate: '2023-03-15',
     lastLogin: '2024-01-20T08:45:00Z',
     isActive: true,
@@ -246,6 +286,106 @@ export const mockUsers: User[] = [
         email: true,
         push: true,
         desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '4',
+    name: 'علي حسن',
+    email: 'ali@crm.com',
+    role: 'sales_manager',
+    phone: '+966 53 456 7890',
+    department: 'المبيعات',
+    teamId: '2', // فريق جدة
+    region: 'جدة',
+    managerId: '1', // المدير العام
+    joinDate: '2023-02-15',
+    lastLogin: '2024-01-20T11:20:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_manager'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '5',
+    name: 'محمد عبدالله',
+    email: 'mohammed@crm.com',
+    role: 'sales_manager',
+    phone: '+966 52 789 0123',
+    department: 'المبيعات',
+    teamId: '3', // فريق الدمام
+    region: 'الدمام',
+    managerId: '1', // المدير العام
+    joinDate: '2023-03-01',
+    lastLogin: '2024-01-20T07:30:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_manager'),
+    preferences: {
+      theme: 'dark',
+      notifications: {
+        email: true,
+        push: false,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '6',
+    name: 'خالد عبدالله',
+    email: 'khalid@crm.com',
+    role: 'sales_representative',
+    phone: '+966 51 234 5678',
+    department: 'المبيعات',
+    teamId: '1', // فريق الرياض
+    region: 'الرياض',
+    managerId: '2', // فاطمة علي
+    joinDate: '2023-04-01',
+    lastLogin: '2024-01-20T09:45:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '7',
+    name: 'نورا سعد',
+    email: 'nora@crm.com',
+    role: 'sales_representative',
+    phone: '+966 56 345 6789',
+    department: 'المبيعات',
+    teamId: '2', // فريق جدة
+    region: 'جدة',
+    managerId: '4', // علي حسن
+    joinDate: '2023-04-15',
+    lastLogin: '2024-01-20T10:15:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: false
       },
       language: 'ar',
       timezone: 'Asia/Riyadh'

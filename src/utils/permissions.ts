@@ -8,6 +8,13 @@ export const adminPermissions: Permissions = {
     edit: true,
     delete: true,
   },
+  teams: {
+    view: true,
+    create: true,
+    edit: true,
+    delete: true,
+    manageMembers: true,
+  },
   clients: {
     view: true,
     create: true,
@@ -49,6 +56,13 @@ export const salesManagerPermissions: Permissions = {
     edit: true, // يمكنه تعديل بيانات فريقه فقط
     delete: false, // لا يمكنه حذف المستخدمين
   },
+  teams: {
+    view: true, // يرى فرقه فقط
+    create: true, // يمكنه إنشاء فرق جديدة
+    edit: true, // يمكنه تعديل فرقه
+    delete: true, // يمكنه حذف فرقه
+    manageMembers: true, // يمكنه إدارة أعضاء فرقه
+  },
   clients: {
     view: true,
     create: false, // لا يضيف عملاء مباشرة
@@ -89,6 +103,13 @@ export const salesRepresentativePermissions: Permissions = {
     create: false,
     edit: false,
     delete: false,
+  },
+  teams: {
+    view: true, // يرى فريقه فقط
+    create: false,
+    edit: false,
+    delete: false,
+    manageMembers: false,
   },
   clients: {
     view: true,
