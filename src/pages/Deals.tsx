@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, DollarSign, Calendar, User, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, DollarSign, Calendar, User, Search, Filter, Building2, Users } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -152,6 +152,7 @@ export const Deals: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [clientFilter, setClientFilter] = useState('');
   const [assignedFilter, setAssignedFilter] = useState('');
+  const [teamFilter, setTeamFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | undefined>();
@@ -181,11 +182,15 @@ export const Deals: React.FC = () => {
     const matchesStatus = statusFilter === 'all' || deal.status === statusFilter;
     const matchesClient = !clientFilter || deal.clientId === clientFilter;
     const matchesAssigned = !assignedFilter || deal.assignedTo === assignedFilter;
+    const matchesTeam = !teamFilter || (() => {
+      const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+      return assignedUser?.teamId === teamFilter;
+    })();
     const matchesSearch = !searchTerm || 
       deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.clientName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesStatus && matchesClient && matchesAssigned && matchesSearch;
+    return matchesStatus && matchesClient && matchesAssigned && matchesTeam && matchesSearch;
   });
 
   // Group deals by teams
@@ -302,8 +307,18 @@ export const Deals: React.FC = () => {
 
       {/* Filters */}
       <Card padding="sm">
+        <div className="mb-4">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            فلاتر البحث
+          </h3>
+        </div>
         <div className="flex flex-col md:flex-row md:items-center gap-3">
           <div className="relative flex-1">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+              <Search className="w-3 h-3" />
+              البحث النصي
+            </label>
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
@@ -315,41 +330,77 @@ export const Deals: React.FC = () => {
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
             />
           </div>
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { value: 'all', label: 'كل الحالات' },
-              { value: 'pending', label: 'قيد الانتظار' },
-              { value: 'won', label: 'مكتملة' },
-              { value: 'lost', label: 'فاشلة' }
-            ]}
-            className="min-w-[140px]"
-          />
-          <Select
-            value={clientFilter}
-            onChange={setClientFilter}
-            options={[
-              { value: '', label: 'كل العملاء' },
-              ...mockClients.map(client => ({
-                value: client.id,
-                label: client.name
-              }))
-            ]}
-            className="min-w-[140px]"
-          />
-          <Select
-            value={assignedFilter}
-            onChange={setAssignedFilter}
-            options={[
-              { value: '', label: 'كل المندوبين' },
-              ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => ({
-                value: user.id,
-                label: user.name
-              }))
-            ]}
-            className="min-w-[140px]"
-          />
+          <div className="flex flex-col">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              حالة الصفقة
+            </label>
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { value: 'all', label: 'كل الحالات' },
+                { value: 'pending', label: 'قيد الانتظار' },
+                { value: 'won', label: 'مكتملة' },
+                { value: 'lost', label: 'فاشلة' }
+              ]}
+              className="min-w-[140px]"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+              <User className="w-3 h-3" />
+              العميل
+            </label>
+            <Select
+              value={clientFilter}
+              onChange={setClientFilter}
+              options={[
+                { value: '', label: 'كل العملاء' },
+                ...mockClients.map(client => ({
+                  value: client.id,
+                  label: client.name
+                }))
+              ]}
+              className="min-w-[140px]"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              المندوب المسؤول
+            </label>
+            <Select
+              value={assignedFilter}
+              onChange={setAssignedFilter}
+              options={[
+                { value: '', label: 'كل المندوبين' },
+                ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => ({
+                  value: user.id,
+                  label: user.name
+                }))
+              ]}
+              className="min-w-[140px]"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+              <Building2 className="w-3 h-3" />
+              الفريق
+            </label>
+            <Select
+              value={teamFilter}
+              onChange={setTeamFilter}
+              options={[
+                { value: '', label: 'كل الفرق' },
+                ...mockTeams.map(team => ({
+                  value: team.id,
+                  label: team.name
+                }))
+              ]}
+              className="min-w-[140px]"
+            />
+          </div>
         </div>
       </Card>
 

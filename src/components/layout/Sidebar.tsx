@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -47,6 +48,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse
 }) => {
   const { logout } = useAuth();
+  const location = useLocation();
+
+  // Function to determine if a navigation item is active
+  const isItemActive = (itemId: string) => {
+    if (itemId === 'deals') {
+      // Make deals active for both /deals and /deals/:dealId
+      return location.pathname.startsWith('/deals');
+    }
+    return activePage === itemId;
+  };
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ease-in-out min-h-screen`}>
@@ -71,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className="flex-1 p-4 space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activePage === item.id;
+          const isActive = isItemActive(item.id);
           
           // إذا كان العنصر يتطلب صلاحية، تحقق منها
           if (item.requiresPermission) {
