@@ -61,12 +61,12 @@ export const Profile: React.FC = () => {
             
             <div className="relative z-10 p-4 flex flex-col h-full">
               <div className="relative inline-block mb-3">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg relative">
                   <User className="w-10 h-10 text-white" />
+                  <button className="absolute bottom-0 right-0 w-6 h-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors shadow-lg border border-white dark:border-gray-700">
+                    <Camera className="w-3 h-3" />
+                  </button>
                 </div>
-                <button className="absolute bottom-0 right-0 w-6 h-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors shadow-lg border border-white dark:border-gray-700">
-                  <Camera className="w-3 h-3" />
-                </button>
               </div>
               
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
