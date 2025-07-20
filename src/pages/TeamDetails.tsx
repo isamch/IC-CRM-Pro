@@ -23,6 +23,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { mockTeams, mockUsers, mockClients, mockDeals, mockTasks } from '../data/mockData';
 import { Team } from '../types';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { Select } from '../components/ui/Select';
 
 // نموذج تعديل الفريق
 const EditTeamForm: React.FC<{
@@ -171,6 +172,12 @@ export const TeamDetails: React.FC = () => {
     message: '',
     onConfirm: () => {},
   });
+  const [showManagerModal, setShowManagerModal] = useState(false);
+  const [selectedManagerId, setSelectedManagerId] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // قائمة مديري المبيعات المتاحين
+  const availableManagers = localUsers.filter(u => u.role === 'sales_manager');
 
   // تحميل بيانات الفريق
   useEffect(() => {
@@ -294,6 +301,12 @@ export const TeamDetails: React.FC = () => {
   return (
     <CanView permission="teams">
       <div className="p-4 space-y-4">
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-2 px-4 py-2 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-center font-medium transition">
+            {successMessage}
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -340,7 +353,21 @@ export const TeamDetails: React.FC = () => {
                 {team.name}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {team.region} • المدير: {manager?.name}
+                {team.region} • المدير: {manager?.name || 'غير محدد'}
+                {/* زر تغيير المدير للأدمن فقط */}
+                {user?.role === 'admin' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-2 text-blue-600 dark:text-blue-300 hover:underline"
+                    onClick={() => {
+                      setSelectedManagerId(team.managerId || '');
+                      setShowManagerModal(true);
+                    }}
+                  >
+                    تغيير المدير
+                  </Button>
+                )}
               </p>
             </div>
           </div>
@@ -584,6 +611,43 @@ export const TeamDetails: React.FC = () => {
             onAdd={handleAddMember}
             onCancel={() => setShowAddMemberModal(false)}
           />
+        </Modal>
+
+        {/* Modal لتغيير مدير الفريق */}
+        <Modal
+          isOpen={showManagerModal}
+          onClose={() => setShowManagerModal(false)}
+          title="تغيير مدير الفريق"
+        >
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              // تحديث مدير الفريق
+              const updatedTeam = { ...team, managerId: selectedManagerId };
+              setLocalTeams(prev => prev.map(t => t.id === team.id ? updatedTeam : t));
+              setTeam(updatedTeam);
+              setShowManagerModal(false);
+              setSuccessMessage('تم تغيير مدير الفريق بنجاح');
+              setTimeout(() => setSuccessMessage(''), 2500);
+            }}
+            className="space-y-4"
+          >
+            <Select
+              label="اختر مدير المبيعات الجديد"
+              value={selectedManagerId}
+              onChange={setSelectedManagerId}
+              options={availableManagers.map(mgr => ({ value: mgr.id, label: mgr.name }))}
+              required
+            />
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowManagerModal(false)}>
+                إلغاء
+              </Button>
+              <Button type="submit" disabled={!selectedManagerId}>
+                تأكيد التعيين
+              </Button>
+            </div>
+          </form>
         </Modal>
 
         <ConfirmDialog

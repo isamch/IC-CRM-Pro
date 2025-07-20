@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { User, Trash2, Eye, UserCheck, Plus, Search, Ban, UserMinus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { mockUsers } from '../data/mockData';
-import { mockTeams } from '../data/mockData';
+import { mockUsers, mockTeams } from '../data/mockData';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { CanView } from '../components/auth/PermissionGuard';
@@ -31,6 +30,11 @@ export const Users: React.FC = () => {
     requirePassword: false,
   });
 
+  // Local state for users, teams, and clients (mock)
+  const [localUsers, setLocalUsers] = useState(mockUsers);
+  const [localTeams, setLocalTeams] = useState(mockTeams);
+  // const [localClients, setLocalClients] = useState(mockClients); // removed because it's not used directly in this file
+
   // Helper to check password (mock: use currentUser?.password or a fixed value for demo)
   const checkPassword = (input: string) => {
     // For demo, accept 'demo123' as the password
@@ -39,11 +43,11 @@ export const Users: React.FC = () => {
 
   // تصفية المستخدمين حسب دور المستخدم الحالي
   const getFilteredUsers = () => {
-    let filteredUsers = mockUsers;
+    let filteredUsers = localUsers;
 
     // إذا كان المستخدم الحالي مدير مبيعات، اعرض فقط مندوبي المبيعات
     if (currentUser?.role === 'sales_manager') {
-      filteredUsers = mockUsers.filter(user => user.role === 'sales_representative');
+      filteredUsers = localUsers.filter(user => user.role === 'sales_representative');
     }
 
     // تطبيق البحث
@@ -63,7 +67,7 @@ export const Users: React.FC = () => {
   // الحصول على اسم الفريق
   const getTeamName = (teamId?: string) => {
     if (!teamId) return 'No Team';
-    const team = mockTeams.find(t => t.id === teamId);
+    const team = localTeams.find(t => t.id === teamId);
     return team ? team.name : 'Unknown Team';
   };
 
@@ -83,6 +87,7 @@ export const Users: React.FC = () => {
     setIsViewModalOpen(true);
   };
 
+  // حذف المستخدم مع منطق احترافي
   const handleDeleteUser = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
@@ -96,12 +101,32 @@ export const Users: React.FC = () => {
           setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
           return;
         }
-        // حذف المستخدم
+        // --- BUSINESS LOGIC ---
+        if (user.role === 'sales_manager') {
+          // 1. اجعل جميع الفرق التي يديرها هذا المدير بدون مدير
+          setLocalTeams(prevTeams => prevTeams.map(team =>
+            team.managerId === user.id ? { ...team, managerId: undefined } : team
+          ));
+          // 2. اجعل جميع مندوبي المبيعات الذين يديرهم هذا المدير بدون مدير
+          setLocalUsers(prevUsers => prevUsers.map(u =>
+            u.managerId === user.id ? { ...u, managerId: undefined } : u
+          ));
+          // 3. اجعل جميع العملاء المخصصين لهذا المدير بدون مندوب
+          // setLocalClients(prevClients => prevClients.map(c =>
+          //   c.assignedTo === user.id ? { ...c, assignedTo: undefined } : c
+          // ));
+        } else if (user.role === 'sales_representative') {
+          // 1. اجعل جميع العملاء المخصصين لهذا المندوب بدون مندوب
+          // setLocalClients(prevClients => prevClients.map(c =>
+          //   c.assignedTo === user.id ? { ...c, assignedTo: undefined } : c
+          // ));
+        }
+        // 4. احذف المستخدم من القائمة
+        setLocalUsers(prevUsers => prevUsers.filter(u => u.id !== user.id));
         setPasswordDialog(d => ({ ...d, isOpen: false }));
         setIsDeleteModalOpen(false);
         setSelectedUser(null);
         setConfirmDialog(d => ({ ...d, isOpen: false }));
-        // ... حذف المستخدم من البيانات هنا
       },
     });
   };

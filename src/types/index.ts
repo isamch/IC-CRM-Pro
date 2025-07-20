@@ -59,7 +59,7 @@ export interface Team {
   id: string;
   name: string;           // اسم الفريق
   region: string;         // المنطقة الجغرافية
-  managerId: string;      // مدير الفريق
+  managerId?: string;     // مدير الفريق (قد يكون undefined إذا لم يكن هناك مدير)
   description?: string;   // وصف الفريق
   isActive: boolean;      // حالة الفريق
   createdAt: string;      // تاريخ الإنشاء
