@@ -25,7 +25,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 export const Settings: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme, toggleTheme } = useTheme();
   const { user, updateUser } = useAuth();
   
   const [notifications, setNotifications] = useState({
@@ -153,7 +153,7 @@ export const Settings: React.FC = () => {
               </label>
               <div className="grid grid-cols-3 gap-3">
                 <button
-                  onClick={() => theme !== 'light' && toggleTheme()}
+                  onClick={() => setTheme('light')}
                   className={`p-3 rounded-lg border-2 transition-all ${
                     theme === 'light'
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -165,7 +165,7 @@ export const Settings: React.FC = () => {
                 </button>
                 
                 <button
-                  onClick={() => theme !== 'dark' && toggleTheme()}
+                  onClick={() => setTheme('dark')}
                   className={`p-3 rounded-lg border-2 transition-all ${
                     theme === 'dark'
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -176,7 +176,14 @@ export const Settings: React.FC = () => {
                   <div className="text-sm font-medium text-gray-900 dark:text-white">Dark</div>
                 </button>
                 
-                <button className="p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 transition-all">
+                <button
+                  onClick={() => setTheme('system')}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    theme === 'system'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                  }`}
+                >
                   <Monitor className="w-5 h-5 mx-auto mb-2 text-gray-600 dark:text-gray-400" />
                   <div className="text-sm font-medium text-gray-900 dark:text-white">System</div>
                 </button>
