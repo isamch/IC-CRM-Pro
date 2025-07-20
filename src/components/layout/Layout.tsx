@@ -12,9 +12,6 @@ export const Layout: React.FC = () => {
   const getActivePage = () => {
     const path = location.pathname;
     
-    // Debug: log the current path
-    console.log('Current path:', path);
-    
     if (path.startsWith('/teams')) return 'teams';
     if (path === '/dashboard') return 'dashboard';
     if (path === '/users') return 'users';

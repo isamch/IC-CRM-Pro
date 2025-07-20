@@ -3,7 +3,6 @@ import { User, Camera, Mail, Phone, Building, Calendar, Clock, Save, Edit, Award
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
 import { useAuth } from '../contexts/AuthContext';
 
 export const Profile: React.FC = () => {
@@ -18,7 +17,12 @@ export const Profile: React.FC = () => {
   });
 
   const handleSave = () => {
-    updateUser(formData);
+    updateUser({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      department: formData.department
+    });
     setIsEditing(false);
   };
 
@@ -36,59 +40,59 @@ export const Profile: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="p-6 space-y-8 max-w-6xl mx-auto">
+    <div className="p-4 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
           Profile Settings
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-lg">
+        <p className="text-gray-600 dark:text-gray-400 text-base">
           Manage your account information and view your performance
         </p>
       </div>
 
       {/* Main Profile Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
         <div className="lg:col-span-1">
           <Card className="text-center relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"></div>
             
-            <div className="relative z-10 p-6">
-              <div className="relative inline-block mb-6">
-                <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                  <User className="w-16 h-16 text-white" />
+            <div className="relative z-10 p-4">
+              <div className="relative inline-block mb-4">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <User className="w-12 h-12 text-white" />
                 </div>
-                <button className="absolute bottom-2 right-2 w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors shadow-lg border-2 border-white dark:border-gray-700">
-                  <Camera className="w-5 h-5" />
+                <button className="absolute bottom-1 right-1 w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors shadow-lg border-2 border-white dark:border-gray-700">
+                  <Camera className="w-4 h-4" />
                 </button>
               </div>
               
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                 {user.name}
               </h3>
-              <p className="text-blue-600 dark:text-blue-400 font-semibold mb-1 text-lg">
+              <p className="text-blue-600 dark:text-blue-400 font-semibold mb-1 text-base">
                 {user.role}
               </p>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 {user.department}
               </p>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 shadow-sm">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">4.8</div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                  <div className="text-xl font-bold text-blue-600 dark:text-blue-400">4.8</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">Rating</div>
                 </div>
-                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 shadow-sm">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">98%</div>
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                  <div className="text-xl font-bold text-green-600 dark:text-green-400">98%</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">Success</div>
                 </div>
               </div>
 
               {/* Member Info */}
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-center space-x-2 text-gray-600 dark:text-gray-400">
                   <Calendar className="w-4 h-4" />
                   <span>Joined {new Date(user.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
@@ -105,10 +109,10 @@ export const Profile: React.FC = () => {
         </div>
 
         {/* Profile Form */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           <Card>
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Personal Information
               </h4>
               {!isEditing ? (
@@ -116,7 +120,7 @@ export const Profile: React.FC = () => {
                   Edit Profile
                 </Button>
               ) : (
-                <div className="flex space-x-3">
+                <div className="flex space-x-2">
                   <Button variant="outline" onClick={handleCancel} size="sm">
                     Cancel
                   </Button>
@@ -127,7 +131,7 @@ export const Profile: React.FC = () => {
               )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Full Name"
                 value={formData.name}
@@ -176,42 +180,42 @@ export const Profile: React.FC = () => {
       </div>
 
       {/* Performance Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-500 rounded-xl">
-              <Award className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <Award className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">24</div>
-              <div className="text-blue-600 dark:text-blue-400 font-medium">Clients Managed</div>
-              <div className="text-sm text-blue-500 dark:text-blue-400">+3 this month</div>
+              <div className="text-xl font-bold text-blue-700 dark:text-blue-300">24</div>
+              <div className="text-blue-600 dark:text-blue-400 font-medium text-sm">Clients Managed</div>
+              <div className="text-xs text-blue-500 dark:text-blue-400">+3 this month</div>
             </div>
           </div>
         </Card>
         
         <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-green-500 rounded-xl">
-              <Target className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-green-500 rounded-lg">
+              <Target className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-700 dark:text-green-300">12</div>
-              <div className="text-green-600 dark:text-green-400 font-medium">Deals Closed</div>
-              <div className="text-sm text-green-500 dark:text-green-400">+2 this week</div>
+              <div className="text-xl font-bold text-green-700 dark:text-green-300">12</div>
+              <div className="text-green-600 dark:text-green-400 font-medium text-sm">Deals Closed</div>
+              <div className="text-xs text-green-500 dark:text-green-400">+2 this week</div>
             </div>
           </div>
         </Card>
         
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-purple-500 rounded-xl">
-              <TrendingUp className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-purple-500 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">$485K</div>
-              <div className="text-purple-600 dark:text-purple-400 font-medium">Revenue Generated</div>
-              <div className="text-sm text-purple-500 dark:text-purple-400">+15% vs last quarter</div>
+              <div className="text-xl font-bold text-purple-700 dark:text-purple-300">$485K</div>
+              <div className="text-purple-600 dark:text-purple-400 font-medium text-sm">Revenue Generated</div>
+              <div className="text-xs text-purple-500 dark:text-purple-400">+15% vs last quarter</div>
             </div>
           </div>
         </Card>
@@ -219,44 +223,44 @@ export const Profile: React.FC = () => {
 
       {/* Recent Activity */}
       <Card>
-        <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Recent Activity
         </h4>
         
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <Target className="w-5 h-5 text-green-600 dark:text-green-400" />
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+              <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900 dark:text-white">
+              <p className="font-medium text-gray-900 dark:text-white text-sm">
                 Closed deal with TechCorp Solutions
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">$45,000 • 2 hours ago</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">$45,000 • 2 hours ago</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900 dark:text-white">
+              <p className="font-medium text-gray-900 dark:text-white text-sm">
                 Added new client: DataStream Inc
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">4 hours ago</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">4 hours ago</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-              <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+              <Award className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900 dark:text-white">
+              <p className="font-medium text-gray-900 dark:text-white text-sm">
                 Achieved monthly sales target
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Yesterday</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday</p>
             </div>
           </div>
         </div>
