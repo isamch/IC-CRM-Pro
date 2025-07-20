@@ -66,92 +66,62 @@ const ClientForm: React.FC<{
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        label="اسم العميل"
-        value={formData.name}
-        onChange={(value) => setFormData({ ...formData, name: value })}
-        placeholder="أدخل اسم العميل"
-        required
-      />
-      <Input
-        label="البريد الإلكتروني"
-        type="email"
-        value={formData.email}
-        onChange={(value) => setFormData({ ...formData, email: value })}
-        placeholder="أدخل البريد الإلكتروني"
-        required
-      />
-      <Input
-        label="رقم الهاتف"
-        type="tel"
-        value={formData.phone}
-        onChange={(value) => setFormData({ ...formData, phone: value })}
-        placeholder="أدخل رقم الهاتف"
-      />
-      <Input
-        label="الشركة"
-        value={formData.company}
-        onChange={(value) => setFormData({ ...formData, company: value })}
-        placeholder="أدخل اسم الشركة"
-        required
-      />
-      <Input
-        label="المنصب"
-        value={formData.position}
-        onChange={(value) => setFormData({ ...formData, position: value })}
-        placeholder="أدخل المنصب الوظيفي"
-      />
-      
-      {/* تخصيص العميل - للمدير أو مدير المبيعات */}
-      {(user?.role === 'admin' || user?.role === 'sales_manager') && (
-        <Select
-          label="تخصيص العميل"
-          value={formData.assignedTo}
-          onChange={(value) => setFormData({ ...formData, assignedTo: value })}
-          options={availableUsers.map(user => ({
-            value: user.id,
-            label: `${user.name} (${getRoleLabel(user.role)})`
-          }))}
+    <form onSubmit={handleSubmit} className="space-y-3 max-w-lg mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Input
+          label="اسم العميل"
+          value={formData.name}
+          onChange={(value) => setFormData({ ...formData, name: value })}
+          placeholder="أدخل اسم العميل"
           required
         />
-      )}
-      
-      {/* ملاحظة للمدير حول التخصيص */}
-      {user?.role === 'admin' && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            💡 <strong>ملاحظة:</strong> يمكنك تخصيص العميل لأي مندوب مبيعات أو مدير مبيعات. 
-            سيتم تخصيص العميل تلقائياً لك إذا لم تختر أحداً.
-          </p>
-        </div>
-      )}
-      
-      {/* ملاحظة لمدير المبيعات */}
-      {user?.role === 'sales_manager' && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200">
-            ⚠️ <strong>تنبيه:</strong> كمدير مبيعات، يمكنك فقط مراقبة العملاء. 
-            لا يمكنك إضافة أو تعديل العملاء مباشرة. 
-            يمكنك تخصيص المهام لفريقك ومتابعة أدائهم.
-          </p>
-        </div>
-      )}
-      
-      {/* ملاحظة لمندوب المبيعات */}
-      {user?.role === 'sales_representative' && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-          <p className="text-sm text-green-800 dark:text-green-200">
-            ✅ <strong>معلومات:</strong> سيتم تخصيص هذا العميل لك تلقائياً. 
-            يمكنك إدارة علاقتك مع العميل وإضافة التفاصيل المطلوبة.
-          </p>
-        </div>
-      )}
-      
+        <Input
+          label="البريد الإلكتروني"
+          type="email"
+          value={formData.email}
+          onChange={(value) => setFormData({ ...formData, email: value })}
+          placeholder="أدخل البريد الإلكتروني"
+          required
+        />
+        <Input
+          label="رقم الهاتف"
+          type="tel"
+          value={formData.phone}
+          onChange={(value) => setFormData({ ...formData, phone: value })}
+          placeholder="أدخل رقم الهاتف"
+        />
+        <Input
+          label="الشركة"
+          value={formData.company}
+          onChange={(value) => setFormData({ ...formData, company: value })}
+          placeholder="أدخل اسم الشركة"
+          required
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Input
+          label="المنصب"
+          value={formData.position}
+          onChange={(value) => setFormData({ ...formData, position: value })}
+          placeholder="أدخل المنصب الوظيفي"
+        />
+        {(user?.role === 'admin' || user?.role === 'sales_manager') && (
+          <Select
+            label="تخصيص العميل"
+            value={formData.assignedTo}
+            onChange={(value) => setFormData({ ...formData, assignedTo: value })}
+            options={availableUsers.map(user => ({
+              value: user.id,
+              label: `${user.name} (${getRoleLabel(user.role)})`
+            }))}
+            required
+          />
+        )}
+      </div>
       <Select
         label="حالة العميل"
         value={formData.status}
-        onChange={(value) => setFormData({ ...formData, status: value })}
+        onChange={(value) => setFormData({ ...formData, status: value as any })}
         options={[
           { value: 'active', label: 'نشط' },
           { value: 'inactive', label: 'غير نشط' },
@@ -160,25 +130,23 @@ const ClientForm: React.FC<{
         ]}
         required
       />
-      
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           ملاحظات
         </label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="أدخل أي ملاحظات إضافية..."
-          rows={3}
-          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          rows={2}
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 dark:text-white"
         />
       </div>
-      
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button variant="outline" onClick={onCancel}>
+      <div className="flex justify-end space-x-2 pt-2">
+        <Button variant="outline" onClick={onCancel} size="sm">
           إلغاء
         </Button>
-        <Button type="submit">
+        <Button type="submit" size="sm">
           {client ? 'تحديث العميل' : 'إضافة العميل'}
         </Button>
       </div>
@@ -290,6 +258,14 @@ export const Clients: React.FC = () => {
   // التحقق من إمكانية التعديل
   const canEditClient = (client: Client) => {
     if (user?.role === 'admin') return true;
+    if (user?.role === 'sales_manager') {
+      // Get all team ids managed by this sales manager
+      const managedTeamIds = mockTeams.filter(team => team.managerId === user.id).map(team => team.id);
+      // Get all reps in those teams
+      const repsIds = mockUsers.filter(u => u.role === 'sales_representative' && managedTeamIds.includes(u.teamId || '')).map(u => u.id);
+      // Can edit if assignedTo is one of his reps or himself
+      return repsIds.includes(client.assignedTo || '') || client.assignedTo === user.id;
+    }
     if (user?.role === 'sales_representative' && client.assignedTo === user?.id) return true;
     return false;
   };
