@@ -52,17 +52,17 @@ export const ClientDetails: React.FC = () => {
         </Button>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white ml-4">تفاصيل العميل</h2>
       </div>
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        <Card className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-8 rounded-2xl flex flex-col md:flex-row items-center gap-8">
-          <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/3">
-            <div className="w-28 h-28 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+      <div className="flex flex-col md:flex-row gap-4 items-start">
+        <Card className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-4 rounded-xl flex flex-col md:flex-row items-center gap-4">
+          <div className="flex flex-col items-center md:items-start gap-2 w-full md:w-1/4">
+            <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow">
               {client.name.split(' ').map(n => n[0]).join('')}
             </div>
             <div className="text-center md:text-right">
-              <div className="text-xl font-semibold text-gray-900 dark:text-white mb-1">{client.name}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">{client.email}</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mb-2">{client.company}</div>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-2 ${
+              <div className="text-base font-semibold text-gray-900 dark:text-white mb-0.5">{client.name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{client.email}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 mb-1">{client.company}</div>
+              <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-medium mb-1 ${
                 client.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                 client.status === 'inactive' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                 client.status === 'prospect' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
@@ -70,24 +70,24 @@ export const ClientDetails: React.FC = () => {
               }`}>
                 {client.status === 'active' ? 'نشط' : client.status === 'inactive' ? 'غير نشط' : client.status === 'prospect' ? 'عميل محتمل' : 'عميل رائد'}
               </span>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 <span className="font-medium">تاريخ الإضافة:</span>
                 {client.createdAt ? ` ${new Date(client.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}` : ' -'}
               </div>
             </div>
           </div>
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-            <div className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-300">
-              <Mail className="w-5 h-5" /> {client.email}
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+            <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300">
+              <Mail className="w-4 h-4" /> {client.email}
             </div>
-            <div className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-300">
-              <Phone className="w-5 h-5" /> {client.phone}
+            <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300">
+              <Phone className="w-4 h-4" /> {client.phone}
             </div>
-            <div className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-300">
-              <Building className="w-5 h-5" /> {client.company}
+            <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300">
+              <Building className="w-4 h-4" /> {client.company}
             </div>
-            <div className="flex items-center gap-2 text-base text-gray-700 dark:text-gray-300">
-              <UserPlus className="w-5 h-5" />
+            <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300">
+              <UserPlus className="w-4 h-4" />
               <span>مخصص لـ: {assignedUser ? (
                 <Link to={`/sales-reps/${assignedUser.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
                   {assignedUser.name}
@@ -99,7 +99,7 @@ export const ClientDetails: React.FC = () => {
                   title="تغيير المندوب المكلف"
                   onClick={() => setAssignModal(true)}
                 >
-                  <Edit2 className="w-5 h-5 text-blue-500" />
+                  <Edit2 className="w-4 h-4 text-blue-500" />
                 </button>
               )}
             </div>

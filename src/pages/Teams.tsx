@@ -109,6 +109,9 @@ export const Teams: React.FC = () => {
     message: '',
     onConfirm: () => {},
   });
+  const [managerFilter, setManagerFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   // تحميل الفرق حسب الصلاحيات
   useEffect(() => {
@@ -177,7 +180,8 @@ export const Teams: React.FC = () => {
   };
 
   // الحصول على اسم مدير الفريق
-  const getTeamManagerName = (managerId: string) => {
+  const getTeamManagerName = (managerId: string | undefined) => {
+    if (!managerId) return 'غير محدد';
     const manager = mockUsers.find(user => user.id === managerId);
     return manager ? manager.name : 'غير محدد';
   };
@@ -205,41 +209,79 @@ export const Teams: React.FC = () => {
           </CanCreate>
         </div>
 
-        {/* Search */}
+        {/* Filters */}
         <Card padding="sm">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="البحث في الفرق..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="البحث في الفرق..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
+            {/* Filter by Sales Manager */}
+            <select
+              className="min-w-[160px] px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 focus:outline-none"
+              value={managerFilter}
+              onChange={e => setManagerFilter(e.target.value)}
+            >
+              <option value="">كل مدراء المبيعات</option>
+              {mockUsers.filter(u => u.role === 'sales_manager').map(manager => (
+                <option key={manager.id} value={manager.id}>{manager.name}</option>
+              ))}
+            </select>
+            {/* Filter by Region */}
+            <select
+              className="min-w-[120px] px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 focus:outline-none"
+              value={regionFilter}
+              onChange={e => setRegionFilter(e.target.value)}
+            >
+              <option value="">كل المناطق</option>
+              {[...new Set(mockTeams.map(t => t.region || ''))].filter(region => region).map(region => (
+                <option key={region} value={region}>{region}</option>
+              ))}
+            </select>
+            {/* Filter by Status */}
+            <select
+              className="min-w-[100px] px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 focus:outline-none"
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+            >
+              <option value="">كل الحالات</option>
+              <option value="active">نشط</option>
+              <option value="inactive">غير نشط</option>
+            </select>
           </div>
         </Card>
 
         {/* Teams Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTeams.map((team) => (
-            <Card key={team.id} className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredTeams
+            .filter(team => !managerFilter || team.managerId === managerFilter)
+            .filter(team => !regionFilter || team.region === regionFilter)
+            .filter(team => !statusFilter || (statusFilter === 'active' ? team.isActive : !team.isActive))
+            .map((team) => (
+            <Card key={team.id} className="hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 p-3 rounded-lg">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-base">
                       {team.name}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {team.region}
                     </p>
                   </div>
                 </div>
-                <div className="flex space-x-1">
+                <div className="flex gap-1">
                   <Button 
                     variant="ghost" 
                     size="sm"
@@ -265,49 +307,45 @@ export const Teams: React.FC = () => {
                   </CanDelete>
                 </div>
               </div>
-              
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <MapPin className="w-4 h-4" />
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                  <MapPin className="w-3 h-3" />
                   <span>{team.region}</span>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Users className="w-4 h-4" />
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                  <Users className="w-3 h-3" />
                   <span>{getTeamMemberCount(team.id)} عضو</span>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                   <span>المدير: {getTeamManagerName(team.managerId)}</span>
                 </div>
                 {team.description && (
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                     <span className="line-clamp-2">{team.description}</span>
                   </div>
                 )}
               </div>
-              
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    team.isActive 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                  }`}>
-                    {team.isActive ? 'نشط' : 'غير نشط'}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                  team.isActive 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                }`}>
+                  {team.isActive ? 'نشط' : 'غير نشط'}
+                </span>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">
                   تم الإنشاء: {new Date(team.createdAt).toLocaleDateString('ar-SA')}
-                </p>
+                </span>
               </div>
               {/* قائمة أعضاء الفريق */}
-              <div className="mt-2">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">أعضاء الفريق:</div>
-                <div className="flex flex-wrap gap-2">
+              <div className="mt-1">
+                <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">أعضاء الفريق:</div>
+                <div className="flex flex-wrap gap-1">
                   {mockUsers.filter(u => u.teamId === team.id && u.role === 'sales_representative').map(rep => (
                     <Link
                       key={rep.id}
                       to={`/sales-reps/${rep.id}`}
-                      className="text-blue-600 dark:text-blue-300 hover:underline text-xs bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded"
+                      className="text-blue-600 dark:text-blue-300 hover:underline text-[11px] bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded"
                     >
                       {rep.name}
                     </Link>
