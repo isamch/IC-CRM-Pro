@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Select } from '../components/ui/Select';
 import { mockClients, mockUsers, mockTeams, mockDeals, mockTasks } from '../data/mockData';
-import { Edit2, ArrowLeft, Mail, Phone, Building, UserPlus, Users, Activity, MapPin } from 'lucide-react';
+import { Edit2, ArrowLeft, Mail, Phone, Building, UserPlus, Users, Activity, MapPin, DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const ClientDetails: React.FC = () => {
@@ -94,6 +94,49 @@ export const ClientDetails: React.FC = () => {
       case 'email': return '📧';
       default: return '📝';
     }
+  };
+
+  const getDealStatusBadge = (status: string) => {
+    const colors = {
+      pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
+      won: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      lost: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    };
+
+    const labels = {
+      pending: 'قيد الانتظار',
+      won: 'مكتملة',
+      lost: 'فاشلة'
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors[status as keyof typeof colors]}`}>
+        {labels[status as keyof typeof labels]}
+      </span>
+    );
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-SA', {
+      style: 'currency',
+      currency: 'SAR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getAssignedUserName = (assignedTo?: string) => {
+    if (!assignedTo) return 'غير محدد';
+    const assignedUser = mockUsers.find(u => u.id === assignedTo && u.role === 'sales_representative');
+    if (!assignedUser) return 'غير محدد';
+    
+    return (
+      <Link 
+        to={`/sales-reps/${assignedUser.id}`} 
+        className="text-blue-600 dark:text-blue-300 hover:underline"
+      >
+        {assignedUser.name}
+      </Link>
+    );
   };
 
   return (
@@ -210,6 +253,97 @@ export const ClientDetails: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Client Deals Section */}
+      {clientDeals.length > 0 && (
+        <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            صفقات العميل ({clientDeals.length})
+          </h3>
+          <div className="space-y-4">
+            {clientDeals.map(deal => (
+              <div key={deal.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-medium text-gray-900 dark:text-white text-lg">{deal.title}</h4>
+                      {getDealStatusBadge(deal.status)}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          <span className="font-medium">المبلغ:</span> {formatCurrency(deal.amount)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          <span className="font-medium">تاريخ الإغلاق:</span> {new Date(deal.date).toLocaleDateString('ar-EG')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          <span className="font-medium">المندوب المسؤول:</span> {getAssignedUserName(deal.assignedTo)}
+                        </span>
+                      </div>
+                    </div>
+                    {deal.probability && (
+                      <div className="mt-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">نسبة النجاح:</span>
+                          <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                deal.probability >= 80 ? 'bg-green-500' :
+                                deal.probability >= 60 ? 'bg-yellow-500' :
+                                'bg-red-500'
+                              }`}
+                              style={{ width: `${deal.probability}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{deal.probability}%</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Link to={`/deals/${deal.id}`}>
+                      <Button variant="outline" size="sm">
+                        عرض التفاصيل
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(clientDeals.reduce((sum, deal) => sum + deal.amount, 0))}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400">إجمالي قيمة الصفقات</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {formatCurrency(clientDeals.filter(d => d.status === 'won').reduce((sum, deal) => sum + deal.amount, 0))}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400">الصفقات المكتملة</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {clientDeals.filter(d => d.status === 'pending').length}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400">الصفقات قيد الانتظار</div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Related Teams Section */}
       {relatedTeams.length > 0 && (

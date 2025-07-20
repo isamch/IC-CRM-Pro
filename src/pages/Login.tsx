@@ -171,12 +171,12 @@ export const Login: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-700 dark:text-blue-400 font-medium">مدير فريق الرياض</p>
-                  <p className="text-xs text-blue-600 dark:text-blue-500">sales@crm.com / demo123</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-500">fatima@crm.com / demo123</p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleQuickLogin('sales@crm.com', 'demo123')}
+                  onClick={() => handleQuickLogin('fatima@crm.com', 'demo123')}
                   className="text-xs"
                 >
                   تسجيل سريع

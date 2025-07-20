@@ -152,7 +152,7 @@ export const mockDeals: Deal[] = [
     clientId: '1',
     clientName: 'أحمد محمد',
     probability: 75,
-    assignedTo: '1' // مخصص للمدير
+    assignedTo: '3' // مخصص لمندوب المبيعات سارة أحمد
   },
   {
     id: '2',
@@ -163,7 +163,7 @@ export const mockDeals: Deal[] = [
     clientId: '2',
     clientName: 'فاطمة علي',
     probability: 100,
-    assignedTo: '2' // مخصص لمدير المبيعات
+    assignedTo: '6' // مخصص لمندوب المبيعات خالد عبدالله
   },
   {
     id: '3',
@@ -174,7 +174,7 @@ export const mockDeals: Deal[] = [
     clientId: '3',
     clientName: 'خالد عبدالله',
     probability: 60,
-    assignedTo: '1' // مخصص للمدير
+    assignedTo: '7' // مخصص لمندوب المبيعات نورا سعد
   },
   {
     id: '4',
@@ -185,7 +185,7 @@ export const mockDeals: Deal[] = [
     clientId: '4',
     clientName: 'نورا سعد',
     probability: 0,
-    assignedTo: '2' // مخصص لمدير المبيعات
+    assignedTo: '8' // مخصص لمندوب المبيعات عبدالرحمن محمد
   },
   {
     id: '5',
@@ -230,6 +230,50 @@ export const mockDeals: Deal[] = [
     clientName: 'منى خالد',
     probability: 65,
     assignedTo: '8' // مخصص لمندوب المبيعات
+  },
+  {
+    id: '9',
+    title: 'حلول الأمن السيبراني',
+    amount: 55000,
+    status: 'pending',
+    date: '2024-03-01',
+    clientId: '9',
+    clientName: 'سعيد العتيبي',
+    probability: 80,
+    assignedTo: '9' // مخصص لمندوب المبيعات ريم عبدالله
+  },
+  {
+    id: '10',
+    title: 'منصة التجارة الإلكترونية',
+    amount: 75000,
+    status: 'won',
+    date: '2024-02-25',
+    clientId: '10',
+    clientName: 'هند محمد',
+    probability: 95,
+    assignedTo: '10' // مخصص لمندوب المبيعات يوسف أحمد
+  },
+  {
+    id: '11',
+    title: 'نظام إدارة الموارد البشرية',
+    amount: 40000,
+    status: 'pending',
+    date: '2024-03-05',
+    clientId: '11',
+    clientName: 'سلوى منصور',
+    probability: 70,
+    assignedTo: '11' // مخصص لمندوب المبيعات فهد سعد
+  },
+  {
+    id: '12',
+    title: 'حلول الذكاء الاصطناعي',
+    amount: 95000,
+    status: 'pending',
+    date: '2024-03-10',
+    clientId: '12',
+    clientName: 'سامي العتيبي',
+    probability: 85,
+    assignedTo: '12' // مخصص لمندوب المبيعات لينا محمد
   }
 ];
 

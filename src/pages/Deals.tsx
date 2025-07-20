@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
-import { mockDeals, mockClients, mockUsers } from '../data/mockData';
+import { mockDeals, mockClients, mockUsers, mockTeams } from '../data/mockData';
 import { Deal } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -59,7 +59,7 @@ const DealForm: React.FC<{
   };
 
   // Get available users for assignment
-  const availableUsers = mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager');
+  const availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -164,7 +164,18 @@ export const Deals: React.FC = () => {
   // Filter deals based on user permissions
   const visibleDeals = user?.role === 'admin' 
     ? deals 
-    : deals.filter(deal => deal.assignedTo === user?.id);
+    : deals.filter(deal => {
+        // For non-admin users, only show deals assigned to sales representatives
+        if (user?.role === 'sales_manager') {
+          // Sales managers can see deals assigned to their team members
+          const teamMembers = mockUsers.filter(u => u.teamId === user.teamId && u.role === 'sales_representative');
+          return teamMembers.some(member => member.id === deal.assignedTo);
+        } else if (user?.role === 'sales_representative') {
+          // Sales representatives can only see their own deals
+          return deal.assignedTo === user?.id;
+        }
+        return false;
+      });
 
   const filteredDeals = visibleDeals.filter(deal => {
     const matchesStatus = statusFilter === 'all' || deal.status === statusFilter;
@@ -176,6 +187,38 @@ export const Deals: React.FC = () => {
     
     return matchesStatus && matchesClient && matchesAssigned && matchesSearch;
   });
+
+  // Group deals by teams
+  const groupDealsByTeams = () => {
+    const teamsMap = new Map<string, { team: import('../types').Team; deals: Deal[]; totalValue: number; wonValue: number }>();
+    
+    filteredDeals.forEach(deal => {
+      const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+      if (assignedUser?.teamId) {
+        const team = mockTeams.find(t => t.id === assignedUser.teamId);
+        if (team) {
+          if (!teamsMap.has(team.id)) {
+            teamsMap.set(team.id, {
+              team,
+              deals: [],
+              totalValue: 0,
+              wonValue: 0
+            });
+          }
+          const teamData = teamsMap.get(team.id)!;
+          teamData.deals.push(deal);
+          teamData.totalValue += deal.amount;
+          if (deal.status === 'won') {
+            teamData.wonValue += deal.amount;
+          }
+        }
+      }
+    });
+    
+    return Array.from(teamsMap.values()).sort((a, b) => a.team.name.localeCompare(b.team.name));
+  };
+
+  const teamsWithDeals = groupDealsByTeams();
 
   const handleAddDeal = () => {
     setEditingDeal(undefined);
@@ -223,8 +266,17 @@ export const Deals: React.FC = () => {
 
   const getAssignedUserName = (assignedTo?: string) => {
     if (!assignedTo) return 'غير محدد';
-    const assignedUser = mockUsers.find(u => u.id === assignedTo);
-    return assignedUser ? assignedUser.name : 'غير محدد';
+    const assignedUser = mockUsers.find(u => u.id === assignedTo && u.role === 'sales_representative');
+    if (!assignedUser) return 'غير محدد';
+    
+    return (
+      <Link 
+        to={`/sales-reps/${assignedUser.id}`} 
+        className="text-blue-600 dark:text-blue-300 hover:underline"
+      >
+        {assignedUser.name}
+      </Link>
+    );
   };
 
   const totalValue = filteredDeals.reduce((sum, deal) => sum + deal.amount, 0);
@@ -291,7 +343,7 @@ export const Deals: React.FC = () => {
             onChange={setAssignedFilter}
             options={[
               { value: '', label: 'كل المندوبين' },
-              ...mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager').map(user => ({
+              ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => ({
                 value: user.id,
                 label: user.name
               }))
@@ -301,119 +353,150 @@ export const Deals: React.FC = () => {
         </div>
       </Card>
 
-      {/* Deals Table */}
-      <Card padding="sm" className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الصفقة</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">العميل</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المبلغ</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المندوب المسؤول</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الحالة</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">تاريخ الإغلاق</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDeals.map((deal, index) => (
-                <tr 
-                  key={deal.id} 
-                  className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                    index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-700/50'
-                  }`}
-                >
-                  <td className="py-3 px-4">
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        {deal.title}
-                      </div>
-                      {deal.probability && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {deal.probability}% نسبة نجاح
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <Link 
-                        to={`/clients/${deal.clientId}`} 
-                        className="text-blue-600 dark:text-blue-300 hover:underline text-gray-900 dark:text-white"
-                      >
-                        {deal.clientName}
-                      </Link>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {formatCurrency(deal.amount)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Link 
-                      to={`/sales-reps/${deal.assignedTo}`} 
-                      className="text-blue-600 dark:text-blue-300 hover:underline text-gray-900 dark:text-white"
-                    >
-                      {getAssignedUserName(deal.assignedTo)}
-                    </Link>
-                  </td>
-                  <td className="py-3 px-4">
-                    <StatusBadge status={deal.status} />
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-900 dark:text-white">
-                        {new Date(deal.date).toLocaleDateString('ar-SA')}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        icon={Edit}
-                        onClick={() => handleEditDeal(deal)}
-                      />
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        icon={Trash2}
-                        onClick={() => handleDeleteDeal(deal.id)}
-                        className="text-red-600 hover:text-red-700"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Deals Grouped by Teams */}
+      <div className="space-y-6">
+        {teamsWithDeals.map(({ team, deals: teamDeals, totalValue: teamTotalValue, wonValue: teamWonValue }) => (
+          <Card key={team.id} padding="sm" className="overflow-hidden">
+            {/* Team Header */}
+            <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {team.name} ({teamDeals.length} صفقة)
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{team.region}</p>
+                </div>
+                <div className="flex gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-medium text-gray-900 dark:text-white">{formatCurrency(teamTotalValue)}</div>
+                    <div className="text-gray-600 dark:text-gray-400">إجمالي القيمة</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-green-600 dark:text-green-400">{formatCurrency(teamWonValue)}</div>
+                    <div className="text-gray-600 dark:text-gray-400">الصفقات المكتملة</div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {filteredDeals.length === 0 && (
-          <div className="text-center py-12">
-            <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              لم يتم العثور على صفقات
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة أول صفقة'}
-            </p>
-            {statusFilter === 'all' && !searchTerm && (
-              <Button icon={Plus} onClick={handleAddDeal}>
-                إضافة صفقة
-              </Button>
-            )}
-          </div>
+            {/* Team Deals Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الصفقة</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">العميل</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المبلغ</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المندوب المسؤول</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الحالة</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">تاريخ الإغلاق</th>
+                    <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teamDeals.map((deal, index) => (
+                    <tr 
+                      key={deal.id} 
+                      className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                        index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-700/50'
+                      }`}
+                    >
+                      <td className="py-3 px-4">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            <Link to={`/deals/${deal.id}`} className="hover:text-blue-600 dark:hover:text-blue-300">
+                              {deal.title}
+                            </Link>
+                          </div>
+                          {deal.probability && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {deal.probability}% نسبة نجاح
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <Link 
+                            to={`/clients/${deal.clientId}`} 
+                            className="text-blue-600 dark:text-blue-300 hover:underline text-gray-900 dark:text-white"
+                          >
+                            {deal.clientName}
+                          </Link>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-gray-400" />
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {formatCurrency(deal.amount)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {getAssignedUserName(deal.assignedTo)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <StatusBadge status={deal.status} />
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-900 dark:text-white">
+                            {new Date(deal.date).toLocaleDateString('ar-SA')}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-2">
+                          <Link to={`/deals/${deal.id}`}>
+                            <Button variant="ghost" size="sm">
+                              عرض
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            icon={Edit}
+                            onClick={() => handleEditDeal(deal)}
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            icon={Trash2}
+                            onClick={() => handleDeleteDeal(deal.id)}
+                            className="text-red-600 hover:text-red-700"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        ))}
+
+        {teamsWithDeals.length === 0 && (
+          <Card padding="sm">
+            <div className="text-center py-12">
+              <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                لم يتم العثور على صفقات
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة أول صفقة'}
+              </p>
+              {statusFilter === 'all' && !searchTerm && (
+                <Button icon={Plus} onClick={handleAddDeal}>
+                  إضافة صفقة
+                </Button>
+              )}
+            </div>
+          </Card>
         )}
-      </Card>
+      </div>
 
       {/* Modal */}
       <Modal
