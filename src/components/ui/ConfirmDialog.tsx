@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -6,8 +6,10 @@ interface ConfirmDialogProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm: () => void;
+  onConfirm: (password?: string) => void;
   onCancel: () => void;
+  requirePassword?: boolean;
+  errorMessage?: string;
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -18,7 +20,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelText = 'إلغاء',
   onConfirm,
   onCancel,
+  requirePassword = false,
+  errorMessage = '',
 }) => {
+  const [password, setPassword] = useState('');
+
+  React.useEffect(() => {
+    if (!isOpen) setPassword('');
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -28,6 +38,18 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 text-center">{title}</h3>
         )}
         <p className="text-gray-700 dark:text-gray-300 mb-6 text-center">{message}</p>
+        {requirePassword && (
+          <div className="mb-4">
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="أدخل كلمة المرور للتأكيد"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errorMessage && <div className="text-red-500 text-xs mt-2 text-center">{errorMessage}</div>}
+          </div>
+        )}
         <div className="flex justify-center gap-4">
           <button
             onClick={onCancel}
@@ -36,8 +58,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {cancelText}
           </button>
           <button
-            onClick={onConfirm}
+            onClick={() => onConfirm(requirePassword ? password : undefined)}
             className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+            disabled={requirePassword && !password}
           >
             {confirmText}
           </button>

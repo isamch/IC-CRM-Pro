@@ -23,6 +23,19 @@ export const Users: React.FC = () => {
     message: '',
     onConfirm: () => {},
   });
+  const [passwordDialog, setPasswordDialog] = useState({
+    isOpen: false,
+    message: '',
+    onConfirm: (password: string) => {},
+    errorMessage: '',
+    requirePassword: false,
+  });
+
+  // Helper to check password (mock: use currentUser?.password or a fixed value for demo)
+  const checkPassword = (input: string) => {
+    // For demo, accept 'demo123' as the password
+    return input === 'demo123';
+  };
 
   // تصفية المستخدمين حسب دور المستخدم الحالي
   const getFilteredUsers = () => {
@@ -72,48 +85,69 @@ export const Users: React.FC = () => {
   const handleDeleteUser = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
-    setConfirmDialog({
+    setPasswordDialog({
       isOpen: true,
-      message: `هل أنت متأكد من حذف المستخدم ${user.name}؟ لا يمكن التراجع عن هذه العملية.`,
-      onConfirm: () => {
+      message: `لحذف المستخدم ${user.name}، أدخل كلمة المرور للتأكيد. لا يمكن التراجع عن هذه العملية.`,
+      requirePassword: true,
+      errorMessage: '',
+      onConfirm: (password: string) => {
+        if (!checkPassword(password)) {
+          setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
+          return;
+        }
         // حذف المستخدم
-        console.log('Deleting user:', user.name);
+        setPasswordDialog(d => ({ ...d, isOpen: false }));
         setIsDeleteModalOpen(false);
         setSelectedUser(null);
         setConfirmDialog(d => ({ ...d, isOpen: false }));
-      }
+        // ... حذف المستخدم من البيانات هنا
+      },
     });
   };
 
   const handleSuspendUser = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
-    setConfirmDialog({
+    setPasswordDialog({
       isOpen: true,
-      message: `هل أنت متأكد من ${user.isActive ? 'إيقاف' : 'تفعيل'} المستخدم ${user.name}؟`,
-      onConfirm: () => {
+      message: `لتأكيد ${user.isActive ? 'إيقاف' : 'تفعيل'} المستخدم ${user.name}، أدخل كلمة المرور.`,
+      requirePassword: true,
+      errorMessage: '',
+      onConfirm: (password: string) => {
+        if (!checkPassword(password)) {
+          setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
+          return;
+        }
         // إيقاف/تفعيل المستخدم
-        console.log('Suspending user:', user.name);
+        setPasswordDialog(d => ({ ...d, isOpen: false }));
         setIsSuspendModalOpen(false);
         setSelectedUser(null);
         setConfirmDialog(d => ({ ...d, isOpen: false }));
-      }
+        // ... تنفيذ الإيقاف/التفعيل هنا
+      },
     });
   };
 
   const handleRemoveFromTeam = (user: UserType) => {
     if (!canEditUser(user)) return;
     setSelectedUser(user);
-    setConfirmDialog({
+    setPasswordDialog({
       isOpen: true,
-      message: `هل أنت متأكد من إزالة المستخدم ${user.name} من الفريق؟`,
-      onConfirm: () => {
+      message: `لتأكيد إزالة المستخدم ${user.name} من الفريق، أدخل كلمة المرور.`,
+      requirePassword: true,
+      errorMessage: '',
+      onConfirm: (password: string) => {
+        if (!checkPassword(password)) {
+          setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
+          return;
+        }
         // إزالة المستخدم من الفريق
-        console.log('Removing user from team:', user.name);
+        setPasswordDialog(d => ({ ...d, isOpen: false }));
         setIsRemoveFromTeamModalOpen(false);
         setSelectedUser(null);
         setConfirmDialog(d => ({ ...d, isOpen: false }));
-      }
+        // ... تنفيذ الإزالة هنا
+      },
     });
   };
 
@@ -507,6 +541,14 @@ export const Users: React.FC = () => {
         message={confirmDialog.message}
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog(d => ({ ...d, isOpen: false }))}
+      />
+      <ConfirmDialog
+        isOpen={passwordDialog.isOpen}
+        message={passwordDialog.message}
+        onConfirm={passwordDialog.onConfirm}
+        onCancel={() => setPasswordDialog(d => ({ ...d, isOpen: false, errorMessage: '' }))}
+        requirePassword={passwordDialog.requirePassword}
+        errorMessage={passwordDialog.errorMessage}
       />
     </div>
   );
