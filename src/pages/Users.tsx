@@ -193,6 +193,10 @@ export const Users: React.FC = () => {
                             <Link to={`/sales-reps/${user.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
                               {user.name}
                             </Link>
+                          ) : user.role === 'sales_manager' ? (
+                            <Link to={`/sales-managers/${user.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                              {user.name}
+                            </Link>
                           ) : user.name}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -342,6 +346,10 @@ export const Users: React.FC = () => {
                     <p className="text-sm text-gray-900 dark:text-white">
                       {selectedUser.role === 'sales_representative' ? (
                         <Link to={`/sales-reps/${selectedUser.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                          {selectedUser.name}
+                        </Link>
+                      ) : selectedUser.role === 'sales_manager' ? (
+                        <Link to={`/sales-managers/${selectedUser.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
                           {selectedUser.name}
                         </Link>
                       ) : selectedUser.name}

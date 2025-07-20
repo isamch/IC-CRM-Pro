@@ -15,6 +15,7 @@ import { Settings } from './pages/Settings';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { SalesRepDetails } from './pages/SalesRepDetails';
 import { ClientDetails } from './pages/ClientDetails';
+import { SalesManagerDetails } from './pages/SalesManagerDetails';
 import './App.css';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="sales-reps/:repId" element={<SalesRepDetails />} />
                 <Route path="clients/:clientId" element={<ClientDetails />} />
+                <Route path="sales-managers/:managerId" element={<SalesManagerDetails />} />
               </Route>
             </Routes>
           </div>
