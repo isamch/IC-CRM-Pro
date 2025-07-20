@@ -70,6 +70,10 @@ export const ClientDetails: React.FC = () => {
               }`}>
                 {client.status === 'active' ? 'نشط' : client.status === 'inactive' ? 'غير نشط' : client.status === 'prospect' ? 'عميل محتمل' : 'عميل رائد'}
               </span>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span className="font-medium">تاريخ الإضافة:</span>
+                {client.createdAt ? ` ${new Date(client.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}` : ' -'}
+              </div>
             </div>
           </div>
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">

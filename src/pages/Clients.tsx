@@ -327,6 +327,7 @@ export const Clients: React.FC = () => {
                 <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رقم الهاتف</th>
                 <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">المندوب المكلف</th>
                 <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الحالة</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">تاريخ الإضافة</th>
                 <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">إجراءات</th>
               </tr>
             </thead>
@@ -360,6 +361,9 @@ export const Clients: React.FC = () => {
                     }`}>
                       {client.status === 'active' ? 'نشط' : client.status === 'inactive' ? 'غير نشط' : client.status === 'prospect' ? 'عميل محتمل' : 'عميل رائد'}
                     </span>
+                  </td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                    {client.createdAt ? new Date(client.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
                   </td>
                   <td className="px-4 py-2">
                     <div className="flex items-center gap-1">
