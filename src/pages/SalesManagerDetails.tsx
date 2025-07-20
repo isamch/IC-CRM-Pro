@@ -37,6 +37,141 @@ export const SalesManagerDetails: React.FC = () => {
   // أحدث المهام (recent activity)
   const recentTasks = managerTasks.slice(0, 5);
 
+  // --- Teams Table ---
+  const teamsTable = currentTeams.length > 0 && (
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> الفرق تحت الإدارة</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+          <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">اسم الفريق</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد المندوبين</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد العملاء</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رابط الفريق</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+            {currentTeams.map(team => {
+              const reps = mockUsers.filter(u => u.teamId === team.id && u.role === 'sales_representative');
+              const teamClients = mockClients.filter(c => reps.map(r => r.id).includes(c.assignedTo || ''));
+              return (
+                <tr key={team.id}>
+                  <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-300">
+                    <Link to={`/teams/${team.id}`}>{team.name}</Link>
+                  </td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{reps.length}</td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{teamClients.length}</td>
+                  <td className="px-4 py-2">
+                    <Link to={`/teams/${team.id}`} className="text-blue-500 dark:text-blue-300 hover:underline">عرض التفاصيل</Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+
+  // --- Sales Reps Table ---
+  const repsTable = salesReps.length > 0 && (
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> مندوبي المبيعات تحت الإدارة</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+          <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">اسم المندوب</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الفريق</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد العملاء</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الحالة</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رابط المندوب</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+            {salesReps.map(rep => {
+              const repTeam = mockTeams.find(t => t.id === rep.teamId);
+              const repClients = mockClients.filter(c => c.assignedTo === rep.id);
+              return (
+                <tr key={rep.id}>
+                  <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-300">
+                    <Link to={`/sales-reps/${rep.id}`}>{rep.name}</Link>
+                  </td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{repTeam ? repTeam.name : 'بدون فريق'}</td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{repClients.length}</td>
+                  <td className="px-4 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      rep.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {rep.isActive ? 'نشط' : 'غير نشط'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    <Link to={`/sales-reps/${rep.id}`} className="text-blue-500 dark:text-blue-300 hover:underline">عرض التفاصيل</Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+
+  // --- Clients Table ---
+  const clientsTable = clients.length > 0 && (
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> العملاء تحت الإدارة</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+          <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">اسم العميل</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">البريد الإلكتروني</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الشركة</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">المندوب المكلف</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">الحالة</th>
+              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رابط العميل</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+            {clients.map(client => {
+              const assignedRep = mockUsers.find(u => u.id === client.assignedTo);
+              return (
+                <tr key={client.id}>
+                  <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-300">
+                    <Link to={`/clients/${client.id}`}>{client.name}</Link>
+                  </td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{client.email}</td>
+                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{client.company}</td>
+                  <td className="px-4 py-2">
+                    {assignedRep ? (
+                      <Link to={`/sales-reps/${assignedRep.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">{assignedRep.name}</Link>
+                    ) : 'غير محدد'}
+                  </td>
+                  <td className="px-4 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                      client.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                      client.status === 'inactive' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                      client.status === 'prospect' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                    }`}>
+                      {client.status === 'active' ? 'نشط' : client.status === 'inactive' ? 'غير نشط' : client.status === 'prospect' ? 'عميل محتمل' : 'عميل رائد'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2">
+                    <Link to={`/clients/${client.id}`} className="text-blue-500 dark:text-blue-300 hover:underline">عرض التفاصيل</Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="p-4 max-w-full mx-auto space-y-6 bg-gray-50 dark:bg-gray-950 transition-colors duration-200 min-h-screen">
       <div className="flex items-center mb-4">
@@ -132,48 +267,9 @@ export const SalesManagerDetails: React.FC = () => {
           </div>
         )}
       </Card>
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
-        <div className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><Users className="w-5 h-5" /> مندوبي المبيعات تحت الإدارة</div>
-        {salesReps.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-6">لا يوجد مندوبي مبيعات تحت هذا المدير.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {salesReps.map(rep => (
-              <Link to={`/sales-reps/${rep.id}`} key={rep.id} className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-lg font-bold text-white">
-                  {rep.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">{rep.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{rep.email}</div>
-                  <div className="text-xs text-gray-400 dark:text-gray-500">{rep.phone}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </Card>
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
-        <div className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><Users className="w-5 h-5" /> العملاء تحت الإدارة</div>
-        {clients.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400 py-6">لا يوجد عملاء تحت هذا المدير.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {clients.map(client => (
-              <Link to={`/clients/${client.id}`} key={client.id} className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 shadow-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-lg font-bold text-white">
-                  {client.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">{client.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{client.email}</div>
-                  <div className="text-xs text-gray-400 dark:text-gray-500">{client.company}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </Card>
+      {teamsTable}
+      {repsTable}
+      {clientsTable}
     </div>
   );
 }; 

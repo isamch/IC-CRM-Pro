@@ -24,6 +24,8 @@ export const Layout: React.FC = () => {
     if (path === '/settings') return 'settings';
     // Make Users active for sales rep details page
     if (/^\/sales-reps\/[\w-]+$/.test(path)) return 'users';
+    // Make Users active for sales manager details page
+    if (/^\/sales-managers\/[\w-]+$/.test(path)) return 'users';
     // Default to dashboard for root path
     if (path === '/') return 'dashboard';
     return 'dashboard';
