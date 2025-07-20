@@ -145,47 +145,91 @@ export const mockClients: Client[] = [
 export const mockDeals: Deal[] = [
   {
     id: '1',
-    title: 'Enterprise Software License',
+    title: 'رخصة برمجيات المؤسسات',
     amount: 45000,
     status: 'pending',
     date: '2024-02-15',
     clientId: '1',
-    clientName: 'TechCorp Solutions',
+    clientName: 'أحمد محمد',
     probability: 75,
     assignedTo: '1' // مخصص للمدير
   },
   {
     id: '2',
-    title: 'Cloud Migration Project',
+    title: 'مشروع الهجرة إلى السحابة',
     amount: 85000,
     status: 'won',
     date: '2024-01-20',
     clientId: '2',
-    clientName: 'InnovateTech',
+    clientName: 'فاطمة علي',
     probability: 100,
     assignedTo: '2' // مخصص لمدير المبيعات
   },
   {
     id: '3',
-    title: 'Data Analytics Platform',
+    title: 'منصة تحليل البيانات',
     amount: 120000,
     status: 'pending',
     date: '2024-02-28',
     clientId: '3',
-    clientName: 'DataStream Inc',
+    clientName: 'خالد عبدالله',
     probability: 60,
     assignedTo: '1' // مخصص للمدير
   },
   {
     id: '4',
-    title: 'Security Audit Service',
+    title: 'خدمة تدقيق الأمان',
     amount: 25000,
     status: 'lost',
     date: '2024-01-10',
     clientId: '4',
-    clientName: 'CloudNine Solutions',
+    clientName: 'نورا سعد',
     probability: 0,
     assignedTo: '2' // مخصص لمدير المبيعات
+  },
+  {
+    id: '5',
+    title: 'تطوير تطبيق الهاتف المحمول',
+    amount: 35000,
+    status: 'won',
+    date: '2024-01-25',
+    clientId: '5',
+    clientName: 'عمر حسن',
+    probability: 90,
+    assignedTo: '3' // مخصص لمندوب المبيعات
+  },
+  {
+    id: '6',
+    title: 'نظام إدارة المخزون',
+    amount: 28000,
+    status: 'pending',
+    date: '2024-02-10',
+    clientId: '6',
+    clientName: 'سارة منصور',
+    probability: 70,
+    assignedTo: '6' // مخصص لمندوب المبيعات
+  },
+  {
+    id: '7',
+    title: 'خدمة الاستشارات التقنية',
+    amount: 15000,
+    status: 'won',
+    date: '2024-01-30',
+    clientId: '7',
+    clientName: 'عبدالله فهد',
+    probability: 85,
+    assignedTo: '7' // مخصص لمندوب المبيعات
+  },
+  {
+    id: '8',
+    title: 'تطوير موقع إلكتروني',
+    amount: 22000,
+    status: 'pending',
+    date: '2024-02-20',
+    clientId: '8',
+    clientName: 'منى خالد',
+    probability: 65,
+    assignedTo: '8' // مخصص لمندوب المبيعات
   }
 ];
 

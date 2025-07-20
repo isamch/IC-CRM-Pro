@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Plus, Filter, Edit, Trash2, DollarSign, Calendar, User } from 'lucide-react';
+import { Plus, Edit, Trash2, DollarSign, Calendar, User, Search } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal } from '../components/ui/Modal';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
-import { mockDeals, mockClients } from '../data/mockData';
+import { mockDeals, mockClients, mockUsers } from '../data/mockData';
 import { Deal } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const StatusBadge: React.FC<{ status: Deal['status'] }> = ({ status }) => {
   const colors = {
@@ -16,9 +18,15 @@ const StatusBadge: React.FC<{ status: Deal['status'] }> = ({ status }) => {
     lost: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
   };
 
+  const labels = {
+    pending: 'قيد الانتظار',
+    won: 'مكتملة',
+    lost: 'فاشلة'
+  };
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[status]}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors[status]}`}>
+      {labels[status]}
     </span>
   );
 };
@@ -28,13 +36,15 @@ const DealForm: React.FC<{
   onSave: (deal: Partial<Deal>) => void;
   onCancel: () => void;
 }> = ({ deal, onSave, onCancel }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: deal?.title || '',
     amount: deal?.amount?.toString() || '',
     status: deal?.status || 'pending',
     date: deal?.date || '',
     clientId: deal?.clientId || '',
-    probability: deal?.probability?.toString() || '50'
+    probability: deal?.probability?.toString() || '50',
+    assignedTo: deal?.assignedTo || user?.id || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,19 +58,22 @@ const DealForm: React.FC<{
     });
   };
 
+  // Get available users for assignment
+  const availableUsers = mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager');
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
-        label="Deal Title"
+        label="عنوان الصفقة"
         value={formData.title}
         onChange={(value) => setFormData({ ...formData, title: value })}
-        placeholder="Enter deal title"
+        placeholder="أدخل عنوان الصفقة"
         required
       />
       
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Amount"
+          label="المبلغ"
           type="number"
           value={formData.amount}
           onChange={(value) => setFormData({ ...formData, amount: value })}
@@ -68,7 +81,7 @@ const DealForm: React.FC<{
           required
         />
         <Input
-          label="Probability (%)"
+          label="نسبة النجاح (%)"
           type="number"
           value={formData.probability}
           onChange={(value) => setFormData({ ...formData, probability: value })}
@@ -78,18 +91,18 @@ const DealForm: React.FC<{
       
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Status"
+          label="الحالة"
           value={formData.status}
           onChange={(value) => setFormData({ ...formData, status: value as Deal['status'] })}
           options={[
-            { value: 'pending', label: 'Pending' },
-            { value: 'won', label: 'Won' },
-            { value: 'lost', label: 'Lost' }
+            { value: 'pending', label: 'قيد الانتظار' },
+            { value: 'won', label: 'مكتملة' },
+            { value: 'lost', label: 'فاشلة' }
           ]}
           required
         />
         <Input
-          label="Close Date"
+          label="تاريخ الإغلاق"
           type="date"
           value={formData.date}
           onChange={(value) => setFormData({ ...formData, date: value })}
@@ -98,23 +111,35 @@ const DealForm: React.FC<{
       </div>
       
       <Select
-        label="Client"
+        label="العميل"
         value={formData.clientId}
         onChange={(value) => setFormData({ ...formData, clientId: value })}
         options={mockClients.map(client => ({
           value: client.id,
           label: `${client.name} (${client.company})`
         }))}
-        placeholder="Select a client"
+        placeholder="اختر العميل"
+        required
+      />
+
+      <Select
+        label="المندوب المسؤول"
+        value={formData.assignedTo}
+        onChange={(value) => setFormData({ ...formData, assignedTo: value })}
+        options={availableUsers.map(user => ({
+          value: user.id,
+          label: user.name
+        }))}
+        placeholder="اختر المندوب"
         required
       />
       
       <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline" onClick={onCancel}>
-          Cancel
+          إلغاء
         </Button>
         <Button type="submit">
-          {deal ? 'Update Deal' : 'Add Deal'}
+          {deal ? 'تحديث الصفقة' : 'إضافة صفقة'}
         </Button>
       </div>
     </form>
@@ -122,8 +147,12 @@ const DealForm: React.FC<{
 };
 
 export const Deals: React.FC = () => {
+  const { user } = useAuth();
   const [deals, setDeals] = useState(mockDeals);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [clientFilter, setClientFilter] = useState('');
+  const [assignedFilter, setAssignedFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | undefined>();
   const [confirmDialog, setConfirmDialog] = useState({
@@ -132,9 +161,21 @@ export const Deals: React.FC = () => {
     onConfirm: () => {},
   });
 
-  const filteredDeals = deals.filter(deal => 
-    statusFilter === 'all' || deal.status === statusFilter
-  );
+  // Filter deals based on user permissions
+  const visibleDeals = user?.role === 'admin' 
+    ? deals 
+    : deals.filter(deal => deal.assignedTo === user?.id);
+
+  const filteredDeals = visibleDeals.filter(deal => {
+    const matchesStatus = statusFilter === 'all' || deal.status === statusFilter;
+    const matchesClient = !clientFilter || deal.clientId === clientFilter;
+    const matchesAssigned = !assignedFilter || deal.assignedTo === assignedFilter;
+    const matchesSearch = !searchTerm || 
+      deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesStatus && matchesClient && matchesAssigned && matchesSearch;
+  });
 
   const handleAddDeal = () => {
     setEditingDeal(undefined);
@@ -173,14 +214,21 @@ export const Deals: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('ar-SA', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'SAR',
       minimumFractionDigits: 0,
     }).format(amount);
   };
 
+  const getAssignedUserName = (assignedTo?: string) => {
+    if (!assignedTo) return 'غير محدد';
+    const assignedUser = mockUsers.find(u => u.id === assignedTo);
+    return assignedUser ? assignedUser.name : 'غير محدد';
+  };
+
   const totalValue = filteredDeals.reduce((sum, deal) => sum + deal.amount, 0);
+  const wonValue = filteredDeals.filter(d => d.status === 'won').reduce((sum, deal) => sum + deal.amount, 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -188,49 +236,84 @@ export const Deals: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Deals ({filteredDeals.length})
+            الصفقات ({filteredDeals.length})
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Total value: {formatCurrency(totalValue)}
-          </p>
+          <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <span>إجمالي القيمة: {formatCurrency(totalValue)}</span>
+            <span>الصفقات المكتملة: {formatCurrency(wonValue)}</span>
+          </div>
         </div>
         <Button icon={Plus} onClick={handleAddDeal}>
-          Add Deal
+          إضافة صفقة
         </Button>
       </div>
 
       {/* Filters */}
       <Card padding="sm">
-        <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="البحث في الصفقات..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
           <Select
             value={statusFilter}
             onChange={setStatusFilter}
             options={[
-              { value: 'all', label: 'All Status' },
-              { value: 'pending', label: 'Pending' },
-              { value: 'won', label: 'Won' },
-              { value: 'lost', label: 'Lost' }
+              { value: 'all', label: 'كل الحالات' },
+              { value: 'pending', label: 'قيد الانتظار' },
+              { value: 'won', label: 'مكتملة' },
+              { value: 'lost', label: 'فاشلة' }
             ]}
-            className="sm:w-48"
+            className="min-w-[140px]"
           />
-          <Button variant="outline" icon={Filter} size="sm">
-            More Filters
-          </Button>
+          <Select
+            value={clientFilter}
+            onChange={setClientFilter}
+            options={[
+              { value: '', label: 'كل العملاء' },
+              ...mockClients.map(client => ({
+                value: client.id,
+                label: client.name
+              }))
+            ]}
+            className="min-w-[140px]"
+          />
+          <Select
+            value={assignedFilter}
+            onChange={setAssignedFilter}
+            options={[
+              { value: '', label: 'كل المندوبين' },
+              ...mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager').map(user => ({
+                value: user.id,
+                label: user.name
+              }))
+            ]}
+            className="min-w-[140px]"
+          />
         </div>
       </Card>
 
       {/* Deals Table */}
       <Card padding="sm" className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Deal</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Client</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Amount</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Close Date</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Actions</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الصفقة</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">العميل</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المبلغ</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المندوب المسؤول</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الحالة</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">تاريخ الإغلاق</th>
+                <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الإجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -241,45 +324,58 @@ export const Deals: React.FC = () => {
                     index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-700/50'
                   }`}
                 >
-                  <td className="py-4 px-4">
+                  <td className="py-3 px-4">
                     <div>
                       <div className="font-medium text-gray-900 dark:text-white">
                         {deal.title}
                       </div>
                       {deal.probability && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {deal.probability}% probability
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {deal.probability}% نسبة نجاح
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-2">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-900 dark:text-white">{deal.clientName}</span>
+                      <Link 
+                        to={`/clients/${deal.clientId}`} 
+                        className="text-blue-600 dark:text-blue-300 hover:underline text-gray-900 dark:text-white"
+                      >
+                        {deal.clientName}
+                      </Link>
                     </div>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-2">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-gray-400" />
                       <span className="font-medium text-gray-900 dark:text-white">
                         {formatCurrency(deal.amount)}
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-3 px-4">
+                    <Link 
+                      to={`/sales-reps/${deal.assignedTo}`} 
+                      className="text-blue-600 dark:text-blue-300 hover:underline text-gray-900 dark:text-white"
+                    >
+                      {getAssignedUserName(deal.assignedTo)}
+                    </Link>
+                  </td>
+                  <td className="py-3 px-4">
                     <StatusBadge status={deal.status} />
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center space-x-2">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-400" />
                       <span className="text-gray-900 dark:text-white">
-                        {new Date(deal.date).toLocaleDateString()}
+                        {new Date(deal.date).toLocaleDateString('ar-SA')}
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
+                  <td className="py-3 px-4">
+                    <div className="flex gap-2">
                       <Button 
                         variant="ghost" 
                         size="sm"
@@ -305,14 +401,14 @@ export const Deals: React.FC = () => {
           <div className="text-center py-12">
             <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              No deals found
+              لم يتم العثور على صفقات
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {statusFilter !== 'all' ? 'Try changing the filter' : 'Get started by adding your first deal'}
+              {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة أول صفقة'}
             </p>
-            {statusFilter === 'all' && (
+            {statusFilter === 'all' && !searchTerm && (
               <Button icon={Plus} onClick={handleAddDeal}>
-                Add Deal
+                إضافة صفقة
               </Button>
             )}
           </div>
@@ -323,7 +419,7 @@ export const Deals: React.FC = () => {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editingDeal ? 'Edit Deal' : 'Add New Deal'}
+        title={editingDeal ? 'تعديل الصفقة' : 'إضافة صفقة جديدة'}
       >
         <DealForm
           deal={editingDeal}

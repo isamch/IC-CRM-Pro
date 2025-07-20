@@ -350,7 +350,7 @@ export const Clients: React.FC = () => {
                       <Link to={`/sales-reps/${client.assignedTo}`} className="text-blue-600 dark:text-blue-300 hover:underline">
                         {getAssignedUserName(client.assignedTo)}
                       </Link>
-                    ) : 'غير محدد'}
+                    ) : <span className="text-gray-500 dark:text-gray-400">غير محدد</span>}
                   </td>
                   <td className="px-4 py-2">
                     <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${

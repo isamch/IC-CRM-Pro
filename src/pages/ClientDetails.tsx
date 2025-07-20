@@ -4,8 +4,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Select } from '../components/ui/Select';
-import { mockClients, mockUsers } from '../data/mockData';
-import { Edit2, ArrowLeft, Mail, Phone, Building, UserPlus } from 'lucide-react';
+import { mockClients, mockUsers, mockTeams, mockDeals, mockTasks } from '../data/mockData';
+import { Edit2, ArrowLeft, Mail, Phone, Building, UserPlus, Users, Activity, MapPin } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const ClientDetails: React.FC = () => {
@@ -25,6 +25,49 @@ export const ClientDetails: React.FC = () => {
   }
   const assignedUser = mockUsers.find(u => u.id === client.assignedTo);
 
+  // Get client's deals
+  const clientDeals = mockDeals.filter(deal => deal.clientId === client.id);
+  
+  // Get client's tasks
+  const clientTasks = mockTasks.filter(task => task.clientId === client.id);
+  
+  // Get assigned user's team
+  const assignedUserTeam = assignedUser ? mockTeams.find(team => team.id === assignedUser.teamId) : null;
+  
+  // Get all teams that might be related to this client (through deals, tasks, etc.)
+  const relatedTeams = mockTeams.filter(team => {
+    const teamMembers = mockUsers.filter(u => u.teamId === team.id);
+    return teamMembers.some(member => member.id === client.assignedTo);
+  });
+  
+  // Mock events/activities for the client
+  const clientEvents = [
+    {
+      id: '1',
+      type: 'call',
+      title: 'مكالمة هاتفية',
+      description: 'متابعة عرض السعر الجديد',
+      date: '2024-01-20',
+      user: assignedUser?.name || 'غير محدد'
+    },
+    {
+      id: '2',
+      type: 'meeting',
+      title: 'اجتماع',
+      description: 'عرض المنتجات الجديدة',
+      date: '2024-01-18',
+      user: assignedUser?.name || 'غير محدد'
+    },
+    {
+      id: '3',
+      type: 'email',
+      title: 'بريد إلكتروني',
+      description: 'إرسال الكتالوج المحدث',
+      date: '2024-01-15',
+      user: assignedUser?.name || 'غير محدد'
+    }
+  ];
+
   // Get available reps for assignment (same logic as Clients page)
   let availableReps: typeof mockUsers = [];
   if (user?.role === 'admin') {
@@ -42,6 +85,15 @@ export const ClientDetails: React.FC = () => {
   const handleAssign = () => {
     // Here you would update the assignment in your state/store/backend
     setAssignModal(false);
+  };
+
+  const getEventIcon = (type: string) => {
+    switch (type) {
+      case 'call': return '📞';
+      case 'meeting': return '🤝';
+      case 'email': return '📧';
+      default: return '📝';
+    }
   };
 
   return (
@@ -106,6 +158,109 @@ export const ClientDetails: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* Assigned People Section */}
+      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Users className="w-5 h-5" />
+          الأشخاص المسؤولون
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">المندوب المسؤول:</span>
+              {assignedUser ? (
+                <Link to={`/sales-reps/${assignedUser.id}`} className="text-blue-600 dark:text-blue-300 hover:underline font-medium">
+                  {assignedUser.name}
+                </Link>
+              ) : (
+                <span className="text-gray-500 dark:text-gray-400">غير محدد</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">الفريق:</span>
+              {assignedUserTeam ? (
+                <Link to={`/teams/${assignedUserTeam.id}`} className="text-blue-600 dark:text-blue-300 hover:underline font-medium">
+                  {assignedUserTeam.name}
+                </Link>
+              ) : (
+                <span className="text-gray-500 dark:text-gray-400">غير محدد</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">المنطقة:</span>
+              <span className="text-gray-700 dark:text-gray-300">{assignedUser?.region || 'غير محدد'}</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">عدد الصفقات:</span>
+              <span className="text-gray-700 dark:text-gray-300">{clientDeals.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">عدد المهام:</span>
+              <span className="text-gray-700 dark:text-gray-300">{clientTasks.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">آخر تواصل:</span>
+              <span className="text-gray-700 dark:text-gray-300">
+                {client.lastContact ? new Date(client.lastContact).toLocaleDateString('ar-EG') : 'غير محدد'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Related Teams Section */}
+      {relatedTeams.length > 0 && (
+        <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            الفرق المرتبطة
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {relatedTeams.map(team => (
+              <div key={team.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <Link to={`/teams/${team.id}`} className="text-blue-600 dark:text-blue-300 hover:underline font-medium">
+                  {team.name}
+                </Link>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{team.region}</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  {team.isActive ? 'نشط' : 'غير نشط'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Events/Activities Section */}
+      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5" />
+          الأحداث والأنشطة
+        </h3>
+        <div className="space-y-3">
+          {clientEvents.map(event => (
+            <div key={event.id} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="text-2xl">{getEventIcon(event.type)}</div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900 dark:text-white">{event.title}</h4>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(event.date).toLocaleDateString('ar-EG')}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{event.description}</p>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  بواسطة: {event.user}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {client.notes && (
         <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
           <div className="text-lg font-semibold text-gray-900 dark:text-white mb-2">ملاحظات</div>
