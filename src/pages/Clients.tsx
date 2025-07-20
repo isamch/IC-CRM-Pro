@@ -122,7 +122,7 @@ const ClientForm: React.FC<{
       <Select
         label="حالة العميل"
         value={formData.status}
-        onChange={(value) => setFormData({ ...formData, status: value as any })}
+        onChange={(value: string) => setFormData({ ...formData, status: value as 'active' | 'inactive' | 'prospect' | 'lead' })}
         options={[
           { value: 'active', label: 'نشط' },
           { value: 'inactive', label: 'غير نشط' },

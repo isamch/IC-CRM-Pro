@@ -15,10 +15,8 @@ import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { SalesRepDetails } from './pages/SalesRepDetails';
+import { ClientDetails } from './pages/ClientDetails';
 import './App.css';
-
-// Add a placeholder for client details
-const ClientDetails = () => <div className="p-8 text-center text-xl">تفاصيل العميل</div>;
 
 function App() {
   return (

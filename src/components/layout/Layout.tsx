@@ -16,6 +16,8 @@ export const Layout: React.FC = () => {
     if (path === '/dashboard') return 'dashboard';
     if (path === '/users') return 'users';
     if (path === '/clients') return 'clients';
+    // Make Clients active for client details page
+    if (/^\/clients\/[\w-]+$/.test(path)) return 'clients';
     if (path === '/deals') return 'deals';
     if (path === '/tasks') return 'tasks';
     if (path === '/profile') return 'profile';
