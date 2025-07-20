@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { mockUsers, mockClients, mockTeams } from '../data/mockData';
+import { mockUsers, mockClients, mockTeams, mockDeals, mockTasks } from '../data/mockData';
 import { ArrowLeft, Mail, Phone, Building, Users, Edit2, Eye } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
 import { Select } from '../components/ui/Select';
@@ -22,6 +22,22 @@ export const SalesRepDetails: React.FC = () => {
   }
   const team = rep.teamId ? mockTeams.find(t => t.id === rep.teamId) : undefined;
   const assignedClients = mockClients.filter(c => c.assignedTo === rep.id);
+
+  // --- Analytics ---
+  const repDeals = mockDeals.filter(d => d.assignedTo === rep.id);
+  const repTasks = mockTasks.filter(t => t.assignee === rep.id);
+  const completedTasks = repTasks.filter(t => t.status === 'done');
+  const revenue = repDeals.filter(d => d.status === 'won').reduce((sum, d) => sum + d.amount, 0);
+  const totalDeals = repDeals.length;
+  const wonDeals = repDeals.filter(d => d.status === 'won').length;
+  const successRate = totalDeals > 0 ? Math.round((wonDeals / totalDeals) * 100) : 0;
+  const activeClients = assignedClients.filter(c => c.status === 'active').length;
+
+  // --- Previous Teams (placeholder) ---
+  // في النظام الحقيقي، يجب حفظ سجل الفرق السابقة للمندوب في قاعدة البيانات
+  // هنا نعرض مثالاً توضيحياً فقط
+  const previousTeams: { id: string; name: string }[] = [];
+  // مثال: previousTeams = [{ id: '2', name: 'فريق جدة' }];
 
   // Get available reps for assignment (same logic as Clients page)
   let availableReps: typeof mockUsers = [];
@@ -63,13 +79,60 @@ export const SalesRepDetails: React.FC = () => {
           <div>
             <div className="text-lg font-semibold text-gray-900 dark:text-white">{rep.name}</div>
             <div className="text-sm text-gray-500 dark:text-gray-400">{rep.email}</div>
-            <div className="text-xs text-gray-400 dark:text-gray-500">{team ? team.name : 'بدون فريق'}</div>
+            {/* الفريق الحالي */}
+            <div className="text-xs text-gray-400 dark:text-gray-500">
+              الفريق الحالي: {team ? (
+                <Link to={`/teams/${team.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">{team.name}</Link>
+              ) : 'بدون فريق'}
+            </div>
+            {/* الفرق القديمة */}
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              الفرق القديمة: {previousTeams.length > 0 ? previousTeams.map(t => (
+                <Link key={t.id} to={`/teams/${t.id}`} className="text-blue-600 dark:text-blue-300 hover:underline mr-2">{t.name}</Link>
+              )) : 'لا يوجد سجل'}
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600 dark:text-gray-300">
           <div className="flex items-center gap-1"><Mail className="w-4 h-4" /> {rep.email}</div>
           <div className="flex items-center gap-1"><Phone className="w-4 h-4" /> {rep.phone}</div>
           <div className="flex items-center gap-1"><Building className="w-4 h-4" /> {rep.department}</div>
+        </div>
+      </Card>
+      {/* Analytics Card */}
+      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">تحليلات المندوب</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{assignedClients.length}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">إجمالي العملاء</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-300">{repDeals.length}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">العقود</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-300">{repTasks.length}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">المهام</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-300">{revenue.toLocaleString()} ريال</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">إجمالي الإيرادات</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mt-4">
+          <div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-300">{activeClients}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">عملاء نشطون</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-300">{completedTasks.length}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">مهام مكتملة</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{successRate}%</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">معدل النجاح (العقود)</div>
+          </div>
         </div>
       </Card>
       <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none">
