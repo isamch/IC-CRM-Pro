@@ -10,7 +10,9 @@ import {
   Edit,
   Trash2,
   X,
-  Plus
+  Plus,
+  Pause,
+  Play
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -97,16 +99,16 @@ const EditTeamForm: React.FC<{
   );
 };
 
-// نموذج إضافة عضو للفريق
+// نموذج إضافة مندوب للفريق
 const AddMemberForm: React.FC<{
   onAdd: (userId: string) => void;
   onCancel: () => void;
 }> = ({ onAdd, onCancel }) => {
   const [selectedUserId, setSelectedUserId] = useState('');
   
-  // الحصول على المستخدمين غير المنضمين للفريق
-  const availableUsers = mockUsers.filter(user => 
-    !user.teamId && user.role === 'sales_representative'
+  // الحصول على مندوبي المبيعات غير المنضمين لأي فريق
+  const availableRepresentatives = mockUsers.filter(user => 
+    user.role === 'sales_representative' && !user.teamId
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,7 +122,7 @@ const AddMemberForm: React.FC<{
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          اختر العضو
+          اختر مندوب المبيعات
         </label>
         <select
           value={selectedUserId}
@@ -129,12 +131,17 @@ const AddMemberForm: React.FC<{
           required
         >
           <option value="">اختر مندوب مبيعات...</option>
-          {availableUsers.map((user) => (
+          {availableRepresentatives.map((user) => (
             <option key={user.id} value={user.id}>
               {user.name} - {user.email}
             </option>
           ))}
         </select>
+        {availableRepresentatives.length === 0 && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            لا يوجد مندوبي مبيعات متاحين للإضافة
+          </p>
+        )}
       </div>
       
       <div className="flex justify-end space-x-3 pt-4">
@@ -142,7 +149,7 @@ const AddMemberForm: React.FC<{
           إلغاء
         </Button>
         <Button type="submit" disabled={!selectedUserId}>
-          إضافة العضو
+          إضافة المندوب
         </Button>
       </div>
     </form>
@@ -184,8 +191,10 @@ export const TeamDetails: React.FC = () => {
     );
   }
 
-  // الحصول على أعضاء الفريق
-  const teamMembers = localUsers.filter(user => user.teamId === team.id);
+  // الحصول على أعضاء الفريق (مندوبي مبيعات فقط)
+  const teamMembers = localUsers.filter(user => 
+    user.teamId === team.id && user.role === 'sales_representative'
+  );
   const manager = localUsers.find(user => user.id === team.managerId);
 
   // الحصول على إحصائيات الفريق
@@ -229,7 +238,7 @@ export const TeamDetails: React.FC = () => {
   };
 
   const handleDelete = () => {
-    if (confirm('هل أنت متأكد من حذف هذا الفريق؟')) {
+    if (confirm('هل أنت متأكد من حذف هذا الفريق؟ سيتم إزالة جميع الأعضاء منه.')) {
       // إزالة الفريق من القائمة
       setLocalTeams(prev => prev.filter(t => t.id !== team.id));
       // إزالة الفريق من جميع الأعضاء
@@ -241,7 +250,7 @@ export const TeamDetails: React.FC = () => {
   };
 
   const handleAddMember = (userId: string) => {
-    // إضافة العضو للفريق
+    // إضافة المندوب للفريق
     setLocalUsers(prev => prev.map(u => 
       u.id === userId ? { ...u, teamId: team.id } : u
     ));
@@ -249,11 +258,25 @@ export const TeamDetails: React.FC = () => {
   };
 
   const handleRemoveMember = (userId: string) => {
-    if (confirm('هل أنت متأكد من إزالة هذا العضو من الفريق؟')) {
-      // إزالة العضو من الفريق
+    if (confirm('هل أنت متأكد من إزالة هذا المندوب من الفريق؟')) {
+      // إزالة المندوب من الفريق
       setLocalUsers(prev => prev.map(u => 
         u.id === userId ? { ...u, teamId: undefined } : u
       ));
+    }
+  };
+
+  const handleToggleMemberStatus = (userId: string) => {
+    const member = localUsers.find(u => u.id === userId);
+    if (member) {
+      const newStatus = !member.isActive;
+      const action = newStatus ? 'تفعيل' : 'إيقاف مؤقت';
+      
+      if (confirm(`هل أنت متأكد من ${action} هذا المندوب؟`)) {
+        setLocalUsers(prev => prev.map(u => 
+          u.id === userId ? { ...u, isActive: newStatus } : u
+        ));
+      }
     }
   };
 
@@ -271,7 +294,7 @@ export const TeamDetails: React.FC = () => {
                 {team.name}
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                تفاصيل الفريق والإحصائيات
+                إدارة فريق {user?.role === 'sales_manager' ? 'المبيعات' : ''} والإحصائيات
               </p>
             </div>
           </div>
@@ -305,7 +328,7 @@ export const TeamDetails: React.FC = () => {
                 {team.name}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {team.region} • {manager?.name}
+                {team.region} • المدير: {manager?.name}
               </p>
             </div>
           </div>
@@ -318,7 +341,7 @@ export const TeamDetails: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Users className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-700 dark:text-gray-300">{teamMembers.length} عضو</span>
+                <span className="text-gray-700 dark:text-gray-300">{teamMembers.length} مندوب</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Calendar className="w-5 h-5 text-gray-400" />
@@ -401,16 +424,16 @@ export const TeamDetails: React.FC = () => {
         {/* Team Members */}
         <Card>
           <div className="flex items-center justify-between mb-6">
-            <h4 className="text-lg font-medium text-gray-900 dark:text-white">أعضاء الفريق</h4>
+            <h4 className="text-lg font-medium text-gray-900 dark:text-white">مندوبي الفريق</h4>
             <CanEdit permission="teams">
               <Button icon={Plus} onClick={() => setShowAddMemberModal(true)}>
-                إضافة عضو
+                إضافة مندوب
               </Button>
             </CanEdit>
           </div>
           <div className="space-y-4">
             {teamMembers.map((member) => {
-              // حساب إحصائيات العضو
+              // حساب إحصائيات المندوب
               const memberClients = mockClients.filter(c => c.assignedTo === member.id).length;
               const memberDeals = mockDeals.filter(d => d.assignedTo === member.id).length;
               const memberTasks = mockTasks.filter(t => t.assignee === member.id).length;
@@ -433,16 +456,27 @@ export const TeamDetails: React.FC = () => {
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       member.isActive 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                     }`}>
-                      {member.isActive ? 'نشط' : 'غير نشط'}
+                      {member.isActive ? 'نشط' : 'موقوف مؤقتاً'}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {member.role === 'sales_manager' ? 'مدير' : 'مندوب'}
-                    </span>
-                    {/* زر إزالة العضو - لا يظهر للمدير */}
-                    {member.role !== 'sales_manager' && (
-                      <CanEdit permission="teams">
+                    
+                    {/* أزرار التحكم */}
+                    <CanEdit permission="teams">
+                      <div className="flex space-x-1">
+                        {/* زر إيقاف/تفعيل مؤقت */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={member.isActive ? Pause : Play}
+                          onClick={() => handleToggleMemberStatus(member.id)}
+                          className={member.isActive 
+                            ? "text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                            : "text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          }
+                        />
+                        
+                        {/* زر إزالة من الفريق */}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -450,8 +484,8 @@ export const TeamDetails: React.FC = () => {
                           onClick={() => handleRemoveMember(member.id)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                         />
-                      </CanEdit>
-                    )}
+                      </div>
+                    </CanEdit>
                   </div>
                 </div>
               );
@@ -460,7 +494,17 @@ export const TeamDetails: React.FC = () => {
             {teamMembers.length === 0 && (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">لا يوجد أعضاء في هذا الفريق</p>
+                <p className="text-gray-500 dark:text-gray-400">لا يوجد مندوبي مبيعات في هذا الفريق</p>
+                <CanEdit permission="teams">
+                  <Button 
+                    variant="outline" 
+                    icon={Plus} 
+                    onClick={() => setShowAddMemberModal(true)}
+                    className="mt-4"
+                  >
+                    إضافة أول مندوب
+                  </Button>
+                </CanEdit>
               </div>
             )}
           </div>
@@ -521,7 +565,7 @@ export const TeamDetails: React.FC = () => {
         <Modal
           isOpen={showAddMemberModal}
           onClose={() => setShowAddMemberModal(false)}
-          title="إضافة عضو للفريق"
+          title="إضافة مندوب للفريق"
         >
           <AddMemberForm
             onAdd={handleAddMember}
