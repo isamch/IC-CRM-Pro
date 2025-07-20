@@ -26,7 +26,7 @@ export const Users: React.FC = () => {
   const [passwordDialog, setPasswordDialog] = useState({
     isOpen: false,
     message: '',
-    onConfirm: (password: string) => {},
+    onConfirm: () => {},
     errorMessage: '',
     requirePassword: false,
   });
@@ -69,6 +69,7 @@ export const Users: React.FC = () => {
 
   // التحقق من إمكانية التعديل على المستخدم
   const canEditUser = (user: UserType) => {
+    if (currentUser?.id === user.id) return false; // لا يمكن التعديل على نفسه
     if (currentUser?.role === 'admin') return true;
     if (currentUser?.role === 'sales_manager') {
       // يمكن لمدير المبيعات التعديل فقط على أعضاء فريقه
@@ -90,8 +91,8 @@ export const Users: React.FC = () => {
       message: `لحذف المستخدم ${user.name}، أدخل كلمة المرور للتأكيد. لا يمكن التراجع عن هذه العملية.`,
       requirePassword: true,
       errorMessage: '',
-      onConfirm: (password: string) => {
-        if (!checkPassword(password)) {
+      onConfirm: (password?: string) => {
+        if (!password || !checkPassword(password)) {
           setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
           return;
         }
@@ -113,8 +114,8 @@ export const Users: React.FC = () => {
       message: `لتأكيد ${user.isActive ? 'إيقاف' : 'تفعيل'} المستخدم ${user.name}، أدخل كلمة المرور.`,
       requirePassword: true,
       errorMessage: '',
-      onConfirm: (password: string) => {
-        if (!checkPassword(password)) {
+      onConfirm: (password?: string) => {
+        if (!password || !checkPassword(password)) {
           setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
           return;
         }
@@ -136,8 +137,8 @@ export const Users: React.FC = () => {
       message: `لتأكيد إزالة المستخدم ${user.name} من الفريق، أدخل كلمة المرور.`,
       requirePassword: true,
       errorMessage: '',
-      onConfirm: (password: string) => {
-        if (!checkPassword(password)) {
+      onConfirm: (password?: string) => {
+        if (!password || !checkPassword(password)) {
           setPasswordDialog(d => ({ ...d, errorMessage: 'كلمة المرور غير صحيحة.' }));
           return;
         }
