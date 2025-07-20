@@ -29,14 +29,14 @@ interface NavigationItem {
 }
 
 const navigationItems: NavigationItem[] = [
-  { id: 'dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { id: 'clients', label: 'العملاء', icon: Users },
-  { id: 'deals', label: 'العقود', icon: Briefcase },
-  { id: 'tasks', label: 'المهام', icon: CheckSquare },
-  { id: 'users', label: 'المستخدمين', icon: Shield, requiresPermission: 'users' },
-  { id: 'teams', label: 'الفرق', icon: Users, requiresPermission: 'teams' },
-  { id: 'profile', label: 'الملف الشخصي', icon: User },
-  { id: 'settings', label: 'الإعدادات', icon: Settings },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'clients', label: 'Clients', icon: Users },
+  { id: 'deals', label: 'Deals', icon: Briefcase },
+  { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+  { id: 'users', label: 'Users', icon: Shield, requiresPermission: 'users' },
+  { id: 'teams', label: 'Teams', icon: Users, requiresPermission: 'teams' },
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           {!isCollapsed && (
-            <span className="ml-3">تسجيل الخروج</span>
+            <span className="ml-3">Logout</span>
           )}
         </button>
       </div>

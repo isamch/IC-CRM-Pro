@@ -10,18 +10,18 @@ interface TopNavbarProps {
 }
 
 const getPageTitle = (pathname: string): string => {
-  if (pathname.startsWith('/teams/')) return 'تفاصيل الفريق';
+  if (pathname.startsWith('/teams/')) return 'Team Details';
   const titles: { [key: string]: string } = {
-    '/dashboard': 'لوحة التحكم',
-    '/users': 'المستخدمين',
-    '/teams': 'الفرق',
-    '/clients': 'العملاء',
-    '/deals': 'العقود',
-    '/tasks': 'المهام',
-    '/profile': 'الملف الشخصي',
-    '/settings': 'الإعدادات'
+    '/dashboard': 'Dashboard',
+    '/users': 'Users',
+    '/teams': 'Teams',
+    '/clients': 'Clients',
+    '/deals': 'Deals',
+    '/tasks': 'Tasks',
+    '/profile': 'Profile',
+    '/settings': 'Settings'
   };
-  return titles[pathname] || 'لوحة التحكم';
+  return titles[pathname] || 'Dashboard';
 };
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({ onToggleSidebar }) => {

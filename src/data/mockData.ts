@@ -390,6 +390,132 @@ export const mockUsers: User[] = [
       language: 'ar',
       timezone: 'Asia/Riyadh'
     }
+  },
+  // مندوبي مبيعات جدد بدون فريق
+  {
+    id: '8',
+    name: 'عبدالرحمن محمد',
+    email: 'abdulrahman@crm.com',
+    role: 'sales_representative',
+    phone: '+966 57 456 7890',
+    department: 'المبيعات',
+    teamId: undefined, // غير منضم لأي فريق
+    region: 'الرياض',
+    managerId: undefined,
+    joinDate: '2024-01-01',
+    lastLogin: '2024-01-20T12:00:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '9',
+    name: 'ريم عبدالله',
+    email: 'reem@crm.com',
+    role: 'sales_representative',
+    phone: '+966 58 567 8901',
+    department: 'المبيعات',
+    teamId: undefined, // غير منضم لأي فريق
+    region: 'جدة',
+    managerId: undefined,
+    joinDate: '2024-01-05',
+    lastLogin: '2024-01-20T13:15:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'dark',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: false
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '10',
+    name: 'يوسف أحمد',
+    email: 'youssef@crm.com',
+    role: 'sales_representative',
+    phone: '+966 59 678 9012',
+    department: 'المبيعات',
+    teamId: undefined, // غير منضم لأي فريق
+    region: 'الدمام',
+    managerId: undefined,
+    joinDate: '2024-01-10',
+    lastLogin: '2024-01-20T14:30:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: false,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '11',
+    name: 'فهد سعد',
+    email: 'fahad@crm.com',
+    role: 'sales_representative',
+    phone: '+966 60 789 0123',
+    department: 'المبيعات',
+    teamId: undefined, // غير منضم لأي فريق
+    region: 'الرياض',
+    managerId: undefined,
+    joinDate: '2024-01-12',
+    lastLogin: '2024-01-20T15:45:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
+  },
+  {
+    id: '12',
+    name: 'لينا محمد',
+    email: 'lina@crm.com',
+    role: 'sales_representative',
+    phone: '+966 61 890 1234',
+    department: 'المبيعات',
+    teamId: undefined, // غير منضم لأي فريق
+    region: 'جدة',
+    managerId: undefined,
+    joinDate: '2024-01-15',
+    lastLogin: '2024-01-20T16:20:00Z',
+    isActive: true,
+    permissions: getPermissionsForRole('sales_representative'),
+    preferences: {
+      theme: 'dark',
+      notifications: {
+        email: true,
+        push: true,
+        desktop: true
+      },
+      language: 'ar',
+      timezone: 'Asia/Riyadh'
+    }
   }
 ];
 
