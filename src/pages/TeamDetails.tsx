@@ -24,6 +24,7 @@ import { mockTeams, mockUsers, mockClients, mockDeals, mockTasks } from '../data
 import { Team } from '../types';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { Select } from '../components/ui/Select';
+import { UnauthorizedPage } from '../components/auth/UnauthorizedPage';
 
 // نموذج تعديل الفريق
 const EditTeamForm: React.FC<{
@@ -197,7 +198,7 @@ export const TeamDetails: React.FC = () => {
     const isManager = user.role === 'sales_manager' && team.managerId === user.id;
     const isTeamMember = user.role === 'sales_representative' && user.teamId === team.id;
     if (!isAdmin && !isManager && !isTeamMember) {
-      return <div className="p-6 text-center text-red-500">غير مصرح لك بعرض هذه الصفحة</div>;
+      return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذا الفريق." />;
     }
   }
 

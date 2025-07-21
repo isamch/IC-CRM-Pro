@@ -422,6 +422,28 @@ export const mockUsers: User[] = [
   { id: '15', name: 'سعيد الحربي', email: 'saeed@crm.com', role: 'sales_representative', phone: '+966 62 123 4567', department: 'المبيعات', teamId: undefined, region: 'القصيم', managerId: undefined, joinDate: '2024-02-10', lastLogin: '2024-02-20T10:00:00Z', isActive: false, permissions: getPermissionsForRole('sales_representative'), preferences: { theme: 'light', notifications: { email: true, push: false, desktop: false }, language: 'ar', timezone: 'Asia/Riyadh' } }
 ];
 
+// Add a general sales manager with no team or region
+mockUsers.push({
+  id: 'sm-general',
+  name: 'مدير مبيعات عام',
+  email: 'general.manager@example.com',
+  phone: '',
+  department: 'Sales',
+  role: 'sales_manager',
+  teamId: undefined,
+  region: undefined,
+  isActive: true,
+  joinDate: '2024-01-01',
+  permissions: getPermissionsForRole('sales_manager'),
+  managerId: undefined,
+  preferences: {
+    theme: 'light',
+    notifications: { email: true, push: true, desktop: true },
+    language: 'ar',
+    timezone: 'Asia/Riyadh'
+  }
+});
+
 // بيانات العملاء (موزعة على الفرق والمندوبين وبعضهم غير مخصص)
 export const mockClients: Client[] = [
   // ... (أضف هنا 15 عميل متنوع، بعضهم مخصص لمدير، بعضهم لمندوب، وبعضهم غير مخصص)

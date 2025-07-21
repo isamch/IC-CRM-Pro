@@ -108,8 +108,8 @@ const UserForm: React.FC<{
 
 export const Users: React.FC = () => {
   const { user: currentUser } = useAuth();
-  if (currentUser?.role !== 'admin') {
-    return <UnauthorizedPage message="هذه الصفحة متاحة فقط للمدير (الأدمن)." />;
+  if (currentUser?.role !== 'admin' && currentUser?.role !== 'sales_manager') {
+    return <UnauthorizedPage message="هذه الصفحة متاحة فقط للمدير أو مدير المبيعات." />;
   }
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
@@ -163,9 +163,9 @@ export const Users: React.FC = () => {
   const getFilteredUsers = () => {
     let filteredUsers = localUsers;
 
-    // إذا كان المستخدم الحالي مدير مبيعات، اعرض فقط مندوبي المبيعات
+    // إذا كان المستخدم الحالي مدير مبيعات، اعرض فقط مندوبي المبيعات ومديري المبيعات
     if (currentUser?.role === 'sales_manager') {
-      filteredUsers = localUsers.filter(user => user.role === 'sales_representative');
+      filteredUsers = localUsers.filter(user => user.role === 'sales_representative' || user.role === 'sales_manager');
     }
 
     // تطبيق البحث

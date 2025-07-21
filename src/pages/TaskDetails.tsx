@@ -31,7 +31,11 @@ export const TaskDetails: React.FC = () => {
   // Access control
   const isAdmin = currentUser?.role === 'admin';
   const isAssignee = currentUser?.id === task.assignee;
-  const isManagerOfAssignee = currentUser?.role === 'sales_manager' && assignee && currentUser.teamId === assignee.teamId;
+  let isManagerOfAssignee = false;
+  if (currentUser?.role === 'sales_manager' && assignee && assignee.teamId) {
+    const managedTeams = mockTeams.filter(team => team.managerId === currentUser.id).map(team => team.id);
+    isManagerOfAssignee = managedTeams.includes(assignee.teamId);
+  }
   const isDealOwner = deal && deal.assignedTo === currentUser?.id;
   if (!isAdmin && !isAssignee && !isManagerOfAssignee && !isDealOwner) {
     return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذه المهمة." />;

@@ -17,8 +17,9 @@ export const SalesManagerDetails: React.FC = () => {
   }
   // Access control
   const isAdmin = user?.role === 'admin';
+  const isSalesManager = user?.role === 'sales_manager';
   const isSelf = user?.id === manager.id;
-  if (!isAdmin && !isSelf) {
+  if (!isAdmin && !isSalesManager && !isSelf) {
     return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذا المدير." />;
   }
   const salesReps = mockUsers.filter(u => u.managerId === manager.id && u.role === 'sales_representative');

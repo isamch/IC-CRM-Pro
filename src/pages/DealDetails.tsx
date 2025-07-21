@@ -37,7 +37,11 @@ export const DealDetails: React.FC = () => {
   // Access control
   const isAdmin = user?.role === 'admin';
   const isAssignedRep = user?.id === deal.assignedTo;
-  const isManagerOfRep = user?.role === 'sales_manager' && assignedUser && user.teamId === assignedUser.teamId;
+  let isManagerOfRep = false;
+  if (user?.role === 'sales_manager' && assignedUser && assignedUser.teamId) {
+    const managedTeams = mockTeams.filter(team => team.managerId === user.id).map(team => team.id);
+    isManagerOfRep = managedTeams.includes(assignedUser.teamId);
+  }
   if (!isAdmin && !isAssignedRep && !isManagerOfRep) {
     return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذه الصفقة." />;
   }
