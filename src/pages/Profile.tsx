@@ -161,6 +161,7 @@ export const Profile: React.FC = () => {
                 onChange={(value) => setFormData({ ...formData, name: value })}
                 disabled={!isEditing}
                 icon={User}
+                className="text-gray-900 dark:text-white"
               />
               
               <Input
@@ -170,6 +171,7 @@ export const Profile: React.FC = () => {
                 onChange={(value) => setFormData({ ...formData, email: value })}
                 disabled={!isEditing}
                 icon={Mail}
+                className="text-gray-900 dark:text-white"
               />
               
               <Input
@@ -179,6 +181,7 @@ export const Profile: React.FC = () => {
                 onChange={(value) => setFormData({ ...formData, phone: value })}
                 disabled={!isEditing}
                 icon={Phone}
+                className="text-gray-900 dark:text-white"
               />
               
               <Input
@@ -187,6 +190,7 @@ export const Profile: React.FC = () => {
                 onChange={(value) => setFormData({ ...formData, department: value })}
                 disabled={!isEditing}
                 icon={Building}
+                className="text-gray-900 dark:text-white"
               />
               
               <div className="md:col-span-2">
@@ -195,6 +199,7 @@ export const Profile: React.FC = () => {
                   value={formData.role}
                   onChange={(value) => setFormData({ ...formData, role: value })}
                   disabled={!isEditing}
+                  className="text-gray-900 dark:text-white"
                 />
               </div>
             </div>

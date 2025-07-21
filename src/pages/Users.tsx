@@ -62,6 +62,7 @@ const UserForm: React.FC<{
         value={formData.name}
         onChange={value => setFormData({ ...formData, name: value })}
         required
+        className="text-gray-900 dark:text-white"
       />
       <Input
         label="Email"
@@ -69,6 +70,7 @@ const UserForm: React.FC<{
         value={formData.email}
         onChange={value => setFormData({ ...formData, email: value })}
         required
+        className="text-gray-900 dark:text-white"
       />
       <Input
         label="Password"
@@ -76,17 +78,20 @@ const UserForm: React.FC<{
         value={formData.password}
         onChange={value => setFormData({ ...formData, password: value })}
         required
+        className="text-gray-900 dark:text-white"
       />
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="Phone"
           value={formData.phone}
           onChange={value => setFormData({ ...formData, phone: value })}
+          className="text-gray-900 dark:text-white"
         />
         <Input
           label="Department"
           value={formData.department}
           onChange={value => setFormData({ ...formData, department: value })}
+          className="text-gray-900 dark:text-white"
         />
         <Select
           label="Role"
@@ -96,6 +101,7 @@ const UserForm: React.FC<{
             { value: 'sales_representative', label: 'Sales Representative' },
             { value: 'sales_manager', label: 'Sales Manager' },
           ]}
+          className="text-gray-900 dark:text-white"
         />
       </div>
       <div className="flex justify-end space-x-2 pt-4">

@@ -51,6 +51,7 @@ const TeamForm: React.FC<{
         onChange={(value) => setFormData({ ...formData, name: value })}
         placeholder="أدخل اسم الفريق"
         required
+        className="text-gray-900 dark:text-white"
       />
       <Input
         label="المنطقة الجغرافية"
@@ -58,6 +59,7 @@ const TeamForm: React.FC<{
         onChange={(value) => setFormData({ ...formData, region: value })}
         placeholder="أدخل المنطقة الجغرافية"
         required
+        className="text-gray-900 dark:text-white"
       />
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -68,7 +70,7 @@ const TeamForm: React.FC<{
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="أدخل وصف الفريق..."
           rows={3}
-          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
         />
       </div>
       
@@ -227,7 +229,7 @@ export const Teams: React.FC = () => {
                 placeholder="البحث في الفرق..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
               />
             </div>
             {/* Filter by Sales Manager */}

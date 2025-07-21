@@ -155,6 +155,7 @@ const TaskForm: React.FC<{
         onChange={(value) => setFormData({ ...formData, title: value })}
         placeholder="أدخل عنوان المهمة"
         required
+        className="text-gray-900 dark:text-white"
       />
       
       <div>
@@ -166,7 +167,7 @@ const TaskForm: React.FC<{
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="أدخل وصف المهمة..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-gray-900 dark:text-white"
         />
       </div>
       
@@ -177,6 +178,7 @@ const TaskForm: React.FC<{
           value={formData.dueDate}
           onChange={(value) => setFormData({ ...formData, dueDate: value })}
           required
+          className="text-gray-900 dark:text-white"
         />
         <Select
           label="الأولوية"
@@ -188,6 +190,7 @@ const TaskForm: React.FC<{
             { value: 'high', label: 'عالية' }
           ]}
           required
+          className="text-gray-900 dark:text-white"
         />
       </div>
       
@@ -201,6 +204,7 @@ const TaskForm: React.FC<{
             { value: 'done', label: 'مكتملة' }
           ]}
           required
+          className="text-gray-900 dark:text-white"
         />
         {/* Only show assignment field for managers and admins */}
         {(user?.role === 'admin' || user?.role === 'sales_manager') && (
@@ -210,6 +214,7 @@ const TaskForm: React.FC<{
           onChange={(value) => setFormData({ ...formData, assignee: value })}
             options={userOptions}
             placeholder="اختر المسؤول (اختياري)"
+            className="text-gray-900 dark:text-white"
           />
         )}
       </div>
@@ -226,6 +231,7 @@ const TaskForm: React.FC<{
           }))}
           placeholder="اختر الفريق"
           required
+          className="text-gray-900 dark:text-white"
         />
       )}
 
@@ -238,6 +244,7 @@ const TaskForm: React.FC<{
           label: `${client.name} (${client.company})`
         }))}
         placeholder="اختر العميل (اختياري)"
+        className="text-gray-900 dark:text-white"
       />
       
       <Select
@@ -249,6 +256,7 @@ const TaskForm: React.FC<{
           label: deal.title
         }))}
         placeholder="اختر الصفقة (اختياري)"
+        className="text-gray-900 dark:text-white"
       />
       
       <div className="flex justify-end space-x-3 pt-4">
@@ -425,7 +433,7 @@ export const Tasks: React.FC = () => {
               { value: 'pending', label: 'قيد التنفيذ' },
               { value: 'done', label: 'مكتملة' }
             ]}
-            className="lg:w-40"
+            className="lg:w-40 text-gray-900 dark:text-white"
           />
           <Select
             value={priorityFilter}
@@ -436,7 +444,7 @@ export const Tasks: React.FC = () => {
               { value: 'medium', label: 'متوسطة' },
               { value: 'low', label: 'منخفضة' }
             ]}
-            className="lg:w-40"
+            className="lg:w-40 text-gray-900 dark:text-white"
           />
           {/* Team filter - only for admins and managers */}
           {(user?.role === 'admin' || user?.role === 'sales_manager') && (
@@ -450,7 +458,7 @@ export const Tasks: React.FC = () => {
                   label: team.name
                 }))
               ]}
-              className="lg:w-40"
+              className="lg:w-40 text-gray-900 dark:text-white"
             />
           )}
         </div>

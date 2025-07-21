@@ -238,6 +238,7 @@ export const Settings: React.FC = () => {
                 { value: 'de', label: 'Deutsch' },
                 { value: 'it', label: 'Italiano' }
               ]}
+              className="text-gray-900 dark:text-white"
             />
             <Select
               label="Timezone"
@@ -251,6 +252,7 @@ export const Settings: React.FC = () => {
                 { value: 'Europe/London', label: 'Greenwich Mean Time (GMT)' },
                 { value: 'Europe/Paris', label: 'Central European Time (CET)' }
               ]}
+              className="text-gray-900 dark:text-white"
             />
           </div>
         </SettingSection>

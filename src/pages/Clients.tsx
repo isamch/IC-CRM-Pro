@@ -75,6 +75,7 @@ const ClientForm: React.FC<{
           onChange={(value) => setFormData({ ...formData, name: value })}
           placeholder="أدخل اسم العميل"
           required
+          className="text-gray-900 dark:text-white"
         />
         <Input
           label="البريد الإلكتروني"
@@ -83,6 +84,7 @@ const ClientForm: React.FC<{
           onChange={(value) => setFormData({ ...formData, email: value })}
           placeholder="أدخل البريد الإلكتروني"
           required
+          className="text-gray-900 dark:text-white"
         />
         <Input
           label="رقم الهاتف"
@@ -90,6 +92,7 @@ const ClientForm: React.FC<{
           value={formData.phone}
           onChange={(value) => setFormData({ ...formData, phone: value })}
           placeholder="أدخل رقم الهاتف"
+          className="text-gray-900 dark:text-white"
         />
         <Input
           label="الشركة"
@@ -97,6 +100,7 @@ const ClientForm: React.FC<{
           onChange={(value) => setFormData({ ...formData, company: value })}
           placeholder="أدخل اسم الشركة"
           required
+          className="text-gray-900 dark:text-white"
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -105,6 +109,7 @@ const ClientForm: React.FC<{
           value={formData.position}
           onChange={(value) => setFormData({ ...formData, position: value })}
           placeholder="أدخل المنصب الوظيفي"
+          className="text-gray-900 dark:text-white"
         />
         {(user?.role === 'admin' || user?.role === 'sales_manager') && (
           <Select
@@ -116,6 +121,7 @@ const ClientForm: React.FC<{
               label: `${user.name} (${getRoleLabel(user.role)})`
             }))}
             required
+            className="text-gray-900 dark:text-white"
           />
         )}
       </div>
@@ -130,6 +136,7 @@ const ClientForm: React.FC<{
           { value: 'lead', label: 'عميل رائد' }
         ]}
         required
+        className="text-gray-900 dark:text-white"
       />
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -140,7 +147,7 @@ const ClientForm: React.FC<{
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="أدخل أي ملاحظات إضافية..."
           rows={2}
-          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 dark:text-white"
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
         />
       </div>
       <div className="flex justify-end space-x-2 pt-2">
@@ -306,7 +313,7 @@ export const Clients: React.FC = () => {
                 placeholder="البحث في العملاء..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
               />
             </div>
             <Button variant="outline" icon={Filter} size="sm">

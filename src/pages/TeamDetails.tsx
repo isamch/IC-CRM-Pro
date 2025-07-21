@@ -56,6 +56,7 @@ const EditTeamForm: React.FC<{
         onChange={(value) => setFormData({ ...formData, name: value })}
         placeholder="أدخل اسم الفريق"
         required
+        className="text-gray-900 dark:text-white"
       />
       <Input
         label="المنطقة الجغرافية"
@@ -63,6 +64,7 @@ const EditTeamForm: React.FC<{
         onChange={(value) => setFormData({ ...formData, region: value })}
         placeholder="أدخل المنطقة الجغرافية"
         required
+        className="text-gray-900 dark:text-white"
       />
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -73,7 +75,7 @@ const EditTeamForm: React.FC<{
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="أدخل وصف الفريق..."
           rows={2}
-          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
         />
       </div>
       
@@ -130,7 +132,7 @@ const AddMemberForm: React.FC<{
         <select
           value={selectedUserId}
           onChange={(e) => setSelectedUserId(e.target.value)}
-          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
           required
         >
           <option value="">اختر مندوب مبيعات...</option>
