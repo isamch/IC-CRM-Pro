@@ -20,6 +20,13 @@ export const SalesRepDetails: React.FC = () => {
   if (!rep) {
     return <div className="p-6 text-center text-red-500">المندوب غير موجود</div>;
   }
+  // Access control: Only allow admin, the rep himself, or the manager of the rep's team
+  const isAdmin = user?.role === 'admin';
+  const isSelf = user?.id === rep.id;
+  const isManagerOfRep = user?.role === 'sales_manager' && user.teamId === rep.teamId;
+  if (!isAdmin && !isSelf && !isManagerOfRep) {
+    return <div className="p-6 text-center text-red-500">غير مصرح لك بعرض هذه الصفحة</div>;
+  }
   const team = rep.teamId ? mockTeams.find(t => t.id === rep.teamId) : undefined;
   const assignedClients = mockClients.filter(c => c.assignedTo === rep.id);
 

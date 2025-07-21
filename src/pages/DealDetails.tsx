@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Deal } from '../types';
+import { UnauthorizedPage } from '../components/auth/UnauthorizedPage';
 
 export const DealDetails: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
@@ -32,6 +33,14 @@ export const DealDetails: React.FC = () => {
 
   const assignedUserTeam = assignedUser ? mockTeams.find(team => team.id === assignedUser.teamId) : null;
   const dealTasks = mockTasks.filter(task => task.dealId === deal.id);
+
+  // Access control
+  const isAdmin = user?.role === 'admin';
+  const isAssignedRep = user?.id === deal.assignedTo;
+  const isManagerOfRep = user?.role === 'sales_manager' && assignedUser && user.teamId === assignedUser.teamId;
+  if (!isAdmin && !isAssignedRep && !isManagerOfRep) {
+    return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذه الصفقة." />;
+  }
 
   const getStatusBadge = (status: Deal['status']) => {
     const colors = {

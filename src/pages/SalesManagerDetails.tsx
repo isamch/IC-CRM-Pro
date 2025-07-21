@@ -4,13 +4,22 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { mockUsers, mockTeams, mockClients, mockDeals, mockTasks } from '../data/mockData';
 import { ArrowLeft, Users, Calendar } from 'lucide-react';
+import { UnauthorizedPage } from '../components/auth/UnauthorizedPage';
+import { useAuth } from '../contexts/AuthContext';
 
 export const SalesManagerDetails: React.FC = () => {
   const { managerId } = useParams<{ managerId: string }>();
   const navigate = useNavigate();
-  const manager = mockUsers.find(u => u.id === managerId && u.role === 'sales_manager');
+  const { user } = useAuth();
+  const manager = mockUsers.find(u => u.id === managerId);
   if (!manager) {
     return <div className="p-8 text-center text-red-500">مدير المبيعات غير موجود</div>;
+  }
+  // Access control
+  const isAdmin = user?.role === 'admin';
+  const isSelf = user?.id === manager.id;
+  if (!isAdmin && !isSelf) {
+    return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذا المدير." />;
   }
   const salesReps = mockUsers.filter(u => u.managerId === manager.id && u.role === 'sales_representative');
   const clients = mockClients.filter(c => {

@@ -13,24 +13,35 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { Task } from '../types';
 import { mockTeams } from '../data/mockData';
+import { UnauthorizedPage } from '../components/auth/UnauthorizedPage';
 
 export const TaskDetails: React.FC = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const task = mockTasks.find(t => t.id === taskId);
-  const assignee = task ? mockUsers.find(u => u.id === task.assignee) : undefined;
-  const team = task ? mockTeams.find(t => t.id === task.teamId) : undefined;
-  const deal = task?.dealId ? mockDeals.find(d => d.id === task.dealId) : undefined;
-  const client = task?.clientId ? mockClients.find(c => c.id === task.clientId) : undefined;
-  
+  if (!task) {
+    return <div className="p-8 text-center text-red-500">المهمة غير موجودة</div>;
+  }
+  const assignee = mockUsers.find(u => u.id === task.assignee);
+  const team = mockTeams.find(t => t.id === task.teamId);
+  const deal = task.dealId ? mockDeals.find(d => d.id === task.dealId) : undefined;
+  const client = task.clientId ? mockClients.find(c => c.id === task.clientId) : undefined;
+
+  // Access control
+  const isAdmin = currentUser?.role === 'admin';
+  const isAssignee = currentUser?.id === task.assignee;
+  const isManagerOfAssignee = currentUser?.role === 'sales_manager' && assignee && currentUser.teamId === assignee.teamId;
+  const isDealOwner = deal && deal.assignedTo === currentUser?.id;
+  if (!isAdmin && !isAssignee && !isManagerOfAssignee && !isDealOwner) {
+    return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذه المهمة." />;
+  }
+
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   if (!task) {
     return <div className="p-8 text-center text-red-500">المهمة غير موجودة</div>;
   }
-
-  const isDealOwner = deal?.assignedTo === currentUser?.id;
 
   // Check permissions - only show task if user has access
   const hasAccess = currentUser?.role === 'admin' || 

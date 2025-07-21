@@ -184,19 +184,22 @@ export const TeamDetails: React.FC = () => {
     if (teamId) {
       const foundTeam = localTeams.find(t => t.id === teamId);
       if (foundTeam) {
-        // التحقق من الصلاحيات
-        if (user?.role === 'admin' || 
-            (user?.role === 'sales_manager' && foundTeam.managerId === user.id) ||
-            (user?.role === 'sales_representative' && user.teamId === teamId)) {
-          setTeam(foundTeam);
-        } else {
-          navigate('/teams');
-        }
+        setTeam(foundTeam);
       } else {
         navigate('/teams');
       }
     }
-  }, [teamId, user, navigate, localTeams]);
+  }, [teamId, localTeams, navigate]);
+
+  // Access control: Only allow admin, the manager of the team, or a sales rep who is a member of the team
+  if (team && user) {
+    const isAdmin = user.role === 'admin';
+    const isManager = user.role === 'sales_manager' && team.managerId === user.id;
+    const isTeamMember = user.role === 'sales_representative' && user.teamId === team.id;
+    if (!isAdmin && !isManager && !isTeamMember) {
+      return <div className="p-6 text-center text-red-500">غير مصرح لك بعرض هذه الصفحة</div>;
+    }
+  }
 
   if (!team) {
     return (

@@ -13,6 +13,7 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { CanCreate } from '../components/auth/PermissionGuard';
 import { useEffect } from 'react';
+import { UnauthorizedPage } from '../components/auth/UnauthorizedPage';
 
 const UserForm: React.FC<{
   onSave: (user: Partial<UserType>) => void;
@@ -107,6 +108,9 @@ const UserForm: React.FC<{
 
 export const Users: React.FC = () => {
   const { user: currentUser } = useAuth();
+  if (currentUser?.role !== 'admin') {
+    return <UnauthorizedPage message="هذه الصفحة متاحة فقط للمدير (الأدمن)." />;
+  }
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);

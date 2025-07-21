@@ -7,6 +7,7 @@ import { Select } from '../components/ui/Select';
 import { mockClients, mockUsers, mockTeams, mockDeals, mockTasks } from '../data/mockData';
 import { Edit2, ArrowLeft, Mail, Phone, Building, UserPlus, Users, Activity, MapPin, DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { UnauthorizedPage } from '../components/auth/UnauthorizedPage';
 
 export const ClientDetails: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -24,6 +25,14 @@ export const ClientDetails: React.FC = () => {
     return <div className="p-8 text-center text-red-500">العميل غير موجود</div>;
   }
   const assignedUser = mockUsers.find(u => u.id === client.assignedTo);
+  const assignedUserTeam = assignedUser ? mockTeams.find(team => team.id === assignedUser.teamId) : null;
+  // Access control
+  const isAdmin = user?.role === 'admin';
+  const isAssignedRep = user?.id === client.assignedTo;
+  const isManagerOfRep = user?.role === 'sales_manager' && assignedUser && user.teamId === assignedUser.teamId;
+  if (!isAdmin && !isAssignedRep && !isManagerOfRep) {
+    return <UnauthorizedPage message="لا يمكنك عرض تفاصيل هذا العميل." />;
+  }
 
   // Get client's deals
   const clientDeals = mockDeals.filter(deal => deal.clientId === client.id);
@@ -32,9 +41,6 @@ export const ClientDetails: React.FC = () => {
   const clientTasks = mockTasks.filter(task => task.clientId === client.id);
   
   // Get assigned user's team
-  const assignedUserTeam = assignedUser ? mockTeams.find(team => team.id === assignedUser.teamId) : null;
-  
-  // Get all teams that might be related to this client (through deals, tasks, etc.)
   const relatedTeams = mockTeams.filter(team => {
     const teamMembers = mockUsers.filter(u => u.teamId === team.id);
     return teamMembers.some(member => member.id === client.assignedTo);
