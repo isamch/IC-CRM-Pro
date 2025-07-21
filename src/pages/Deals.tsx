@@ -52,7 +52,7 @@ const DealForm: React.FC<{
     const client = mockClients.find(c => c.id === formData.clientId);
     
     // For sales representatives, auto-assign to themselves
-    const finalAssignedTo = user?.role === 'sales_representative' ? user.id : formData.assignedTo;
+    const finalAssignedTo = (user?.role === 'sales_representative' || (user?.role === 'admin' && !formData.assignedTo)) ? user.id : formData.assignedTo;
     
     onSave({
       ...formData,
@@ -328,7 +328,7 @@ export const Deals: React.FC = () => {
         </Button>
         )}
         {/* Managers and admins can see info about deal creation restrictions */}
-        {(user?.role === 'admin' || user?.role === 'sales_manager') && (
+        {user?.role === 'sales_manager' && (
           <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
             <p>المدراء لا يمكنهم إنشاء صفقات</p>
             <p className="text-xs">يمكنهم فقط تعيين الصفقات للمندوبين</p>
@@ -574,12 +574,12 @@ export const Deals: React.FC = () => {
                 {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 
                   user?.role === 'sales_representative' ? 'ابدأ بإضافة أول صفقة' : 'لا توجد صفقات متاحة'}
             </p>
-              {statusFilter === 'all' && !searchTerm && user?.role === 'sales_representative' && (
+              {(statusFilter === 'all' && !searchTerm && (user?.role === 'sales_representative' || user?.role === 'admin')) && (
               <Button icon={Plus} onClick={handleAddDeal}>
                   إضافة صفقة
               </Button>
             )}
-              {statusFilter === 'all' && !searchTerm && (user?.role === 'admin' || user?.role === 'sales_manager') && (
+              {statusFilter === 'all' && !searchTerm && user?.role === 'sales_manager' && (
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   <p>المدراء لا يمكنهم إنشاء صفقات</p>
                   <p className="text-xs">يمكنهم فقط تعيين الصفقات للمندوبين</p>

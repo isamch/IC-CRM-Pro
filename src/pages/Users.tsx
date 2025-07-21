@@ -5,9 +5,105 @@ import { mockUsers, mockTeams } from '../data/mockData';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { CanView } from '../components/auth/PermissionGuard';
-import { User as UserType } from '../types';
+import { User as UserType, UserRole } from '../types';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { Link } from 'react-router-dom';
+import { getPermissionsForRole } from '../utils/permissions';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { CanCreate } from '../components/auth/PermissionGuard';
+import { useEffect } from 'react';
+
+const UserForm: React.FC<{
+  onSave: (user: Partial<UserType>) => void;
+  onCancel: () => void;
+}> = ({ onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    department: 'Sales',
+    role: 'sales_representative',
+    password: '',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newUser: Partial<UserType> = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      department: formData.department,
+      role: formData.role as UserRole,
+      teamId: undefined,
+      // In a real app, password would be hashed.
+      // For mock data, we are not implementing authentication logic with the password.
+      joinDate: new Date().toISOString().split('T')[0],
+      isActive: true,
+      permissions: getPermissionsForRole(formData.role as UserRole),
+      managerId: undefined,
+      region: undefined,
+      preferences: {
+        theme: 'light',
+        notifications: { email: true, push: true, desktop: true },
+        language: 'ar',
+        timezone: 'Asia/Riyadh'
+      }
+    };
+    onSave(newUser);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Input
+        label="Full Name"
+        value={formData.name}
+        onChange={value => setFormData({ ...formData, name: value })}
+        required
+      />
+      <Input
+        label="Email"
+        type="email"
+        value={formData.email}
+        onChange={value => setFormData({ ...formData, email: value })}
+        required
+      />
+      <Input
+        label="Password"
+        type="password"
+        value={formData.password}
+        onChange={value => setFormData({ ...formData, password: value })}
+        required
+      />
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="Phone"
+          value={formData.phone}
+          onChange={value => setFormData({ ...formData, phone: value })}
+        />
+        <Input
+          label="Department"
+          value={formData.department}
+          onChange={value => setFormData({ ...formData, department: value })}
+        />
+        <Select
+          label="Role"
+          value={formData.role}
+          onChange={value => setFormData({ ...formData, role: value })}
+          options={[
+            { value: 'sales_representative', label: 'Sales Representative' },
+            { value: 'sales_manager', label: 'Sales Manager' },
+          ]}
+        />
+      </div>
+      <div className="flex justify-end space-x-2 pt-4">
+        <Button variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button type="submit">Create User</Button>
+      </div>
+    </form>
+  );
+};
 
 export const Users: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -17,6 +113,7 @@ export const Users: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
   const [isRemoveFromTeamModalOpen, setIsRemoveFromTeamModalOpen] = useState(false);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     message: '',
@@ -39,6 +136,23 @@ export const Users: React.FC = () => {
   const checkPassword = (input: string) => {
     // For demo, accept 'demo123' as the password
     return input === 'demo123';
+  };
+
+  const handleSaveUser = (userData: Partial<UserType>) => {
+    const newUser = {
+      id: Date.now().toString(),
+      ...userData,
+    } as UserType;
+
+    setLocalUsers(prev => [...prev, newUser]);
+
+    if (newUser.role === 'sales_manager' && newUser.teamId) {
+      setLocalTeams(prev => prev.map(team => 
+        team.id === newUser.teamId ? { ...team, managerId: newUser.id } : team
+      ));
+    }
+
+    setIsAddUserModalOpen(false);
   };
 
   // تصفية المستخدمين حسب دور المستخدم الحالي
@@ -205,12 +319,12 @@ export const Users: React.FC = () => {
           />
         </div>
         
-        <CanView permission="users">
-          <Button className="flex items-center gap-2">
+        <CanCreate permission="users">
+          <Button className="flex items-center gap-2" onClick={() => setIsAddUserModalOpen(true)}>
             <Plus className="w-4 h-4" />
             Add User
           </Button>
-        </CanView>
+        </CanCreate>
       </div>
 
       {/* Users Table */}
@@ -576,6 +690,16 @@ export const Users: React.FC = () => {
         requirePassword={passwordDialog.requirePassword}
         errorMessage={passwordDialog.errorMessage}
       />
+      <Modal
+        isOpen={isAddUserModalOpen}
+        onClose={() => setIsAddUserModalOpen(false)}
+        title="Create New User"
+      >
+        <UserForm 
+          onSave={handleSaveUser}
+          onCancel={() => setIsAddUserModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }; 

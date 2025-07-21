@@ -70,7 +70,7 @@ const TaskForm: React.FC<{
     e.preventDefault();
     
     // For sales representatives, auto-assign to themselves
-    const finalAssignee = user?.role === 'sales_representative' ? user.id : formData.assignee;
+    const finalAssignee = (user?.role === 'sales_representative' || (user?.role === 'admin' && !formData.assignee)) ? user.id : formData.assignee;
     
     onSave({
       ...formData,
@@ -335,7 +335,7 @@ export const Tasks: React.FC = () => {
         </Button>
         )}
         {/* Managers and admins can see info about task creation restrictions */}
-        {(user?.role === 'admin' || user?.role === 'sales_manager') && (
+        {user?.role === 'sales_manager' && (
           <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
             <p>المدراء لا يمكنهم إنشاء مهام</p>
             <p className="text-xs">يمكنهم فقط تعيين المهام للمندوبين</p>
@@ -528,12 +528,12 @@ export const Tasks: React.FC = () => {
               : 'لا توجد مهام متاحة'
             }
           </p>
-          {statusFilter === 'all' && priorityFilter === 'all' && teamFilter === 'all' && user?.role === 'sales_representative' && (
+          {(statusFilter === 'all' && priorityFilter === 'all' && teamFilter === 'all' && (user?.role === 'sales_representative' || user?.role === 'admin')) && (
             <Button icon={Plus} onClick={handleAddTask}>
               إضافة مهمة
             </Button>
           )}
-          {statusFilter === 'all' && priorityFilter === 'all' && teamFilter === 'all' && (user?.role === 'admin' || user?.role === 'sales_manager') && (
+          {statusFilter === 'all' && priorityFilter === 'all' && teamFilter === 'all' && user?.role === 'sales_manager' && (
             <div className="text-sm text-gray-600 dark:text-gray-400">
               <p>المدراء لا يمكنهم إنشاء مهام</p>
               <p className="text-xs">يمكنهم فقط تعيين المهام للمندوبين</p>

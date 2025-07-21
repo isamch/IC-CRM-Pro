@@ -11,6 +11,12 @@ interface TopNavbarProps {
 
 const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith('/teams/')) return 'Team Details';
+  if (pathname.startsWith('/clients/')) return 'Client Details';
+  if (pathname.startsWith('/deals/')) return 'Deal Details';
+  if (pathname.startsWith('/tasks/')) return 'Task Details';
+  if (pathname.startsWith('/sales-reps/')) return 'Sales Rep Details';
+  if (pathname.startsWith('/sales-managers/')) return 'Sales Manager Details';
+
   const titles: { [key: string]: string } = {
     '/dashboard': 'Dashboard',
     '/users': 'Users',
