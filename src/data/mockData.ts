@@ -580,49 +580,179 @@ export const mockDeals: Deal[] = [
 export const mockTasks: Task[] = [
   {
     id: '1',
-    title: 'Follow up with TechCorp on proposal',
-    description: 'Schedule a call to discuss the enterprise license proposal',
+    title: 'متابعة عرض السعر مع شركة التقنية المتقدمة',
+    description: 'جدولة مكالمة لمناقشة عرض الترخيص المؤسسي والتفاصيل التقنية',
     dueDate: '2024-01-25',
     status: 'pending',
     priority: 'high',
     clientId: '1',
     dealId: '1',
-    assignee: '1',
-    createdBy: '1'
+    assignee: '6', // سارة أحمد - فريق الرياض
+    createdBy: '6'
   },
   {
     id: '2',
-    title: 'Prepare contract for InnovateTech',
-    description: 'Draft the final contract for the cloud migration project',
+    title: 'إعداد العقد النهائي لشركة الابتكار التقني',
+    description: 'صياغة العقد النهائي لمشروع الهجرة السحابية مع جميع الشروط والضمانات',
     dueDate: '2024-01-22',
     status: 'done',
     priority: 'medium',
     clientId: '2',
     dealId: '2',
-    assignee: '2',
-    createdBy: '2'
+    assignee: '7', // أحمد محمد - فريق الرياض
+    createdBy: '7'
   },
   {
     id: '3',
-    title: 'Research DataStream requirements',
-    description: 'Analyze technical requirements for the analytics platform',
+    title: 'تحليل متطلبات شركة تدفق البيانات',
+    description: 'دراسة وتحليل المتطلبات التقنية لمنصة التحليلات والذكاء الاصطناعي',
     dueDate: '2024-01-30',
     status: 'pending',
     priority: 'medium',
     clientId: '3',
     dealId: '3',
-    assignee: '1',
-    createdBy: '1'
+    assignee: '6', // سارة أحمد - فريق الرياض
+    createdBy: '6'
   },
   {
     id: '4',
-    title: 'Monthly client check-in calls',
-    description: 'Schedule and conduct monthly check-in calls with all active clients',
+    title: 'مكالمات المتابعة الشهرية مع العملاء النشطين',
+    description: 'جدولة وإجراء مكالمات المتابعة الشهرية مع جميع العملاء النشطين لتقييم رضاهم',
     dueDate: '2024-01-28',
     status: 'pending',
     priority: 'low',
-    assignee: '2',
-    createdBy: '2'
+    assignee: '7', // أحمد محمد - فريق الرياض
+    createdBy: '7'
+  },
+  {
+    id: '5',
+    title: 'إعداد عرض تجاري لشركة الحلول الذكية',
+    description: 'تحضير عرض تجاري شامل لمشروع نظام إدارة المخزون مع التحليلات المتقدمة',
+    dueDate: '2024-02-05',
+    status: 'pending',
+    priority: 'high',
+    clientId: '4',
+    dealId: '4',
+    assignee: '8', // فاطمة علي - فريق جدة
+    createdBy: '8'
+  },
+  {
+    id: '6',
+    title: 'اجتماع مع فريق شركة النظم المتكاملة',
+    description: 'اجتماع تقني مع فريق العميل لمناقشة تفاصيل مشروع البوابات الإلكترونية',
+    dueDate: '2024-02-08',
+    status: 'pending',
+    priority: 'medium',
+    clientId: '5',
+    dealId: '5',
+    assignee: '9', // عمر خالد - فريق جدة
+    createdBy: '9'
+  },
+  {
+    id: '7',
+    title: 'مراجعة العقد مع شركة التقنية الخضراء',
+    description: 'مراجعة شاملة للعقد مع فريق القانون قبل التوقيع النهائي',
+    dueDate: '2024-02-12',
+    status: 'done',
+    priority: 'high',
+    clientId: '6',
+    dealId: '6',
+    assignee: '8', // فاطمة علي - فريق جدة
+    createdBy: '8'
+  },
+  {
+    id: '8',
+    title: 'إعداد خطة التنفيذ لشركة البيانات الآمنة',
+    description: 'وضع خطة تنفيذ مفصلة لمشروع نظام الأمان السيبراني مع الجدول الزمني',
+    dueDate: '2024-02-15',
+    status: 'pending',
+    priority: 'medium',
+    clientId: '7',
+    dealId: '7',
+    assignee: '9', // عمر خالد - فريق جدة
+    createdBy: '9'
+  },
+  {
+    id: '9',
+    title: 'متابعة دفع شركة الحلول السحابية',
+    description: 'متابعة عملية الدفع مع قسم المحاسبة وتأكيد استلام المبلغ',
+    dueDate: '2024-02-18',
+    status: 'pending',
+    priority: 'low',
+    clientId: '8',
+    dealId: '8',
+    assignee: '10', // يوسف أحمد - فريق الدمام
+    createdBy: '10'
+  },
+  {
+    id: '10',
+    title: 'إعداد تقرير الأداء الشهري',
+    description: 'إعداد تقرير شامل عن أداء المبيعات والإنجازات المحققة خلال الشهر',
+    dueDate: '2024-02-20',
+    status: 'pending',
+    priority: 'medium',
+    assignee: '6', // سارة أحمد - فريق الرياض
+    createdBy: '6'
+  },
+  {
+    id: '11',
+    title: 'اجتماع مع شركة التقنية المستقبلية',
+    description: 'اجتماع تمهيدي لمناقشة مشروع الذكاء الاصطناعي والروبوتات',
+    dueDate: '2024-02-25',
+    status: 'pending',
+    priority: 'high',
+    clientId: '9',
+    dealId: '9',
+    assignee: '11', // فهد سعد - فريق الدمام
+    createdBy: '11'
+  },
+  {
+    id: '12',
+    title: 'إعداد عرض تجاري لشركة الحلول المتقدمة',
+    description: 'تحضير عرض تجاري لمشروع نظام إدارة الموارد البشرية المتكامل',
+    dueDate: '2024-03-01',
+    status: 'pending',
+    priority: 'medium',
+    clientId: '10',
+    dealId: '10',
+    assignee: '12', // لينا محمد - فريق الدمام
+    createdBy: '12'
+  },
+  {
+    id: '13',
+    title: 'متابعة تنفيذ مشروع شركة التقنية المتقدمة',
+    description: 'متابعة مراحل تنفيذ المشروع والتأكد من الالتزام بالجدول الزمني',
+    dueDate: '2024-03-05',
+    status: 'pending',
+    priority: 'high',
+    clientId: '1',
+    dealId: '1',
+    assignee: '6', // سارة أحمد - فريق الرياض
+    createdBy: '6'
+  },
+  {
+    id: '14',
+    title: 'إعداد خطة التدريب لشركة الابتكار التقني',
+    description: 'وضع خطة تدريب شاملة لفريق العميل على النظام الجديد',
+    dueDate: '2024-03-08',
+    status: 'pending',
+    priority: 'medium',
+    clientId: '2',
+    dealId: '2',
+    assignee: '7', // أحمد محمد - فريق الرياض
+    createdBy: '7'
+  },
+  {
+    id: '15',
+    title: 'مراجعة العقد مع شركة البيانات الآمنة',
+    description: 'مراجعة نهائية للعقد قبل التوقيع والتأكد من جميع الشروط',
+    dueDate: '2024-03-10',
+    status: 'pending',
+    priority: 'high',
+    clientId: '7',
+    dealId: '7',
+    assignee: '9', // عمر خالد - فريق جدة
+    createdBy: '9'
   }
 ];
 

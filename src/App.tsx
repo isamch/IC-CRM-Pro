@@ -8,6 +8,7 @@ import { Clients } from './pages/Clients';
 import { Deals } from './pages/Deals';
 import { DealDetails } from './pages/DealDetails';
 import { Tasks } from './pages/Tasks';
+import { TaskDetails } from './pages/TaskDetails';
 import { Users } from './pages/Users';
 import { Teams } from './pages/Teams';
 import { TeamDetails } from './pages/TeamDetails';
@@ -37,6 +38,7 @@ function App() {
                 <Route path="deals" element={<Deals />} />
                 <Route path="deals/:dealId" element={<DealDetails />} />
                 <Route path="tasks" element={<Tasks />} />
+                <Route path="tasks/:taskId" element={<TaskDetails />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="sales-reps/:repId" element={<SalesRepDetails />} />

@@ -185,7 +185,9 @@ export const TeamDetails: React.FC = () => {
       const foundTeam = localTeams.find(t => t.id === teamId);
       if (foundTeam) {
         // التحقق من الصلاحيات
-        if (user?.role === 'admin' || (user?.role === 'sales_manager' && foundTeam.managerId === user.id)) {
+        if (user?.role === 'admin' || 
+            (user?.role === 'sales_manager' && foundTeam.managerId === user.id) ||
+            (user?.role === 'sales_representative' && user.teamId === teamId)) {
           setTeam(foundTeam);
         } else {
           navigate('/teams');

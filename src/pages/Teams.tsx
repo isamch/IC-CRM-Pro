@@ -14,7 +14,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
-import { CanView, CanCreate, CanEdit, CanDelete } from '../components/auth/PermissionGuard';
+import { CanView } from '../components/auth/PermissionGuard';
 import { useAuth } from '../contexts/AuthContext';
 import { mockTeams, mockUsers } from '../data/mockData';
 import { Team } from '../types';
@@ -121,6 +121,10 @@ export const Teams: React.FC = () => {
     } else if (user?.role === 'sales_manager') {
       // مدير المبيعات يرى فرقه فقط
       setTeams(mockTeams.filter(team => team.managerId === user.id));
+    } else if (user?.role === 'sales_representative') {
+      // المندوب يرى فريقه فقط
+      const userTeam = mockTeams.find(team => team.id === user.teamId);
+      setTeams(userTeam ? [userTeam] : []);
     } else {
       setTeams([]);
     }
@@ -193,20 +197,22 @@ export const Teams: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              إدارة الفرق ({filteredTeams.length})
+              {user?.role === 'sales_representative' ? 'فريقي' : `إدارة الفرق (${filteredTeams.length})`}
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              {user?.role === 'sales_manager' 
-                ? 'إدارة فرقك وإنشاء فرق جديدة' 
-                : 'إدارة جميع الفرق في النظام'
+              {user?.role === 'admin' 
+                ? 'إدارة جميع الفرق في النظام'
+                : user?.role === 'sales_manager'
+                ? 'إدارة فرقك وإنشاء فرق جديدة'
+                : 'معلومات فريقي وأعضائه'
               }
             </p>
           </div>
-          <CanCreate permission="teams">
+          {(user?.role === 'admin' || user?.role === 'sales_manager') && (
             <Button icon={Plus} onClick={handleAddTeam}>
               إنشاء فريق
             </Button>
-          </CanCreate>
+          )}
         </div>
 
         {/* Filters */}
@@ -288,15 +294,15 @@ export const Teams: React.FC = () => {
                     icon={Eye}
                     onClick={() => handleViewDetails(team)}
                   />
-                  <CanEdit permission="teams">
+                  {(user?.role === 'admin' || user?.role === 'sales_manager') && (
                     <Button 
                       variant="ghost" 
                       size="sm"
                       icon={Edit}
                       onClick={() => handleEditTeam(team)}
                     />
-                  </CanEdit>
-                  <CanDelete permission="teams">
+                  )}
+                  {(user?.role === 'admin' || user?.role === 'sales_manager') && (
                     <Button 
                       variant="ghost" 
                       size="sm"
@@ -304,7 +310,7 @@ export const Teams: React.FC = () => {
                       onClick={() => handleDeleteTeam(team.id)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                     />
-                  </CanDelete>
+                  )}
                 </div>
               </div>
               <div className="mt-2 space-y-1">
@@ -364,17 +370,18 @@ export const Teams: React.FC = () => {
           <Card className="text-center py-12">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              لم يتم العثور على فرق
+              {user?.role === 'sales_representative' ? 'لا يوجد فريق مسند لك' : 'لم يتم العثور على فرق'}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {searchTerm ? 'جرب تغيير معايير البحث' : 'ابدأ بإنشاء أول فريق'}
+              {user?.role === 'sales_representative' 
+                ? 'يرجى التواصل مع مديرك لتعيينك لفريق'
+                : searchTerm ? 'جرب تغيير معايير البحث' : 'ابدأ بإنشاء أول فريق'
+              }
             </p>
-            {!searchTerm && (
-              <CanCreate permission="teams">
-                <Button icon={Plus} onClick={handleAddTeam}>
-                  إنشاء فريق
-                </Button>
-              </CanCreate>
+            {!searchTerm && (user?.role === 'admin' || user?.role === 'sales_manager') && (
+              <Button icon={Plus} onClick={handleAddTeam}>
+                إنشاء فريق
+              </Button>
             )}
           </Card>
         )}
