@@ -141,6 +141,7 @@ export interface User {
     language: string;
     timezone: string;
   };
+  previousTeams?: string[]; // معرفات الفرق التي أدارها سابقاً (لمدراء المبيعات فقط)
 }
 
 export interface AuthState {

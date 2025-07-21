@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   Users, 
   MapPin, 
@@ -490,7 +490,11 @@ export const TeamDetails: React.FC = () => {
                       <Users className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h5 className="text-sm font-medium text-gray-900 dark:text-white">{member.name}</h5>
+                      <h5 className="text-sm font-medium">
+                        <Link to={`/sales-reps/${member.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                          {member.name}
+                        </Link>
+                      </h5>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{member.email}</p>
                       <p className="text-xs text-gray-400 dark:text-gray-500">
                         {memberClients} عميل • {memberDeals} عقد • {memberTasks} مهمة
@@ -629,9 +633,23 @@ export const TeamDetails: React.FC = () => {
             onSubmit={e => {
               e.preventDefault();
               // تحديث مدير الفريق
+              const oldManagerId = team.managerId;
               const updatedTeam = { ...team, managerId: selectedManagerId };
               setLocalTeams(prev => prev.map(t => t.id === team.id ? updatedTeam : t));
               setTeam(updatedTeam);
+              // إذا كان هناك مدير قديم مختلف عن الجديد
+              if (oldManagerId && oldManagerId !== selectedManagerId) {
+                setLocalUsers(prevUsers => prevUsers.map(u => {
+                  if (u.id === oldManagerId && u.role === 'sales_manager') {
+                    // أضف الفريق إلى سجل الفرق السابقة إذا لم يكن موجوداً
+                    const previousTeams = Array.isArray(u.previousTeams) ? u.previousTeams : [];
+                    if (!previousTeams.includes(team.id)) {
+                      return { ...u, previousTeams: [...previousTeams, team.id] };
+                    }
+                  }
+                  return u;
+                }));
+              }
               setShowManagerModal(false);
               setSuccessMessage('تم تغيير مدير الفريق بنجاح');
               setTimeout(() => setSuccessMessage(''), 2500);

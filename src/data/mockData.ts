@@ -444,6 +444,21 @@ mockUsers.push({
   }
 });
 
+// تحديث بيانات مدراء المبيعات لإضافة سجل الفرق السابقة
+mockUsers.forEach(user => {
+  if (user.role === 'sales_manager') {
+    // إضافة خاصية previousTeams إذا لم تكن موجودة
+    if (!('previousTeams' in user)) {
+      // مثال: فاطمة علي كانت تدير فريق 3 سابقاً
+      if (user.id === '2') {
+        user.previousTeams = ['3'];
+      } else {
+        user.previousTeams = [];
+      }
+    }
+  }
+});
+
 // بيانات العملاء (موزعة على الفرق والمندوبين وبعضهم غير مخصص)
 export const mockClients: Client[] = [
   // ... (أضف هنا 15 عميل متنوع، بعضهم مخصص لمدير، بعضهم لمندوب، وبعضهم غير مخصص)
