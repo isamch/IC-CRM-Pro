@@ -44,17 +44,22 @@ const DealForm: React.FC<{
     date: deal?.date || '',
     clientId: deal?.clientId || '',
     probability: deal?.probability?.toString() || '50',
-    assignedTo: deal?.assignedTo || user?.id || ''
+    assignedTo: deal?.assignedTo || (user?.role === 'sales_representative' ? user.id : '')
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const client = mockClients.find(c => c.id === formData.clientId);
+    
+    // For sales representatives, auto-assign to themselves
+    const finalAssignedTo = user?.role === 'sales_representative' ? user.id : formData.assignedTo;
+    
     onSave({
       ...formData,
       amount: parseFloat(formData.amount),
       probability: parseInt(formData.probability),
-      clientName: client?.name || ''
+      clientName: client?.name || '',
+      assignedTo: finalAssignedTo
     });
   };
 
@@ -63,6 +68,15 @@ const DealForm: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Role-based information */}
+      {user?.role === 'sales_representative' && (
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            <strong>ملاحظة:</strong> ستتم إضافة هذه الصفقة تلقائياً إلى قائمة صفقاتك
+          </p>
+        </div>
+      )}
+
       <Input
         label="عنوان الصفقة"
         value={formData.title}
@@ -122,17 +136,20 @@ const DealForm: React.FC<{
         required
       />
 
-      <Select
-        label="المندوب المسؤول"
-        value={formData.assignedTo}
-        onChange={(value) => setFormData({ ...formData, assignedTo: value })}
-        options={availableUsers.map(user => ({
-          value: user.id,
-          label: user.name
-        }))}
-        placeholder="اختر المندوب"
-        required
-      />
+      {/* Only show assignment field for managers and admins */}
+      {(user?.role === 'admin' || user?.role === 'sales_manager') && (
+        <Select
+          label="المندوب المسؤول"
+          value={formData.assignedTo}
+          onChange={(value) => setFormData({ ...formData, assignedTo: value })}
+          options={availableUsers.map(user => ({
+            value: user.id,
+            label: user.name
+          }))}
+          placeholder="اختر المندوب"
+          required
+        />
+      )}
       
       <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline" onClick={onCancel}>
@@ -300,9 +317,19 @@ export const Deals: React.FC = () => {
             <span>الصفقات المكتملة: {formatCurrency(wonValue)}</span>
           </div>
         </div>
-        <Button icon={Plus} onClick={handleAddDeal}>
-          إضافة صفقة
-        </Button>
+        {/* Only sales representatives can create deals */}
+        {user?.role === 'sales_representative' && (
+          <Button icon={Plus} onClick={handleAddDeal}>
+            إضافة صفقة
+          </Button>
+        )}
+        {/* Managers and admins can see info about deal creation restrictions */}
+        {(user?.role === 'admin' || user?.role === 'sales_manager') && (
+          <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
+            <p>المدراء لا يمكنهم إنشاء صفقات</p>
+            <p className="text-xs">يمكنهم فقط تعيين الصفقات للمندوبين</p>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -431,7 +458,7 @@ export const Deals: React.FC = () => {
             </div>
 
             {/* Team Deals Table */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto table-scrollbar">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -537,12 +564,19 @@ export const Deals: React.FC = () => {
                 لم يتم العثور على صفقات
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
-                {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 'ابدأ بإضافة أول صفقة'}
+                {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 
+                  user?.role === 'sales_representative' ? 'ابدأ بإضافة أول صفقة' : 'لا توجد صفقات متاحة'}
               </p>
-              {statusFilter === 'all' && !searchTerm && (
+              {statusFilter === 'all' && !searchTerm && user?.role === 'sales_representative' && (
                 <Button icon={Plus} onClick={handleAddDeal}>
                   إضافة صفقة
                 </Button>
+              )}
+              {statusFilter === 'all' && !searchTerm && (user?.role === 'admin' || user?.role === 'sales_manager') && (
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <p>المدراء لا يمكنهم إنشاء صفقات</p>
+                  <p className="text-xs">يمكنهم فقط تعيين الصفقات للمندوبين</p>
+                </div>
               )}
             </div>
           </Card>
