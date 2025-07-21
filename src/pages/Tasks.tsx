@@ -306,8 +306,14 @@ export const Tasks: React.FC = () => {
     // Team filter logic
     let teamMatch = true;
     if (teamFilter !== 'all') {
-      const assignee = mockUsers.find(u => u.id === task.assignee);
-      teamMatch = assignee?.teamId === teamFilter;
+      if (teamFilter === 'no-team') {
+        // المهام التي ليس لها teamId أو assignee ليس له teamId
+        const assignee = mockUsers.find(u => u.id === task.assignee);
+        teamMatch = !task.teamId && (!assignee || !assignee.teamId);
+      } else {
+        const assignee = mockUsers.find(u => u.id === task.assignee);
+        teamMatch = (task.teamId === teamFilter) || (assignee?.teamId === teamFilter);
+      }
     }
     
     return statusMatch && priorityMatch && teamMatch;
@@ -336,11 +342,26 @@ export const Tasks: React.FC = () => {
     return groups;
   }, {} as Record<string, Task[]>);
 
-  // Get available teams for filter
-  const availableTeams = user?.role === 'admin' 
-    ? mockTeams 
-    : user?.role === 'sales_manager' 
-    ? mockTeams.filter(t => t.id === user.teamId)
+  // استخراج جميع teamId من جميع المهام في النظام
+  const allTeamIdsWithTasks = Array.from(new Set(mockTasks.map(task => {
+    if (task.teamId) return task.teamId;
+    const assignee = mockUsers.find(u => u.id === task.assignee);
+    return assignee?.teamId || 'no-team';
+  })));
+
+  // بناء قائمة الفرق التي لديها مهام
+  const allTeamsWithTasks = mockTeams.filter(team => allTeamIdsWithTasks.includes(team.id));
+
+  // إضافة خيار الإدارة / بدون فريق
+  const teamOptions = [
+    { value: 'no-team', label: 'الإدارة / بدون فريق' },
+    ...allTeamsWithTasks.map(team => ({ value: team.id, label: team.name }))
+  ];
+
+  const availableTeams = user?.role === 'admin'
+    ? allTeamsWithTasks
+    : user?.role === 'sales_manager'
+    ? allTeamsWithTasks.filter(t => t.id === user.teamId)
     : [];
 
   const handleAddTask = () => {
@@ -453,6 +474,7 @@ export const Tasks: React.FC = () => {
               onChange={setTeamFilter}
               options={[
                 { value: 'all', label: 'جميع الفرق' },
+                { value: 'no-team', label: 'الإدارة / بدون فريق' },
                 ...availableTeams.map(team => ({
                   value: team.id,
                   label: team.name

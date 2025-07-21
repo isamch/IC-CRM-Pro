@@ -267,10 +267,17 @@ export const Deals: React.FC = () => {
     const matchesStatus = statusFilter === 'all' || deal.status === statusFilter;
     const matchesClient = !clientFilter || deal.clientId === clientFilter;
     const matchesAssigned = !assignedFilter || deal.assignedTo === assignedFilter;
-    const matchesTeam = !teamFilter || (() => {
-      const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
-      return assignedUser?.teamId === teamFilter;
-    })();
+    // Team filter logic
+    let matchesTeam = true;
+    if (teamFilter) {
+      if (teamFilter === 'no-team') {
+        const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+        matchesTeam = !deal.teamId && (!assignedUser || !assignedUser.teamId);
+      } else {
+        const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+        matchesTeam = (deal.teamId === teamFilter) || (assignedUser?.teamId === teamFilter);
+      }
+    }
     const matchesSearch = !searchTerm || 
       deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.clientName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -335,6 +342,35 @@ export const Deals: React.FC = () => {
   };
 
   const teamsWithDeals = groupDealsByTeams();
+
+  // استخراج جميع teamId من الصفقات الظاهرة
+  const teamIdsWithDeals = Array.from(new Set(filteredDeals.map(deal => {
+    if (deal.teamId) return deal.teamId;
+    const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+    return assignedUser?.teamId || null;
+  }).filter(Boolean)));
+
+  // استخراج جميع teamId من جميع الصفقات في النظام
+  const allTeamIdsWithDeals = Array.from(new Set(mockDeals.map(deal => {
+    if (deal.teamId) return deal.teamId;
+    const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+    return assignedUser?.teamId || 'no-team';
+  })));
+
+  // بناء قائمة الفرق التي لديها صفقات
+  const allTeamsWithDeals = mockTeams.filter(team => allTeamIdsWithDeals.includes(team.id));
+
+  // إضافة خيار الإدارة / بدون فريق
+  const teamOptions = [
+    { value: 'no-team', label: 'الإدارة / بدون فريق' },
+    ...allTeamsWithDeals.map(team => ({ value: team.id, label: team.name }))
+  ];
+
+  const availableTeams = user?.role === 'admin'
+    ? allTeamsWithDeals
+    : user?.role === 'sales_manager'
+    ? allTeamsWithDeals.filter(t => t.id === user.teamId)
+    : [];
 
   const handleAddDeal = () => {
     setEditingDeal(undefined);
@@ -436,12 +472,11 @@ export const Deals: React.FC = () => {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
-            <input
-              type="text"
-              placeholder="البحث في الصفقات..."
+            <Input
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              onChange={setSearchTerm}
+              placeholder="البحث في الصفقات..."
+              className="pl-10"
             />
           </div>
           <div className="flex flex-col">
@@ -510,7 +545,8 @@ export const Deals: React.FC = () => {
               onChange={setTeamFilter}
               options={[
                 { value: '', label: 'كل الفرق' },
-                ...mockTeams.map(team => ({
+                { value: 'no-team', label: 'الإدارة / بدون فريق' },
+                ...availableTeams.map(team => ({
                   value: team.id,
                   label: team.name
                 }))
