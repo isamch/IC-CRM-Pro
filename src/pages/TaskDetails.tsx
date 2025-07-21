@@ -8,7 +8,7 @@ import { mockTasks, mockClients, mockUsers, mockDeals } from '../data/mockData';
 import { 
   Edit2, ArrowLeft, Calendar, User, Clock, 
   AlertTriangle, FileText, Target, Building, DollarSign,
-  CheckCircle, AlertCircle
+  CheckCircle, AlertCircle, Users2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Task } from '../types';
@@ -17,32 +17,33 @@ import { mockTeams } from '../data/mockData';
 export const TaskDetails: React.FC = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const task = mockTasks.find(t => t.id === taskId);
-  const [editModal, setEditModal] = useState(false);
+  const assignee = task ? mockUsers.find(u => u.id === task.assignee) : undefined;
+  const team = task ? mockTeams.find(t => t.id === task.teamId) : undefined;
+  const deal = task?.dealId ? mockDeals.find(d => d.id === task.dealId) : undefined;
+  const client = task?.clientId ? mockClients.find(c => c.id === task.clientId) : undefined;
+  
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   if (!task) {
     return <div className="p-8 text-center text-red-500">المهمة غير موجودة</div>;
   }
 
-  const deal = mockDeals.find(d => d.id === task.dealId);
-  const isDealOwner = deal?.assignedTo === user?.id;
+  const isDealOwner = deal?.assignedTo === currentUser?.id;
 
   // Check permissions - only show task if user has access
-  const hasAccess = user?.role === 'admin' || 
+  const hasAccess = currentUser?.role === 'admin' || 
                    isDealOwner ||
-                   (user?.role === 'sales_manager' && (() => {
+                   (currentUser?.role === 'sales_manager' && (() => {
                      const assignee = mockUsers.find(u => u.id === task.assignee);
-                     return assignee?.teamId === user.teamId;
+                     return assignee?.teamId === currentUser.teamId;
                    })()) ||
-                   (user?.role === 'sales_representative' && task.assignee === user.id);
+                   (currentUser?.role === 'sales_representative' && task.assignee === currentUser.id);
 
   if (!hasAccess) {
     return <div className="p-8 text-center text-red-500">ليس لديك صلاحية لعرض هذه المهمة</div>;
   }
-
-  const client = mockClients.find(c => c.id === task.clientId);
-  const assignee = mockUsers.find(u => u.id === task.assignee);
 
   const getPriorityBadge = (priority: Task['priority']) => {
     const colors = {
@@ -114,7 +115,7 @@ export const TaskDetails: React.FC = () => {
   const handleSaveTask = (taskData: Partial<Task>) => {
     // Here you would update the task in your state/store/backend
     console.log('Saving task data:', taskData);
-    setEditModal(false);
+    setEditModalOpen(false);
   };
 
   return (
@@ -125,12 +126,12 @@ export const TaskDetails: React.FC = () => {
         </Button>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white ml-4">تفاصيل المهمة</h2>
         <div className="flex-1"></div>
-        {(user?.role === 'admin' || user?.role === 'sales_manager' || task.assignee === user?.id || isDealOwner) && (
+        {(currentUser?.role === 'admin' || currentUser?.role === 'sales_manager' || task.assignee === currentUser?.id || isDealOwner) && (
           <Button 
             variant="outline" 
             icon={Edit2} 
             size="sm" 
-            onClick={() => setEditModal(true)}
+            onClick={() => setEditModalOpen(true)}
           >
             تعديل المهمة
           </Button>
@@ -177,11 +178,17 @@ export const TaskDetails: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <User className="w-4 h-4 text-gray-400" />
+                <Users2 className="w-4 h-4 text-gray-400" />
                 <div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">المسؤول</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">الفريق</div>
                   <div className="text-base font-semibold text-gray-900 dark:text-white">
-                    {assignee ? assignee.name : 'غير محدد'}
+                    {team ? (
+                      <Link to={`/teams/${team.id}`} className="text-blue-600 hover:underline">
+                        {team.name}
+                      </Link>
+                    ) : (
+                      'غير محدد'
+                    )}
                   </div>
                 </div>
               </div>
@@ -341,8 +348,8 @@ export const TaskDetails: React.FC = () => {
 
       {/* Edit Modal */}
       <Modal
-        isOpen={editModal}
-        onClose={() => setEditModal(false)}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
         title="تعديل المهمة"
       >
         <div className="space-y-4">
@@ -411,7 +418,7 @@ export const TaskDetails: React.FC = () => {
           </div>
 
           {/* Assignment Information - Only for managers and admins */}
-          {(user?.role === 'admin' || user?.role === 'sales_manager') && (
+          {(currentUser?.role === 'admin' || currentUser?.role === 'sales_manager') && (
             <div className="space-y-3">
               <h4 className="text-sm font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                 تعيين المهمة
@@ -439,7 +446,7 @@ export const TaskDetails: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Button variant="outline" onClick={() => setEditModal(false)}>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
               إلغاء
             </Button>
             <Button onClick={() => handleSaveTask({})}>

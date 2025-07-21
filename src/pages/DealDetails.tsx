@@ -9,7 +9,7 @@ import { mockDealActivities, DealActivity } from '../data/mockData';
 import { 
   Edit2, ArrowLeft, DollarSign, Calendar, User, Building, 
   TrendingUp, Activity, Users, MapPin, Phone, Mail, 
-  CheckCircle, Clock, XCircle, FileText, Target
+  CheckCircle, Clock, XCircle, FileText, Target, Users2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Deal } from '../types';
@@ -19,14 +19,17 @@ export const DealDetails: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const deal = mockDeals.find(d => d.id === dealId);
-  const [editModal, setEditModal] = useState(false);
+  const client = deal ? mockClients.find(c => c.id === deal.clientId) : undefined;
+  const assignedUser = deal ? mockUsers.find(u => u.id === deal.assignedTo) : undefined;
+  const team = deal ? mockTeams.find(t => t.id === deal.teamId) : undefined;
+  const relatedTasks = deal ? mockTasks.filter(task => task.dealId === deal.id) : [];
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   if (!deal) {
     return <div className="p-8 text-center text-red-500">الصفقة غير موجودة</div>;
   }
 
-  const client = mockClients.find(c => c.id === deal.clientId);
-  const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
   const assignedUserTeam = assignedUser ? mockTeams.find(team => team.id === assignedUser.teamId) : null;
   const dealTasks = mockTasks.filter(task => task.dealId === deal.id);
 
@@ -129,7 +132,7 @@ export const DealDetails: React.FC = () => {
   const handleSaveDeal = (dealData: Partial<Deal>) => {
     // Here you would update the deal in your state/store/backend
     console.log('Saving deal data:', dealData);
-    setEditModal(false);
+    setEditModalOpen(false);
   };
 
   return (
@@ -145,7 +148,7 @@ export const DealDetails: React.FC = () => {
             variant="outline" 
             icon={Edit2} 
             size="sm" 
-            onClick={() => setEditModal(true)}
+            onClick={() => setEditModalOpen(true)}
           >
             تعديل الصفقة
           </Button>
@@ -190,6 +193,38 @@ export const DealDetails: React.FC = () => {
                       day: 'numeric' 
                     })}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <Users2 className="w-5 h-5 text-gray-500" />
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">الفريق</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {team ? (
+                    <Link to={`/teams/${team.id}`} className="text-blue-600 hover:underline">
+                      {team.name}
+                    </Link>
+                  ) : (
+                    'غير محدد'
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">المندوب المسؤول</div>
+                <div className="text-base font-semibold text-gray-900 dark:text-white">
+                  {assignedUser ? (
+                    <Link to={`/sales-reps/${assignedUser.id}`} className="text-blue-600 dark:text-blue-300 hover:underline">
+                      {assignedUser.name}
+                    </Link>
+                  ) : (
+                    'غير محدد'
+                  )}
                 </div>
               </div>
             </div>
@@ -411,8 +446,8 @@ export const DealDetails: React.FC = () => {
 
       {/* Edit Modal */}
       <Modal
-        isOpen={editModal}
-        onClose={() => setEditModal(false)}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
         title="تعديل الصفقة"
       >
         <div className="space-y-4">
@@ -535,7 +570,7 @@ export const DealDetails: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Button variant="outline" onClick={() => setEditModal(false)}>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
               إلغاء
             </Button>
             <Button onClick={() => handleSaveDeal({})}>

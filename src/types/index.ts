@@ -23,6 +23,7 @@ export interface Deal {
   clientName: string;
   probability?: number;
   assignedTo?: string; // من يملك هذا العقد
+  teamId?: string; // الفريق المسؤول عن الصفقة
 }
 
 export interface Task {
@@ -36,6 +37,7 @@ export interface Task {
   dealId?: string;
   assignee?: string;
   createdBy?: string; // من أنشأ هذه المهمة
+  teamId?: string; // الفريق المسؤول عن المهمة
 }
 
 export interface DashboardStats {

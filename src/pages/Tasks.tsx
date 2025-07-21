@@ -63,36 +63,80 @@ const TaskForm: React.FC<{
     priority: task?.priority || 'medium',
     clientId: task?.clientId || '',
     dealId: task?.dealId || '',
-    assignee: task?.assignee || (user?.role === 'sales_representative' ? user.id : '')
+    assignee: task?.assignee || (user?.role === 'sales_representative' ? user.id : ''),
+    teamId: task?.teamId || ''
   });
+
+  // Get available users for assignment
+  let availableUsers: typeof mockUsers = [];
+  if (user) {
+    if (user.role === 'admin') {
+      const representatives = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
+      availableUsers = [user, ...representatives];
+    } else if (user.role === 'sales_manager') {
+      const teamMembers = mockUsers.filter(u => u.role === 'sales_representative' && u.teamId === user.teamId && u.isActive);
+      availableUsers = [user, ...teamMembers];
+    }
+  }
+  
+  const userOptions = availableUsers.map(u => {
+    const team = mockTeams.find(t => t.id === u.teamId);
+    const label = u.id === user?.id 
+      ? `${u.name} (أنت)`
+      : `${u.name} (${team ? team.name : 'بدون فريق'})`;
+    return {
+      value: u.id,
+      label: label
+    };
+  });
+
+  // Get teams managed by the current user if they are a sales manager
+  const managedTeams = user?.role === 'sales_manager' 
+    ? mockTeams.filter(team => team.managerId === user.id) 
+    : [];
+
+  // Helper to determine if team selection should be shown
+  const shouldShowTeamSelect =
+    user?.role === 'sales_manager' &&
+    managedTeams.length > 1 &&
+    (
+      // Case 1: No assignee selected (implicit self-assignment)
+      !formData.assignee ||
+      // Case 2: Explicitly selected self
+      formData.assignee === user.id
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // For sales representatives, auto-assign to themselves
-    const finalAssignee = (user?.role === 'sales_representative' || (user?.role === 'admin' && !formData.assignee)) ? user.id : formData.assignee;
+    let { assignee, teamId } = { ...formData };
+
+    if (formData.assignee) {
+      // Case 1: An assignee was explicitly selected from the dropdown.
+      if (user?.role === 'sales_manager' && formData.assignee === user.id && managedTeams.length > 1) {
+        // Manager chose himself and has multiple teams: use selected teamId
+        // (teamId already set by the select)
+      } else {
+        // The task's team MUST be the selected user's team.
+        const selectedUserInfo = mockUsers.find(u => u.id === formData.assignee);
+        teamId = selectedUserInfo?.teamId || '';
+      }
+    } else {
+      // Case 2: No assignee was selected, so it defaults to the current user.
+      assignee = user?.id || '';
+      // If no team was selected manually (e.g., manager has only 1 team),
+      // set it to the current user's primary team.
+      if (!teamId) {
+        teamId = user?.teamId || '';
+      }
+    }
     
     onSave({
       ...formData,
-      assignee: finalAssignee
+      assignee,
+      teamId,
     });
   };
-
-  // Get available users for assignment
-  let availableUsers: typeof mockUsers = [];
-  if (user?.role === 'admin') {
-    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
-  } else if (user?.role === 'sales_manager') {
-    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.teamId === user.teamId && u.isActive);
-  }
-  
-  const userOptions = availableUsers.map(user => {
-    const team = mockTeams.find(t => t.id === user.teamId);
-    return {
-      value: user.id,
-      label: `${user.name} (${team ? team.name : 'بدون فريق'})`
-    };
-  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -165,12 +209,26 @@ const TaskForm: React.FC<{
           value={formData.assignee}
           onChange={(value) => setFormData({ ...formData, assignee: value })}
             options={userOptions}
-            placeholder="اختر المسؤول"
-            required
+            placeholder="اختر المسؤول (اختياري)"
           />
         )}
       </div>
       
+      {/* Team selection for managers assigning to themselves */}
+      {shouldShowTeamSelect && (
+        <Select
+          label="نسب إلى فريق"
+          value={formData.teamId}
+          onChange={(value) => setFormData({ ...formData, teamId: value })}
+          options={managedTeams.map(team => ({
+            value: team.id,
+            label: team.name
+          }))}
+          placeholder="اختر الفريق"
+          required
+        />
+      )}
+
       <Select
         label="العميل المرتبط"
         value={formData.clientId}
@@ -247,11 +305,21 @@ export const Tasks: React.FC = () => {
     return statusMatch && priorityMatch && teamMatch;
   });
 
-  // Group tasks by team
+  // Correctly handle tasks assigned to users without a team (like admin)
   const groupedTasks = filteredTasks.reduce((groups, task) => {
-    const assignee = mockUsers.find(u => u.id === task.assignee);
-    const team = mockTeams.find(t => t.id === assignee?.teamId);
-    const teamName = team?.name || 'غير محدد';
+    const team = mockTeams.find(t => t.id === task.teamId);
+    let teamName: string;
+
+    if (team) {
+      teamName = team.name;
+    } else if (!task.teamId && task.assignee) {
+      // Fallback for older tasks: find team via assignee
+      const assignee = mockUsers.find(u => u.id === task.assignee);
+      const assigneeTeam = mockTeams.find(t => t.id === assignee?.teamId);
+      teamName = assigneeTeam?.name || 'الإدارة / بدون فريق';
+    } else {
+      teamName = 'الإدارة / بدون فريق';
+    }
     
     if (!groups[teamName]) {
       groups[teamName] = [];
@@ -334,18 +402,11 @@ export const Tasks: React.FC = () => {
             }
           </p>
         </div>
-        {/* Only sales representatives can create tasks */}
-        {user?.role === 'sales_representative' && (
+        {/* Allow task creation for all roles that have permission */}
+        {(user?.role === 'sales_representative' || user?.role === 'sales_manager' || user?.role === 'admin') && (
         <Button icon={Plus} onClick={handleAddTask}>
             إضافة مهمة
         </Button>
-        )}
-        {/* Managers and admins can see info about task creation restrictions */}
-        {user?.role === 'sales_manager' && (
-          <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            <p>المدراء لا يمكنهم إنشاء مهام</p>
-            <p className="text-xs">يمكنهم فقط تعيين المهام للمندوبين</p>
-          </div>
         )}
       </div>
 

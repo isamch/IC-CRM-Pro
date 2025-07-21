@@ -44,40 +44,84 @@ const DealForm: React.FC<{
     date: deal?.date || '',
     clientId: deal?.clientId || '',
     probability: deal?.probability?.toString() || '50',
-    assignedTo: deal?.assignedTo || (user?.role === 'sales_representative' ? user.id : '')
+    assignedTo: deal?.assignedTo || (user?.role === 'sales_representative' ? user.id : ''),
+    teamId: deal?.teamId || ''
   });
+
+  // Get available users for assignment
+  let availableUsers: typeof mockUsers = [];
+  if (user) {
+    if (user.role === 'admin') {
+      const representatives = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
+      availableUsers = [user, ...representatives];
+    } else if (user.role === 'sales_manager') {
+      const teamMembers = mockUsers.filter(u => u.role === 'sales_representative' && u.teamId === user.teamId && u.isActive);
+      availableUsers = [user, ...teamMembers];
+    }
+  }
+
+  const userOptions = availableUsers.map(u => {
+    const team = mockTeams.find(t => t.id === u.teamId);
+    const label = u.id === user?.id 
+      ? `${u.name} (أنت)`
+      : `${u.name} (${team ? team.name : 'بدون فريق'})`;
+    return {
+      value: u.id,
+      label: label
+    };
+  });
+
+  // Get teams managed by the current user if they are a sales manager
+  const managedTeams = user?.role === 'sales_manager' 
+    ? mockTeams.filter(team => team.managerId === user.id) 
+    : [];
+
+  // Helper to determine if team selection should be shown
+  const shouldShowTeamSelect =
+    user?.role === 'sales_manager' &&
+    managedTeams.length > 1 &&
+    (
+      // Case 1: No assignee selected (implicit self-assignment)
+      !formData.assignedTo ||
+      // Case 2: Explicitly selected self
+      formData.assignedTo === user.id
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const client = mockClients.find(c => c.id === formData.clientId);
     
-    // For sales representatives, auto-assign to themselves
-    const finalAssignedTo = (user?.role === 'sales_representative' || (user?.role === 'admin' && !formData.assignedTo)) ? user.id : formData.assignedTo;
+    let { assignedTo, teamId } = { ...formData };
+
+    if (formData.assignedTo) {
+      // Case 1: An assignee was explicitly selected from the dropdown.
+      if (user?.role === 'sales_manager' && formData.assignedTo === user.id && managedTeams.length > 1) {
+        // Manager chose himself and has multiple teams: use selected teamId
+        // (teamId already set by the select)
+      } else {
+        // The deal's team MUST be the selected user's team.
+        const selectedUserInfo = mockUsers.find(u => u.id === formData.assignedTo);
+        teamId = selectedUserInfo?.teamId || '';
+      }
+    } else {
+      // Case 2: No assignee was selected, so it defaults to the current user.
+      assignedTo = user?.id || '';
+      // If no team was selected manually (e.g., manager has only 1 team),
+      // set it to the current user's primary team.
+      if (!teamId) {
+        teamId = user?.teamId || '';
+      }
+    }
     
     onSave({
       ...formData,
       amount: parseFloat(formData.amount),
       probability: parseInt(formData.probability),
       clientName: client?.name || '',
-      assignedTo: finalAssignedTo
+      assignedTo,
+      teamId,
     });
   };
-
-  // Get available users for assignment
-  let availableUsers: typeof mockUsers = [];
-  if (user?.role === 'admin') {
-    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
-  } else if (user?.role === 'sales_manager') {
-    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.teamId === user.teamId && u.isActive);
-  }
-
-  const userOptions = availableUsers.map(user => {
-    const team = mockTeams.find(t => t.id === user.teamId);
-    return {
-      value: user.id,
-      label: `${user.name} (${team ? team.name : 'بدون فريق'})`
-    };
-  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -156,11 +200,25 @@ const DealForm: React.FC<{
           value={formData.assignedTo}
           onChange={(value) => setFormData({ ...formData, assignedTo: value })}
           options={userOptions}
-          placeholder="اختر المندوب"
-          required
+          placeholder="اختر المندوب (اختياري)"
         />
       )}
       
+      {/* Team selection for managers assigning to themselves */}
+      {shouldShowTeamSelect && (
+        <Select
+          label="نسب إلى فريق"
+          value={formData.teamId}
+          onChange={(value) => setFormData({ ...formData, teamId: value })}
+          options={managedTeams.map(team => ({
+            value: team.id,
+            label: team.name
+          }))}
+          placeholder="اختر الفريق"
+          required
+        />
+      )}
+
       <div className="flex justify-end space-x-3 pt-4">
         <Button variant="outline" onClick={onCancel}>
           إلغاء
@@ -225,24 +283,50 @@ export const Deals: React.FC = () => {
     const teamsMap = new Map<string, { team: import('../types').Team; deals: Deal[]; totalValue: number; wonValue: number }>();
     
     filteredDeals.forEach(deal => {
-      const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
-      if (assignedUser?.teamId) {
-        const team = mockTeams.find(t => t.id === assignedUser.teamId);
-        if (team) {
-          if (!teamsMap.has(team.id)) {
-            teamsMap.set(team.id, {
-              team,
+      const team = mockTeams.find(t => t.id === deal.teamId);
+
+      if (team) {
+        if (!teamsMap.has(team.id)) {
+          teamsMap.set(team.id, { team, deals: [], totalValue: 0, wonValue: 0 });
+        }
+        const teamData = teamsMap.get(team.id)!;
+        teamData.deals.push(deal);
+        teamData.totalValue += deal.amount;
+        if (deal.status === 'won') teamData.wonValue += deal.amount;
+      } else {
+        // Fallback for deals without a direct teamId or for admin deals
+        const assignedUser = mockUsers.find(u => u.id === deal.assignedTo);
+        const fallbackTeam = mockTeams.find(t => t.id === assignedUser?.teamId);
+
+        if (fallbackTeam) {
+          if (!teamsMap.has(fallbackTeam.id)) {
+            teamsMap.set(fallbackTeam.id, { team: fallbackTeam, deals: [], totalValue: 0, wonValue: 0 });
+          }
+          const teamData = teamsMap.get(fallbackTeam.id)!;
+          teamData.deals.push(deal);
+          teamData.totalValue += deal.amount;
+          if (deal.status === 'won') teamData.wonValue += deal.amount;
+        } else {
+          // Deals assigned to users with no team (like admin)
+          const noTeamKey = 'no-team';
+          if (!teamsMap.has(noTeamKey)) {
+            teamsMap.set(noTeamKey, {
+              team: { 
+                id: noTeamKey, 
+                name: 'الإدارة / بدون فريق',
+                region: 'System',
+                isActive: true,
+                createdAt: new Date().toISOString()
+              },
               deals: [],
               totalValue: 0,
               wonValue: 0
             });
           }
-          const teamData = teamsMap.get(team.id)!;
-          teamData.deals.push(deal);
-          teamData.totalValue += deal.amount;
-          if (deal.status === 'won') {
-            teamData.wonValue += deal.amount;
-          }
+          const noTeamData = teamsMap.get(noTeamKey)!;
+          noTeamData.deals.push(deal);
+          noTeamData.totalValue += deal.amount;
+          if (deal.status === 'won') noTeamData.wonValue += deal.amount;
         }
       }
     });
@@ -327,18 +411,11 @@ export const Deals: React.FC = () => {
             <span>الصفقات المكتملة: {formatCurrency(wonValue)}</span>
           </div>
         </div>
-        {/* Only sales representatives can create deals */}
-        {user?.role === 'sales_representative' && (
+        {/* Allow deal creation for all roles that have permission */}
+        {(user?.role === 'sales_representative' || user?.role === 'sales_manager' || user?.role === 'admin') && (
         <Button icon={Plus} onClick={handleAddDeal}>
             إضافة صفقة
         </Button>
-        )}
-        {/* Managers and admins can see info about deal creation restrictions */}
-        {user?.role === 'sales_manager' && (
-          <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            <p>المدراء لا يمكنهم إنشاء صفقات</p>
-            <p className="text-xs">يمكنهم فقط تعيين الصفقات للمندوبين</p>
-          </div>
         )}
       </div>
 
