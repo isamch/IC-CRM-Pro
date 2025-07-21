@@ -272,7 +272,7 @@ export const Deals: React.FC = () => {
       isOpen: true,
       message: 'هل أنت متأكد من حذف هذه الصفقة؟ لا يمكن التراجع عن هذه العملية.',
       onConfirm: () => {
-        setDeals(deals.filter(d => d.id !== dealId));
+    setDeals(deals.filter(d => d.id !== dealId));
         setConfirmDialog(d => ({ ...d, isOpen: false }));
       }
     });
@@ -319,9 +319,9 @@ export const Deals: React.FC = () => {
         </div>
         {/* Only sales representatives can create deals */}
         {user?.role === 'sales_representative' && (
-          <Button icon={Plus} onClick={handleAddDeal}>
+        <Button icon={Plus} onClick={handleAddDeal}>
             إضافة صفقة
-          </Button>
+        </Button>
         )}
         {/* Managers and admins can see info about deal creation restrictions */}
         {(user?.role === 'admin' || user?.role === 'sales_manager') && (
@@ -362,10 +362,10 @@ export const Deals: React.FC = () => {
               <Calendar className="w-3 h-3" />
               حالة الصفقة
             </label>
-            <Select
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={[
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
                 { value: 'all', label: 'كل الحالات' },
                 { value: 'pending', label: 'قيد الانتظار' },
                 { value: 'won', label: 'مكتملة' },
@@ -460,8 +460,8 @@ export const Deals: React.FC = () => {
             {/* Team Deals Table */}
             <div className="overflow-x-auto table-scrollbar">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
                     <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الصفقة</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">العميل</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">المبلغ</th>
@@ -469,63 +469,63 @@ export const Deals: React.FC = () => {
                     <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الحالة</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">تاريخ الإغلاق</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-white">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
+              </tr>
+            </thead>
+            <tbody>
                   {teamDeals.map((deal, index) => (
-                    <tr 
-                      key={deal.id} 
-                      className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                        index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-700/50'
-                      }`}
-                    >
+                <tr 
+                  key={deal.id} 
+                  className={`border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                    index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-700/50'
+                  }`}
+                >
                       <td className="py-3 px-4">
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
                             <Link to={`/deals/${deal.id}`} className="hover:text-blue-600 dark:hover:text-blue-300">
-                              {deal.title}
+                        {deal.title}
                             </Link>
-                          </div>
-                          {deal.probability && (
+                      </div>
+                      {deal.probability && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {deal.probability}% نسبة نجاح
-                            </div>
-                          )}
                         </div>
-                      </td>
+                      )}
+                    </div>
+                  </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
+                      <User className="w-4 h-4 text-gray-400" />
                           <Link 
                             to={`/clients/${deal.clientId}`} 
                             className="text-blue-600 dark:text-blue-300 hover:underline text-gray-900 dark:text-white"
                           >
                             {deal.clientName}
                           </Link>
-                        </div>
-                      </td>
+                    </div>
+                  </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-gray-400" />
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {formatCurrency(deal.amount)}
-                          </span>
-                        </div>
-                      </td>
+                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formatCurrency(deal.amount)}
+                      </span>
+                    </div>
+                  </td>
                       <td className="py-3 px-4">
                         {getAssignedUserName(deal.assignedTo)}
                       </td>
                       <td className="py-3 px-4">
-                        <StatusBadge status={deal.status} />
-                      </td>
+                    <StatusBadge status={deal.status} />
+                  </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-900 dark:text-white">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-900 dark:text-white">
                             {new Date(deal.date).toLocaleDateString('ar-SA')}
-                          </span>
-                        </div>
-                      </td>
+                      </span>
+                    </div>
+                  </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2">
                           <Link to={`/deals/${deal.id}`}>
@@ -533,52 +533,52 @@ export const Deals: React.FC = () => {
                               عرض
                             </Button>
                           </Link>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            icon={Edit}
-                            onClick={() => handleEditDeal(deal)}
-                          />
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            icon={Trash2}
-                            onClick={() => handleDeleteDeal(deal.id)}
-                            className="text-red-600 hover:text-red-700"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        icon={Edit}
+                        onClick={() => handleEditDeal(deal)}
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        icon={Trash2}
+                        onClick={() => handleDeleteDeal(deal.id)}
+                        className="text-red-600 hover:text-red-700"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
           </Card>
         ))}
 
         {teamsWithDeals.length === 0 && (
           <Card padding="sm">
-            <div className="text-center py-12">
-              <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <div className="text-center py-12">
+            <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 لم يتم العثور على صفقات
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {statusFilter !== 'all' || searchTerm ? 'جرب تغيير معايير البحث' : 
                   user?.role === 'sales_representative' ? 'ابدأ بإضافة أول صفقة' : 'لا توجد صفقات متاحة'}
-              </p>
+            </p>
               {statusFilter === 'all' && !searchTerm && user?.role === 'sales_representative' && (
-                <Button icon={Plus} onClick={handleAddDeal}>
+              <Button icon={Plus} onClick={handleAddDeal}>
                   إضافة صفقة
-                </Button>
-              )}
+              </Button>
+            )}
               {statusFilter === 'all' && !searchTerm && (user?.role === 'admin' || user?.role === 'sales_manager') && (
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   <p>المدراء لا يمكنهم إنشاء صفقات</p>
                   <p className="text-xs">يمكنهم فقط تعيين الصفقات للمندوبين</p>
                 </div>
               )}
-            </div>
+          </div>
           </Card>
         )}
       </div>

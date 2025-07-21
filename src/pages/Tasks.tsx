@@ -149,8 +149,8 @@ const TaskForm: React.FC<{
         {(user?.role === 'admin' || user?.role === 'sales_manager') && (
           <Select
             label="المسؤول عن المهمة"
-            value={formData.assignee}
-            onChange={(value) => setFormData({ ...formData, assignee: value })}
+          value={formData.assignee}
+          onChange={(value) => setFormData({ ...formData, assignee: value })}
             options={availableUsers.map(user => ({
               value: user.id,
               label: user.name
@@ -287,7 +287,7 @@ export const Tasks: React.FC = () => {
       isOpen: true,
       message: 'هل أنت متأكد من حذف هذه المهمة؟ لا يمكن التراجع عن هذه العملية.',
       onConfirm: () => {
-        setTasks(tasks.filter(t => t.id !== taskId));
+    setTasks(tasks.filter(t => t.id !== taskId));
         setConfirmDialog(d => ({ ...d, isOpen: false }));
       }
     });
@@ -326,9 +326,9 @@ export const Tasks: React.FC = () => {
         </div>
         {/* Only sales representatives can create tasks */}
         {user?.role === 'sales_representative' && (
-          <Button icon={Plus} onClick={handleAddTask}>
+        <Button icon={Plus} onClick={handleAddTask}>
             إضافة مهمة
-          </Button>
+        </Button>
         )}
         {/* Managers and admins can see info about task creation restrictions */}
         {(user?.role === 'admin' || user?.role === 'sales_manager') && (
@@ -400,11 +400,11 @@ export const Tasks: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {teamTasks.map((task) => {
-                const client = mockClients.find(c => c.id === task.clientId);
+          const client = mockClients.find(c => c.id === task.clientId);
                 const assignee = mockUsers.find(u => u.id === task.assignee);
-                const overdue = isOverdue(task.dueDate);
-                
-                return (
+          const overdue = isOverdue(task.dueDate);
+          
+          return (
                   <Card key={task.id} className={`p-4 transition-all duration-200 hover:shadow-md cursor-pointer ${
                     overdue && task.status === 'pending' 
                       ? 'border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10' 
@@ -413,7 +413,7 @@ export const Tasks: React.FC = () => {
                     <div onClick={() => navigate(`/tasks/${task.id}`)} className="cursor-pointer">
                       <div className="space-y-3">
                         {/* Header */}
-                        <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
                             <h4 className={`font-medium text-sm truncate ${
                               task.status === 'done' 
@@ -423,28 +423,28 @@ export const Tasks: React.FC = () => {
                               {task.title}
                             </h4>
                           </div>
-                          <button
+                  <button
                             onClick={(e: React.MouseEvent) => {
                               e.stopPropagation();
                               handleToggleStatus(task.id);
                             }}
                             className={`ml-2 w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                              task.status === 'done'
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 dark:border-gray-600 hover:border-green-500'
-                            }`}
-                          >
+                      task.status === 'done'
+                        ? 'bg-green-500 border-green-500 text-white'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-green-500'
+                    }`}
+                  >
                             {task.status === 'done' && <CheckSquare className="w-2.5 h-2.5" />}
-                          </button>
-                        </div>
-                        
+                  </button>
+                    </div>
+                    
                         {/* Description */}
-                        {task.description && (
+                    {task.description && (
                           <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {task.description}
-                          </p>
-                        )}
-                        
+                        {task.description}
+                      </p>
+                    )}
+                    
                         {/* Badges */}
                         <div className="flex items-center gap-2 flex-wrap">
                           <StatusBadge status={task.status} />
@@ -460,19 +460,19 @@ export const Tasks: React.FC = () => {
                         <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-2">
                             <Calendar className="w-3 h-3" />
-                            <span className={overdue && task.status === 'pending' ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
+                        <span className={overdue && task.status === 'pending' ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
                               {new Date(task.dueDate).toLocaleDateString('ar-EG')}
-                            </span>
-                          </div>
-                          
+                        </span>
+                      </div>
+                      
                           {assignee && (
                             <div className="flex items-center gap-2">
                               <User className="w-3 h-3" />
                               <span>{assignee.name}</span>
-                            </div>
-                          )}
-                          
-                          {client && (
+                        </div>
+                      )}
+                      
+                      {client && (
                             <div className="flex items-center gap-2">
                               <span>العميل: {client.name}</span>
                             </div>
@@ -501,10 +501,10 @@ export const Tasks: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                );
-              })}
+              </div>
+            </Card>
+          );
+        })}
             </div>
           </div>
         ))}
