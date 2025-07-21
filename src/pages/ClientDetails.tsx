@@ -68,18 +68,12 @@ export const ClientDetails: React.FC = () => {
     }
   ];
 
-  // Get available reps for assignment (same logic as Clients page)
+  // Get available reps for assignment
   let availableReps: typeof mockUsers = [];
   if (user?.role === 'admin') {
-    availableReps = mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'sales_manager');
+    availableReps = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
   } else if (user?.role === 'sales_manager') {
-    const managedTeamIds = mockUsers.filter(u => u.role === 'sales_manager' && u.id === user.id).map(u => u.teamId).filter(Boolean);
-    availableReps = mockUsers.filter(u => u.role === 'sales_representative' && managedTeamIds.includes(u.teamId || ''));
-    if (!availableReps.some(u => u.id === user.id)) {
-      availableReps = [user, ...availableReps];
-    }
-  } else if (user?.role === 'sales_representative') {
-    availableReps = [user];
+    availableReps = mockUsers.filter(u => u.role === 'sales_representative' && u.teamId === user.teamId && u.isActive);
   }
 
   const handleAssign = () => {

@@ -64,7 +64,13 @@ const DealForm: React.FC<{
   };
 
   // Get available users for assignment
-  const availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
+  let availableUsers: typeof mockUsers = [];
+  if (user?.role === 'admin') {
+    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
+  } else if (user?.role === 'sales_manager') {
+    availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.teamId === user.teamId && u.isActive);
+  }
+
   const userOptions = availableUsers.map(user => {
     const team = mockTeams.find(t => t.id === user.teamId);
     return {
