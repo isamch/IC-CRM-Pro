@@ -38,30 +38,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Apply theme to document
   useEffect(() => {
     const root = window.document.documentElement;
-    let appliedTheme = theme;
-    if (theme === 'system') {
-      appliedTheme = getSystemTheme();
-    }
+    const currentTheme = theme === 'system' ? getSystemTheme() : theme;
+    
     root.classList.remove('light', 'dark');
-    root.classList.add(appliedTheme);
+    root.classList.add(currentTheme);
+    
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Listen to system theme changes if theme is 'system'
-  useEffect(() => {
-    if (theme !== 'system') return;
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-      const root = window.document.documentElement;
-      root.classList.remove('light', 'dark');
-      root.classList.add(getSystemTheme());
-    };
-    media.addEventListener('change', handleChange);
-    return () => media.removeEventListener('change', handleChange);
-  }, [theme]);
-
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
   };
 
   return (
