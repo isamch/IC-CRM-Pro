@@ -17,7 +17,6 @@ import { CanView } from '../auth/PermissionGuard';
 import { Permissions } from '../../types';
 
 interface SidebarProps {
-  activePage: string;
   onPageChange: (page: string) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -42,7 +41,6 @@ const navigationItems: NavigationItem[] = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  activePage,
   onPageChange,
   isCollapsed,
   onToggleCollapse
@@ -52,11 +50,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Function to determine if a navigation item is active
   const isItemActive = (itemId: string) => {
-    if (itemId === 'deals') {
-      // Make deals active for both /deals and /deals/:dealId
-      return location.pathname.startsWith('/deals');
+    const currentPath = location.pathname;
+
+    if (itemId === 'dashboard') {
+      return currentPath === '/dashboard';
     }
-    return activePage === itemId;
+    if (itemId === 'deals') {
+      return currentPath.startsWith('/deals');
+    }
+    if (itemId === 'clients') {
+      return currentPath.startsWith('/clients');
+    }
+    if (itemId === 'tasks') {
+      return currentPath.startsWith('/tasks');
+    }
+    if (itemId === 'users') {
+      return currentPath.startsWith('/users') || currentPath.startsWith('/sales-reps') || currentPath.startsWith('/sales-managers');
+    }
+    if (itemId === 'teams') {
+      return currentPath.startsWith('/teams');
+    }
+    
+    return currentPath === `/${itemId}`;
   };
 
   return (

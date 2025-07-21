@@ -382,7 +382,7 @@ export const DealDetails: React.FC = () => {
           </h3>
           <div className="space-y-2">
             {dealTasks.map(task => (
-              <div key={task.id} className="border border-gray-200 dark:border-gray-700 rounded-md p-3">
+              <Link to={`/tasks/${task.id}`} key={task.id} className="block border border-gray-200 dark:border-gray-700 rounded-md p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">{task.title}</h4>
@@ -403,7 +403,7 @@ export const DealDetails: React.FC = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </Card>

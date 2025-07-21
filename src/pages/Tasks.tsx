@@ -80,6 +80,13 @@ const TaskForm: React.FC<{
 
   // Get available users for assignment
   const availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
+  const userOptions = availableUsers.map(user => {
+    const team = mockTeams.find(t => t.id === user.teamId);
+    return {
+      value: user.id,
+      label: `${user.name} (${team ? team.name : 'بدون فريق'})`
+    };
+  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -151,10 +158,7 @@ const TaskForm: React.FC<{
             label="المسؤول عن المهمة"
           value={formData.assignee}
           onChange={(value) => setFormData({ ...formData, assignee: value })}
-            options={availableUsers.map(user => ({
-              value: user.id,
-              label: user.name
-            }))}
+            options={userOptions}
             placeholder="اختر المسؤول"
             required
           />

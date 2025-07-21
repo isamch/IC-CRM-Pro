@@ -65,6 +65,13 @@ const DealForm: React.FC<{
 
   // Get available users for assignment
   const availableUsers = mockUsers.filter(u => u.role === 'sales_representative' && u.isActive);
+  const userOptions = availableUsers.map(user => {
+    const team = mockTeams.find(t => t.id === user.teamId);
+    return {
+      value: user.id,
+      label: `${user.name} (${team ? team.name : 'بدون فريق'})`
+    };
+  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -142,10 +149,7 @@ const DealForm: React.FC<{
           label="المندوب المسؤول"
           value={formData.assignedTo}
           onChange={(value) => setFormData({ ...formData, assignedTo: value })}
-          options={availableUsers.map(user => ({
-            value: user.id,
-            label: user.name
-          }))}
+          options={userOptions}
           placeholder="اختر المندوب"
           required
         />
@@ -402,10 +406,13 @@ export const Deals: React.FC = () => {
               onChange={setAssignedFilter}
               options={[
                 { value: '', label: 'كل المندوبين' },
-                ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => ({
-                  value: user.id,
-                  label: user.name
-                }))
+                ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => {
+                  const team = mockTeams.find(t => t.id === user.teamId);
+                  return {
+                    value: user.id,
+                    label: `${user.name} (${team ? team.name : 'بدون فريق'})`
+                  }
+                })
               ]}
               className="min-w-[140px]"
             />

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Task } from '../types';
+import { mockTeams } from '../data/mockData';
 
 export const TaskDetails: React.FC = () => {
   const { taskId } = useParams<{ taskId: string }>();
@@ -24,8 +25,12 @@ export const TaskDetails: React.FC = () => {
     return <div className="p-8 text-center text-red-500">المهمة غير موجودة</div>;
   }
 
+  const deal = mockDeals.find(d => d.id === task.dealId);
+  const isDealOwner = deal?.assignedTo === user?.id;
+
   // Check permissions - only show task if user has access
   const hasAccess = user?.role === 'admin' || 
+                   isDealOwner ||
                    (user?.role === 'sales_manager' && (() => {
                      const assignee = mockUsers.find(u => u.id === task.assignee);
                      return assignee?.teamId === user.teamId;
@@ -37,7 +42,6 @@ export const TaskDetails: React.FC = () => {
   }
 
   const client = mockClients.find(c => c.id === task.clientId);
-  const deal = mockDeals.find(d => d.id === task.dealId);
   const assignee = mockUsers.find(u => u.id === task.assignee);
 
   const getPriorityBadge = (priority: Task['priority']) => {
@@ -121,7 +125,7 @@ export const TaskDetails: React.FC = () => {
         </Button>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white ml-4">تفاصيل المهمة</h2>
         <div className="flex-1"></div>
-        {(user?.role === 'admin' || user?.role === 'sales_manager' || task.assignee === user?.id) && (
+        {(user?.role === 'admin' || user?.role === 'sales_manager' || task.assignee === user?.id || isDealOwner) && (
           <Button 
             variant="outline" 
             icon={Edit2} 
@@ -420,10 +424,13 @@ export const TaskDetails: React.FC = () => {
                   onChange={(value) => console.log('Assignee changed:', value)}
                   options={[
                     { value: '', label: 'اختر المسؤول' },
-                    ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => ({
-                      value: user.id,
-                      label: user.name
-                    }))
+                    ...mockUsers.filter(u => u.role === 'sales_representative' && u.isActive).map(user => {
+                      const team = mockTeams.find(t => t.id === user.teamId);
+                      return {
+                        value: user.id,
+                        label: `${user.name} (${team ? team.name : 'بدون فريق'})`
+                      }
+                    })
                   ]}
                 />
               </div>

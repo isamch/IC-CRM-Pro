@@ -423,10 +423,16 @@ export const ClientDetails: React.FC = () => {
               label="اختر المندوب المكلف"
               value={assignTo}
               onChange={setAssignTo}
-              options={availableReps.map(rep => ({
-                value: rep.id,
-                label: rep.id === user?.id ? `${rep.name} (أنت)` : rep.name
-              }))}
+              options={availableReps.map(rep => {
+                const team = mockTeams.find(t => t.id === rep.teamId);
+                const label = rep.id === user?.id 
+                  ? `${rep.name} (أنت)` 
+                  : `${rep.name} (${team ? team.name : 'بدون فريق'})`;
+                return {
+                  value: rep.id,
+                  label: label
+                }
+              })}
               required
             />
             <div className="flex justify-end space-x-2">
