@@ -753,6 +753,174 @@ export const mockTasks: Task[] = [
     dealId: '7',
     assignee: '9', // عمر خالد - فريق جدة
     createdBy: '9'
+  },
+  {
+    id: '16',
+    title: 'متابعة عرض الأسعار مع شركة المستقبل',
+    description: 'التواصل مع نورا سعد لمناقشة عرض الأسعار المقدم.',
+    dueDate: '2024-03-12',
+    status: 'pending',
+    priority: 'high',
+    clientId: '4',
+    dealId: '4',
+    assignee: '8', // عبدالرحمن محمد
+    createdBy: '4'
+  },
+  {
+    id: '17',
+    title: 'إعداد تقرير الأداء لفريق الرياض',
+    description: 'تحليل أداء فريق الرياض وتقديم تقرير للمدير.',
+    dueDate: '2024-03-15',
+    status: 'pending',
+    priority: 'medium',
+    assignee: '3', // سارة أحمد
+    createdBy: '2'
+  },
+  {
+    id: '18',
+    title: 'جدولة عرض تجريبي لشركة الإبداع',
+    description: 'تحديد موعد لعرض تجريبي لمنصة التجارة الإلكترونية.',
+    dueDate: '2024-03-14',
+    status: 'pending',
+    priority: 'high',
+    clientId: '10',
+    dealId: '10',
+    assignee: '10', // يوسف أحمد
+    createdBy: '5'
+  },
+  {
+    id: '19',
+    title: 'مراجعة ملاحظات العميل لصفقة "حلول الذكاء الاصطناعي"',
+    description: 'مراجعة الملاحظات من سامي العتيبي والتنسيق مع الفريق الفني.',
+    dueDate: '2024-03-18',
+    status: 'pending',
+    priority: 'high',
+    clientId: '12',
+    dealId: '12',
+    assignee: '12', // لينا محمد
+    createdBy: '14'
+  },
+  {
+    id: '20',
+    title: 'تحديث بيانات العميل "شركة القصيم"',
+    description: 'إضافة معلومات الاتصال الجديدة وتحديث حالة العميل.',
+    dueDate: '2024-03-11',
+    status: 'done',
+    priority: 'low',
+    clientId: '13',
+    assignee: '15', // سعيد الحربي
+    createdBy: '15'
+  },
+  {
+    id: '21',
+    title: 'التحضير لاجتماع فريق جدة الأسبوعي',
+    description: 'إعداد أجندة الاجتماع ومشاركة النقاط الرئيسية.',
+    dueDate: '2024-03-13',
+    status: 'pending',
+    priority: 'medium',
+    assignee: '7', // نورا سعد
+    createdBy: '4'
+  },
+  {
+    id: '22',
+    title: 'إرسال عقد "خدمة الاستشارات التقنية" للتوقيع',
+    description: 'إرسال النسخة النهائية من العقد إلى عبدالله فهد.',
+    dueDate: '2024-02-28',
+    status: 'done',
+    priority: 'high',
+    clientId: '7',
+    dealId: '7',
+    assignee: '7', // نورا سعد
+    createdBy: '4'
+  },
+  {
+    id: '23',
+    title: 'مكالمة متابعة مع "شركة الريادة"',
+    description: 'متابعة الاهتمام بحلول الأمن السيبراني.',
+    dueDate: '2024-03-16',
+    status: 'pending',
+    priority: 'medium',
+    clientId: '9',
+    dealId: '9',
+    assignee: '9', // ريم عبدالله
+    createdBy: '5'
+  },
+  {
+    id: '24',
+    title: 'بحث عن عملاء محتملين في قطاع التعليم',
+    description: 'تحديد 5 عملاء محتملين جدد في قطاع التعليم بالرياض.',
+    dueDate: '2024-03-20',
+    status: 'pending',
+    priority: 'low',
+    assignee: '6', // خالد عبدالله
+    createdBy: '2'
+  },
+  {
+    id: '25',
+    title: 'إغلاق صفقة "تطوير تطبيق الهاتف المحمول"',
+    description: 'تأكيد إتمام الصفقة وتحديث حالتها في النظام إلى "رابحة".',
+    dueDate: '2024-01-26',
+    status: 'done',
+    priority: 'high',
+    clientId: '5',
+    dealId: '5',
+    assignee: '3', // سارة أحمد
+    createdBy: '2'
+  },
+  {
+    id: '26',
+    title: 'التواصل مع العميل غير النشط "الشركة الرقمية"',
+    description: 'محاولة إعادة تفعيل العلاقة مع عمر حسن.',
+    dueDate: '2024-03-22',
+    status: 'pending',
+    priority: 'medium',
+    clientId: '5',
+    assignee: '3', // سارة أحمد
+    createdBy: '2'
+  },
+  {
+    id: '27',
+    title: 'تقديم تقرير خسارة صفقة "خدمة تدقيق الأمان"',
+    description: 'تحليل أسباب خسارة الصفقة وتقديم تقرير للمدير.',
+    dueDate: '2024-01-15',
+    status: 'done',
+    priority: 'medium',
+    clientId: '4',
+    dealId: '4',
+    assignee: '8', // عبدالرحمن محمد
+    createdBy: '4'
+  },
+  {
+    id: '28',
+    title: 'جدولة تدريب لفريق الدمام على المنتج الجديد',
+    description: 'تنظيم جلسة تدريبية لأعضاء فريق الدمام.',
+    dueDate: '2024-03-25',
+    status: 'pending',
+    priority: 'medium',
+    assignee: '10', // يوسف أحمد
+    createdBy: '5'
+  },
+  {
+    id: '29',
+    title: 'متابعة العقد مع شركة مكة',
+    description: 'التأكد من استلام العقد الموقع من سلوى منصور.',
+    dueDate: '2024-03-19',
+    status: 'pending',
+    priority: 'high',
+    clientId: '11',
+    dealId: '11',
+    assignee: '11', // فهد سعد
+    createdBy: '13'
+  },
+  {
+    id: '30',
+    title: 'إعداد قائمة بالعملاء المحتملين في المدينة المنورة',
+    description: 'تجميع قائمة بـ 10 شركات يمكن استهدافها في المدينة.',
+    dueDate: '2024-03-28',
+    status: 'pending',
+    priority: 'low',
+    assignee: '12', // لينا محمد
+    createdBy: '14'
   }
 ];
 
