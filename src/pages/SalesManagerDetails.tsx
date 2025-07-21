@@ -48,39 +48,65 @@ export const SalesManagerDetails: React.FC = () => {
   const recentTasks = managerTasks.slice(0, 5);
 
   // --- Teams Table ---
-  const teamsTable = currentTeams.length > 0 && (
+  const teamsTable = (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
       <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> الفرق تحت الإدارة</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm rounded-lg overflow-hidden bg-white dark:bg-gray-900">
-          <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <tr>
-              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">اسم الفريق</th>
-              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد المندوبين</th>
-              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد العملاء</th>
-              <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رابط الفريق</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-            {currentTeams.map(team => {
-              const reps = mockUsers.filter(u => u.teamId === team.id && u.role === 'sales_representative');
-              const teamClients = mockClients.filter(c => reps.map(r => r.id).includes(c.assignedTo || ''));
-              return (
-                <tr key={team.id}>
-                  <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-300">
-                    <Link to={`/teams/${team.id}`}>{team.name}</Link>
-                  </td>
-                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{reps.length}</td>
-                  <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{teamClients.length}</td>
-                  <td className="px-4 py-2">
-                    <Link to={`/teams/${team.id}`} className="text-blue-500 dark:text-blue-300 hover:underline">عرض التفاصيل</Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {currentTeams.length === 0 ? (
+        <div className="text-center text-gray-500 dark:text-gray-400 py-6">لا يوجد فرق يديرها هذا المدير حالياً.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+            <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <tr>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">اسم الفريق</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد المندوبين</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">عدد العملاء</th>
+                <th className="px-4 py-2 text-right text-gray-700 dark:text-gray-200">رابط الفريق</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+              {currentTeams.map(team => {
+                const reps = mockUsers.filter(u => u.teamId === team.id && u.role === 'sales_representative');
+                const teamClients = mockClients.filter(c => reps.map(r => r.id).includes(c.assignedTo || ''));
+                return (
+                  <tr key={team.id}>
+                    <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-300">
+                      <Link to={`/teams/${team.id}`}>{team.name}</Link>
+                    </td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{reps.length}</td>
+                    <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{teamClients.length}</td>
+                    <td className="px-4 py-2">
+                      <Link to={`/teams/${team.id}`} className="text-blue-500 dark:text-blue-300 hover:underline">عرض التفاصيل</Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+
+  // --- Previous Teams Section ---
+  const previousTeamsSection = manager.previousTeams && manager.previousTeams.length > 0 ? (
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> الفرق التي أدارها سابقاً</h3>
+      <div className="flex flex-wrap gap-3">
+        {manager.previousTeams.map(teamId => {
+          const team = mockTeams.find(t => t.id === teamId);
+          return team ? (
+            <Link key={team.id} to={`/teams/${team.id}`} className="text-blue-600 dark:text-blue-300 hover:underline font-medium">
+              {team.name}
+            </Link>
+          ) : null;
+        })}
       </div>
+    </Card>
+  ) : (
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md dark:shadow-none p-6 rounded-2xl">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"><Users className="w-5 h-5" /> الفرق التي أدارها سابقاً</h3>
+      <div className="text-center text-gray-500 dark:text-gray-400 py-6">لا يوجد سجل للفرق السابقة لهذا المدير.</div>
     </Card>
   );
 
@@ -278,6 +304,7 @@ export const SalesManagerDetails: React.FC = () => {
         )}
       </Card>
       {teamsTable}
+      {previousTeamsSection}
       {repsTable}
       {clientsTable}
     </div>

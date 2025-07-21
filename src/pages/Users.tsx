@@ -194,8 +194,8 @@ export const Users: React.FC = () => {
     if (currentUser?.id === user.id) return false; // لا يمكن التعديل على نفسه
     if (currentUser?.role === 'admin') return true;
     if (currentUser?.role === 'sales_manager') {
-      // يمكن لمدير المبيعات التعديل فقط على أعضاء فريقه
-      return user.teamId === currentUser.teamId && user.role === 'sales_representative';
+      // يمكن لمدير المبيعات التعديل فقط على أعضاء فريقه (مندوبي المبيعات)
+      return user.role === 'sales_representative' && user.teamId === currentUser.teamId;
     }
     return false;
   };
