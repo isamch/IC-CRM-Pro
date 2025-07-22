@@ -27,6 +27,7 @@ interface NavigationItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   requiresPermission?: keyof Permissions;
+  requiresRole?: string; // Added for role-based visibility
 }
 
 const navigationItems: NavigationItem[] = [
@@ -36,6 +37,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'users', label: 'Users', icon: Shield, requiresPermission: 'users' },
   { id: 'teams', label: 'Teams', icon: Building2, requiresPermission: 'teams' },
+  { id: 'organization-chart', label: 'المخطط', icon: Building2, requiresRole: 'admin' },
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -45,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
 
   // Function to determine if a navigation item is active
@@ -96,6 +98,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
         {navigationItems.map((item) => {
+          if (item.requiresRole && (!user || user.role !== item.requiresRole)) {
+            return null;
+          }
           const Icon = item.icon;
           const isActive = isItemActive(item.id);
           
