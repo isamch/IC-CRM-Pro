@@ -292,12 +292,13 @@ export const OrganizationChart: React.FC = () => {
 
   // حساب ارتفاع المخطط تلقائيًا بناءً على توزيع البطاقات
   const chartHeight = Math.max(...positions.map(p => p.top + CARD_HEIGHT)) + 40; // 40 هامش سفلي
+  const chartWidth = CHART_WIDTH + 40; // هامش جانبي
 
   // تحسين مظهر الخلفية والبطاقات
   return (
-    <div className="relative w-full min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] flex flex-col items-center justify-start">
+    <div className="relative min-h-screen w-full bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] flex flex-col">
       {/* أزرار التحكم في التكبير/التصغير */}
-      <div className="z-50 flex gap-2 bg-white/80 rounded shadow p-2 mt-4 mb-2" style={{ alignSelf: 'center' }}>
+      <div className="z-50 flex gap-2 bg-white/80 rounded shadow p-2 mt-4 mb-2 mx-auto">
         <button
           className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
           onClick={() => setScale(s => Math.max(0.3, s - 0.1))}
@@ -312,13 +313,11 @@ export const OrganizationChart: React.FC = () => {
       </div>
       {/* مساحة العمل */}
       <div
-        className="relative flex items-start justify-center select-none"
+        className="flex-1 flex items-center justify-center select-none"
         style={{
-          width: '100vw',
-          minHeight: '80vh',
-          background: 'none',
+          width: '100%',
+          height: '100vh',
           overflow: 'hidden',
-          cursor: dragging ? 'grabbing' : 'grab',
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -327,13 +326,13 @@ export const OrganizationChart: React.FC = () => {
       >
         <div
           style={{
-            minWidth: CHART_WIDTH,
+            width: chartWidth,
             height: chartHeight,
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
             transformOrigin: 'top center',
             transition: dragging ? 'none' : 'transform 0.2s',
-            margin: '40px 0',
             position: 'relative',
+            background: 'none',
           }}
         >
           {/* خطوط بين الصفوف (اختياري) */}
