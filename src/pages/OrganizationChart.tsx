@@ -296,9 +296,9 @@ export const OrganizationChart: React.FC = () => {
 
   // تحسين مظهر الخلفية والبطاقات
   return (
-    <div className="relative min-h-screen w-full bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] flex flex-col">
-      {/* أزرار التحكم في التكبير/التصغير */}
-      <div className="z-50 flex gap-2 bg-white/80 rounded shadow p-2 mt-4 mb-2 mx-auto">
+    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] overflow-hidden">
+      {/* أزرار التحكم في التكبير/التصغير مثبتة في الزاوية */}
+      <div className="absolute top-6 right-6 z-50 flex gap-2 bg-white/80 rounded shadow p-2">
         <button
           className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
           onClick={() => setScale(s => Math.max(0.3, s - 0.1))}
@@ -311,14 +311,9 @@ export const OrganizationChart: React.FC = () => {
         >+
         </button>
       </div>
-      {/* مساحة العمل */}
+      {/* مساحة العمل الثابتة بدون أي scroll */}
       <div
-        className="flex-1 flex items-center justify-center select-none"
-        style={{
-          width: '100%',
-          height: '100vh',
-          overflow: 'hidden',
-        }}
+        className="absolute inset-0 w-full h-full overflow-hidden select-none"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -326,12 +321,13 @@ export const OrganizationChart: React.FC = () => {
       >
         <div
           style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+            transition: dragging ? 'none' : 'transform 0.2s',
             width: chartWidth,
             height: chartHeight,
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
-            transformOrigin: 'top center',
-            transition: dragging ? 'none' : 'transform 0.2s',
-            position: 'relative',
             background: 'none',
           }}
         >
