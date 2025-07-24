@@ -297,94 +297,96 @@ export const OrganizationChart: React.FC = () => {
   // تحسين مظهر الخلفية والبطاقات
   return (
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] overflow-hidden">
-      {/* أزرار التحكم في التكبير/التصغير مثبتة في الزاوية */}
-      <div className="absolute top-6 right-6 z-50 flex gap-2 bg-white/80 rounded shadow p-2">
-        <button
-          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
-          onClick={() => setScale(s => Math.max(0.3, s - 0.1))}
-        >-
-        </button>
-        <span className="px-2 font-mono">{(scale * 100).toFixed(0)}%</span>
-        <button
-          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
-          onClick={() => setScale(s => Math.min(2, s + 0.1))}
-        >+
-        </button>
-      </div>
-      {/* مساحة العمل الثابتة بدون أي scroll */}
-      <div
-        className="absolute inset-0 w-full h-full overflow-hidden select-none"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="relative w-full h-full">
+        {/* أزرار التحكم في التكبير/التصغير مثبتة دائماً في الزاوية العليا اليمنى من مساحة العمل */}
+        <div className="absolute top-6 right-6 z-[9999] flex gap-2 bg-white/80 rounded shadow p-2">
+          <button
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
+            onClick={() => setScale(s => Math.max(0.3, s - 0.1))}
+          >-
+          </button>
+          <span className="px-2 font-mono">{(scale * 100).toFixed(0)}%</span>
+          <button
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
+            onClick={() => setScale(s => Math.min(2, s + 0.1))}
+          >+
+          </button>
+        </div>
+        {/* مساحة العمل الثابتة بدون أي scroll */}
         <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
-            transition: dragging ? 'none' : 'transform 0.2s',
-            width: chartWidth,
-            height: chartHeight,
-            background: 'none',
-          }}
+          className="absolute inset-0 w-full h-full overflow-hidden select-none"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
-          {/* خطوط بين الصفوف (اختياري) */}
-          <div className="absolute left-0 w-full" style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
-          <div className="absolute left-0 w-full" style={{ top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
-          <div className="absolute left-0 w-full" style={{ top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
-          {/* خطوط SVG بزوايا قائمة */}
-          <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-            {lines.map((line, idx) => {
-              const from = getCenter(line.from);
-              const to = getCenter(line.to);
-              return (
-                <path
-                  key={idx}
-                  d={getLShapePath(from, to)}
-                  fill="none"
-                  stroke="#7b8bbd"
-                  strokeWidth={2}
-                  markerEnd="url(#arrowhead)"
-                />
-              );
-            })}
-            <defs>
-              <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L0,6 L8,3 z" fill="#7b8bbd" />
-              </marker>
-            </defs>
-          </svg>
-          {/* العناصر */}
-          {allNodes
-            .filter((node: any) => node && node.id)
-            .map((node: any) => {
-              const refKey = `${node.type}-${node.id}`;
-              const pos = positions.find(p => p.id === refKey);
-              if (!pos) return null;
-              return (
-                <div
-                  key={refKey}
-                  ref={nodeRefs.current[refKey]}
-                  style={{
-                    position: 'absolute',
-                    top: pos.top,
-                    left: pos.left,
-                    width: CARD_WIDTH,
-                    height: CARD_HEIGHT,
-                    zIndex: 10,
-                    userSelect: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <NodeCard node={node} />
-                </div>
-              );
-            })}
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+              transition: dragging ? 'none' : 'transform 0.2s',
+              width: chartWidth,
+              height: chartHeight,
+              background: 'none',
+            }}
+          >
+            {/* خطوط بين الصفوف (اختياري) */}
+            <div className="absolute left-0 w-full" style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
+            <div className="absolute left-0 w-full" style={{ top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
+            <div className="absolute left-0 w-full" style={{ top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
+            {/* خطوط SVG بزوايا قائمة */}
+            <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
+              {lines.map((line, idx) => {
+                const from = getCenter(line.from);
+                const to = getCenter(line.to);
+                return (
+                  <path
+                    key={idx}
+                    d={getLShapePath(from, to)}
+                    fill="none"
+                    stroke="#7b8bbd"
+                    strokeWidth={2}
+                    markerEnd="url(#arrowhead)"
+                  />
+                );
+              })}
+              <defs>
+                <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#7b8bbd" />
+                </marker>
+              </defs>
+            </svg>
+            {/* العناصر */}
+            {allNodes
+              .filter((node: any) => node && node.id)
+              .map((node: any) => {
+                const refKey = `${node.type}-${node.id}`;
+                const pos = positions.find(p => p.id === refKey);
+                if (!pos) return null;
+                return (
+                  <div
+                    key={refKey}
+                    ref={nodeRefs.current[refKey]}
+                    style={{
+                      position: 'absolute',
+                      top: pos.top,
+                      left: pos.left,
+                      width: CARD_WIDTH,
+                      height: CARD_HEIGHT,
+                      zIndex: 10,
+                      userSelect: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <NodeCard node={node} />
+                  </div>
+                );
+              })}
+          </div>
         </div>
       </div>
     </div>
