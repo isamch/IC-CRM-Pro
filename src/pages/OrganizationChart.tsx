@@ -253,6 +253,15 @@ export const OrganizationChart: React.FC = () => {
     // eslint-disable-next-line
   }, [positions])
 
+  // حساب ارتفاع وعرض المخطط تلقائيًا بناءً على توزيع البطاقات
+  const maxRight = Math.max(...positions.map((p) => p.left + CARD_WIDTH))
+  const maxBottom = Math.max(...positions.map((p) => p.top + CARD_HEIGHT))
+  const minLeft = Math.min(...positions.map((p) => p.left))
+  const minTop = Math.min(...positions.map((p) => p.top))
+  const offsetX = -minLeft < 0 ? 0 : -minLeft
+  const chartWidth = maxRight - minLeft + 100 // هامش إضافي
+  const chartHeight = maxBottom - minTop + 100 // هامش إضافي
+
   // حساب مراكز العناصر لرسم الخطوط
   const getCenter = useCallback(
     (id: string) => {
@@ -261,11 +270,11 @@ export const OrganizationChart: React.FC = () => {
       if (!pos || !ref?.current) return { x: 0, y: 0 }
       // Use fixed card dimensions for center calculation to avoid layout shifts
       return {
-        x: pos.left + CARD_WIDTH / 2,
+        x: pos.left + offsetX + CARD_WIDTH / 2,
         y: pos.top + CARD_HEIGHT / 2,
       }
     },
-    [positions],
+    [positions, offsetX],
   )
 
   // رسم الخطوط بزوايا قائمة (L-shape)
@@ -343,10 +352,6 @@ export const OrganizationChart: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
   }, [])
-
-  // حساب ارتفاع المخطط تلقائيًا بناءً على توزيع البطاقات
-  const chartHeight = Math.max(...positions.map((p) => p.top + CARD_HEIGHT)) + 40 // 40 هامش سفلي
-  const chartWidth = CHART_WIDTH + 40 // هامش جانبي
 
   // تحسين مظهر الخلفية والبطاقات
   return (
@@ -454,7 +459,7 @@ export const OrganizationChart: React.FC = () => {
                     style={{
                       position: "absolute",
                       top: pos.top,
-                      left: pos.left,
+                      left: pos.left + offsetX,
                       width: CARD_WIDTH,
                       height: CARD_HEIGHT,
                       zIndex: 10,
