@@ -18,7 +18,7 @@ interface NodePosition {
 
 // صورة رمزية
 const Avatar: React.FC<AvatarProps> = ({ name, avatar }) => (
-  <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow">
+  <div className="w-14 h-14 bg-gradient-to-r from-[#2563eb] to-[#7c3aed] rounded-full flex items-center justify-center text-2xl font-bold text-white shadow">
     {avatar ? (
       <img src={avatar} alt={name} className="w-full h-full rounded-full object-cover" />
     ) : (
@@ -29,27 +29,27 @@ const Avatar: React.FC<AvatarProps> = ({ name, avatar }) => (
 
 // بطاقة مستخدم أو فريق
 const NodeCard: React.FC<NodeCardProps> = ({ node }) => (
-  <div className="flex flex-col items-center p-2 bg-white dark:bg-gray-900 rounded-xl shadow border border-gray-200 dark:border-gray-700 min-w-[120px] max-w-[160px]">
+  <div className="flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px]">
     {node.type === 'team' ? (
-      <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
+      <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
         <Building2 className="w-6 h-6" />
       </div>
     ) : (
       <Avatar name={node.name} avatar={node.avatar} />
     )}
     <div className="mt-2 text-center">
-      <div className="font-bold text-gray-900 dark:text-white">{node.name}</div>
-      {node.email && <div className="text-xs text-gray-500 dark:text-gray-400">{node.email}</div>}
-      {node.region && <div className="text-xs text-gray-500 dark:text-gray-400">{node.region}</div>}
+      <div className="font-bold text-white">{node.name}</div>
+      {node.email && <div className="text-xs text-[#cbd5e1]">{node.email}</div>}
+      {node.region && <div className="text-xs text-[#cbd5e1]">{node.region}</div>}
       <div className="text-xs mt-1">
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
           node.type === 'admin'
-            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+            ? 'bg-[#7c3aed] text-white'
             : node.type === 'manager'
-            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+            ? 'bg-[#2563eb] text-white'
             : node.type === 'team'
-            ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+            ? 'bg-[#334155] text-[#a5b4fc]'
+            : 'bg-[#22c55e] text-white'
         }`}>
           {node.type === 'admin'
             ? 'مدير النظام'
@@ -61,7 +61,7 @@ const NodeCard: React.FC<NodeCardProps> = ({ node }) => (
         </span>
       </div>
       {typeof node.isActive === 'boolean' && (
-        <div className="text-xs text-gray-400">{node.isActive ? 'نشط' : 'غير نشط'}</div>
+        <div className="text-xs text-[#a3e635]">{node.isActive ? 'نشط' : 'غير نشط'}</div>
       )}
     </div>
   </div>
@@ -97,7 +97,7 @@ function buildHierarchy() {
 const CARD_WIDTH = 160;
 const CARD_HEIGHT = 120;
 const H_GAP = 60; // المسافة الأفقية بين البطاقات
-const V_GAP = 100; // المسافة العمودية بين الصفوف
+const V_GAP = 160; // أو أي قيمة تناسبك (مثلاً 180 أو 200)
 const CHART_WIDTH = 1200; // عرض المخطط الكلي
 
 // توزيع هرمي حقيقي: كل مدير مع فرقه ومندوبيه في عمود مستقل
@@ -106,7 +106,7 @@ function getHierarchicalPositions(hierarchy: any) {
   const CARD_WIDTH = 160;
   const CARD_HEIGHT = 120;
   const H_GAP = 60;
-  const V_GAP = 100;
+  const V_GAP = 160; // أو أي قيمة تناسبك (مثلاً 180 أو 200)
   const ROOT_TOP = 40;
   const CHART_WIDTH = 1200;
 
@@ -254,66 +254,144 @@ export const OrganizationChart: React.FC = () => {
     return `M${from.x},${from.y} L${from.x},${midY} L${to.x},${midY} L${to.x},${to.y}`;
   };
 
+  // حالة التكبير/التصغير
+  const [scale, setScale] = useState(0.6); // القيمة الافتراضية مصغرة
+  // حالة السحب (pan)
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const panStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // أحداث السحب
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // فقط زر الماوس الأيسر
+    if (e.button !== 0) return;
+    setDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    panStart.current = { ...pan };
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPan({ x: panStart.current.x + dx, y: panStart.current.y + dy });
+  };
+  const handleMouseUp = () => setDragging(false);
+
+  // منع تحديد النص أثناء السحب
+  useEffect(() => {
+    if (dragging) {
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.userSelect = '';
+    }
+    return () => {
+      document.body.style.userSelect = '';
+    };
+  }, [dragging]);
+
+  // حساب ارتفاع المخطط تلقائيًا بناءً على توزيع البطاقات
+  const chartHeight = Math.max(...positions.map(p => p.top + CARD_HEIGHT)) + 40; // 40 هامش سفلي
+
   // تحسين مظهر الخلفية والبطاقات
   return (
-    <div
-      className="relative w-full min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-900"
-      style={{ minWidth: CHART_WIDTH }}
-    >
-      {/* خطوط بين الصفوف (اختياري) */}
-      <div className="absolute left-0 w-full" style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: 'rgba(255,255,255,0.04)' }} />
-      <div className="absolute left-0 w-full" style={{ top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(255,255,255,0.04)' }} />
-      <div className="absolute left-0 w-full" style={{ top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(255,255,255,0.04)' }} />
-      {/* خطوط SVG بزوايا قائمة */}
-      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-        {lines.map((line, idx) => {
-          const from = getCenter(line.from);
-          const to = getCenter(line.to);
-          return (
-            <path
-              key={idx}
-              d={getLShapePath(from, to)}
-              fill="none"
-              stroke="#94a3b8"
-              strokeWidth={2}
-              markerEnd="url(#arrowhead)"
-            />
-          );
-        })}
-        <defs>
-          <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8" />
-          </marker>
-        </defs>
-      </svg>
-      {/* العناصر */}
-      {allNodes
-        .filter((node: any) => node && node.id)
-        .map((node: any) => {
-          const refKey = `${node.type}-${node.id}`;
-          const pos = positions.find(p => p.id === refKey);
-          if (!pos) return null;
-          return (
-            <div
-              key={refKey}
-              ref={nodeRefs.current[refKey]}
-              style={{
-                position: 'absolute',
-                top: pos.top,
-                left: pos.left,
-                width: CARD_WIDTH,
-                height: CARD_HEIGHT,
-                zIndex: 10,
-                userSelect: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <NodeCard node={node} />
-            </div>
-          );
-        })}
+    <div className="relative w-full min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] flex flex-col items-center justify-start">
+      {/* أزرار التحكم في التكبير/التصغير */}
+      <div className="z-50 flex gap-2 bg-white/80 rounded shadow p-2 mt-4 mb-2" style={{ alignSelf: 'center' }}>
+        <button
+          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
+          onClick={() => setScale(s => Math.max(0.3, s - 0.1))}
+        >-
+        </button>
+        <span className="px-2 font-mono">{(scale * 100).toFixed(0)}%</span>
+        <button
+          className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
+          onClick={() => setScale(s => Math.min(2, s + 0.1))}
+        >+
+        </button>
+      </div>
+      {/* مساحة العمل */}
+      <div
+        className="relative flex items-start justify-center select-none"
+        style={{
+          width: '100vw',
+          minHeight: '80vh',
+          background: 'none',
+          overflow: 'hidden',
+          cursor: dragging ? 'grabbing' : 'grab',
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        <div
+          style={{
+            minWidth: CHART_WIDTH,
+            height: chartHeight,
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+            transformOrigin: 'top center',
+            transition: dragging ? 'none' : 'transform 0.2s',
+            margin: '40px 0',
+            position: 'relative',
+          }}
+        >
+          {/* خطوط بين الصفوف (اختياري) */}
+          <div className="absolute left-0 w-full" style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
+          <div className="absolute left-0 w-full" style={{ top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
+          <div className="absolute left-0 w-full" style={{ top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(120,130,180,0.04)' }} />
+          {/* خطوط SVG بزوايا قائمة */}
+          <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
+            {lines.map((line, idx) => {
+              const from = getCenter(line.from);
+              const to = getCenter(line.to);
+              return (
+                <path
+                  key={idx}
+                  d={getLShapePath(from, to)}
+                  fill="none"
+                  stroke="#7b8bbd"
+                  strokeWidth={2}
+                  markerEnd="url(#arrowhead)"
+                />
+              );
+            })}
+            <defs>
+              <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L8,3 z" fill="#7b8bbd" />
+              </marker>
+            </defs>
+          </svg>
+          {/* العناصر */}
+          {allNodes
+            .filter((node: any) => node && node.id)
+            .map((node: any) => {
+              const refKey = `${node.type}-${node.id}`;
+              const pos = positions.find(p => p.id === refKey);
+              if (!pos) return null;
+              return (
+                <div
+                  key={refKey}
+                  ref={nodeRefs.current[refKey]}
+                  style={{
+                    position: 'absolute',
+                    top: pos.top,
+                    left: pos.left,
+                    width: CARD_WIDTH,
+                    height: CARD_HEIGHT,
+                    zIndex: 10,
+                    userSelect: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <NodeCard node={node} />
+                </div>
+              );
+            })}
+        </div>
+      </div>
     </div>
   );
 }; 
