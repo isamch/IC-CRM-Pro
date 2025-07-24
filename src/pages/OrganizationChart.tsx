@@ -3,6 +3,7 @@
 import React, { useRef, useLayoutEffect, useState, useMemo, useEffect, useCallback } from "react"
 import { Building2 } from "lucide-react"
 import { mockUsers, mockTeams } from "../data/mockData"
+import { useAuth } from "../contexts/AuthContext"
 
 // أنواع البيانات
 interface AvatarProps {
@@ -76,22 +77,46 @@ const NodeCard: React.FC<NodeCardProps> = ({ node }) => (
   </div>
 )
 
-// بناء الشجرة الهرمية الحقيقية
-function buildHierarchy() {
+// بناء الشجرة الهرمية حسب دور المستخدم
+function buildHierarchy(currentUser: any) {
   const admin = mockUsers.find((u) => u.role === "admin")
   const managers = mockUsers.filter((u) => u.role === "sales_manager")
   const teams = mockTeams
   const reps = mockUsers.filter((u) => u.role === "sales_representative")
 
-  // لكل مدير: اجلب الفرق التي يديرها
-  const managersWithTeams = managers
-    .filter((manager) => !!manager.id)
-    .map((manager) => ({
-      ...manager,
-      type: "manager",
-      teams: teams
-        .filter((team) => team.managerId === manager.id && !!team.id)
-        .map((team) => ({
+  if (!currentUser) return { admin: null, managers: [] }
+
+  if (currentUser.role === "admin") {
+    // يرى كل شيء
+    const managersWithTeams = managers
+      .filter((manager) => !!manager.id)
+      .map((manager) => ({
+        ...manager,
+        type: "manager",
+        teams: teams
+          .filter((team) => team.managerId === manager.id && !!team.id)
+          .map((team) => ({
+            ...team,
+            type: "team",
+            reps: reps
+              .filter((rep) => rep.teamId === team.id && !!rep.id)
+              .map((rep) => ({
+                ...rep,
+                type: "rep",
+              })),
+          })),
+      }))
+    return { admin: admin && admin.id ? { ...admin, type: "admin" } : null, managers: managersWithTeams }
+  }
+
+  if (currentUser.role === "sales_manager") {
+    // يرى فقط نفسه، فرقه، ومندوبيهم
+    const myTeams = teams.filter((team) => team.managerId === currentUser.id && !!team.id)
+    const managersWithTeams = [
+      {
+        ...currentUser,
+        type: "manager",
+        teams: myTeams.map((team) => ({
           ...team,
           type: "team",
           reps: reps
@@ -101,9 +126,39 @@ function buildHierarchy() {
               type: "rep",
             })),
         })),
-    }))
+      },
+    ]
+    return { admin: null, managers: managersWithTeams }
+  }
 
-  return { admin: admin && admin.id ? { ...admin, type: "admin" } : null, managers: managersWithTeams }
+  if (currentUser.role === "sales_representative") {
+    // يرى فقط فريقه، زملاءه، ومديرهم
+    const myTeam = teams.find((team) => team.id === currentUser.teamId)
+    if (!myTeam) return { admin: null, managers: [] }
+    const myManager = managers.find((m) => m.id === myTeam.managerId)
+    const myTeammates = reps.filter((rep) => rep.teamId === myTeam.id)
+    const managersWithTeams = myManager
+      ? [
+          {
+            ...myManager,
+            type: "manager",
+            teams: [
+              {
+                ...myTeam,
+                type: "team",
+                reps: myTeammates.map((rep) => ({
+                  ...rep,
+                  type: "rep",
+                })),
+              },
+            ],
+          },
+        ]
+      : []
+    return { admin: null, managers: managersWithTeams }
+  }
+
+  return { admin: null, managers: [] }
 }
 
 // إعداد متغيرات الأبعاد والمسافات
@@ -199,10 +254,14 @@ function getHierarchicalPositions(hierarchy: any) {
 }
 
 export const OrganizationChart: React.FC = () => {
-  const hierarchy = buildHierarchy()
+  const { user: currentUser, loading } = useAuth()
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500 bg-gray-900 min-h-screen flex items-center justify-center">جاري التحميل...</div>
+  }
+  const hierarchy = buildHierarchy(currentUser)
 
   // تحقق من وجود بيانات فعلية
-  if (!hierarchy.admin || !hierarchy.managers.length) {
+  if (!hierarchy.managers.length) {
     return (
       <div className="p-8 text-center text-gray-500 bg-gray-900 min-h-screen flex items-center justify-center">
         لا يوجد بيانات لعرض المخطط التنظيمي.

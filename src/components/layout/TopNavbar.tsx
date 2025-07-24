@@ -16,6 +16,7 @@ const getPageTitle = (pathname: string): string => {
   if (pathname.startsWith('/tasks/')) return 'Task Details';
   if (pathname.startsWith('/sales-reps/')) return 'Sales Rep Details';
   if (pathname.startsWith('/sales-managers/')) return 'Sales Manager Details';
+  if (pathname.startsWith('/organization-chart')) return 'Organization Chart';
 
   const titles: { [key: string]: string } = {
     '/dashboard': 'Dashboard',
@@ -25,7 +26,8 @@ const getPageTitle = (pathname: string): string => {
     '/deals': 'Deals',
     '/tasks': 'Tasks',
     '/profile': 'Profile',
-    '/settings': 'Settings'
+    '/settings': 'Settings',
+    '/organization-chart': 'Organization Chart'
   };
   return titles[pathname] || 'Dashboard';
 };

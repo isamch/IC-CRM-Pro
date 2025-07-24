@@ -37,7 +37,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'users', label: 'Users', icon: Shield, requiresPermission: 'users' },
   { id: 'teams', label: 'Teams', icon: Building2, requiresPermission: 'teams' },
-  { id: 'organization-chart', label: 'المخطط', icon: Building2, requiresRole: 'admin' },
+  { id: 'organization-chart', label: 'المخطط', icon: Building2 },
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
