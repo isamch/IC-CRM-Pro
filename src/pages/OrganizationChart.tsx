@@ -93,28 +93,92 @@ function buildHierarchy() {
   return { admin: admin && admin.id ? { ...admin, type: 'admin' } : null, managers: managersWithTeams };
 }
 
-// توزيع تلقائي منظم (صفوف)
-function getInitialPositions(hierarchy: any) {
+// إعداد متغيرات الأبعاد والمسافات
+const CARD_WIDTH = 160;
+const CARD_HEIGHT = 120;
+const H_GAP = 60; // المسافة الأفقية بين البطاقات
+const V_GAP = 100; // المسافة العمودية بين الصفوف
+const CHART_WIDTH = 1200; // عرض المخطط الكلي
+
+// توزيع هرمي حقيقي: كل مدير مع فرقه ومندوبيه في عمود مستقل
+function getHierarchicalPositions(hierarchy: any) {
   const positions: NodePosition[] = [];
-  const rowHeight = 180;
-  const colWidth = 180;
-  // المدير في الأعلى
-  positions.push({ id: hierarchy.admin.id!, top: 0, left: 600 });
-  // المدراء
+  const CARD_WIDTH = 160;
+  const CARD_HEIGHT = 120;
+  const H_GAP = 60;
+  const V_GAP = 100;
+  const ROOT_TOP = 40;
+  const CHART_WIDTH = 1200;
+
+  // حساب عرض subtree لكل مدير
+  function getSubtreeWidth(manager: any) {
+    // أوسع صف: الفرق أو أكبر عدد من المندوبين في فريق
+    const teamsCount = manager.teams.length;
+    let maxReps = 0;
+    manager.teams.forEach((team: any) => {
+      if (team.reps.length > maxReps) maxReps = team.reps.length;
+    });
+    const teamRowWidth = teamsCount * CARD_WIDTH + (teamsCount - 1) * H_GAP;
+    const repsRowWidth = maxReps * CARD_WIDTH + (maxReps - 1) * H_GAP;
+    return Math.max(CARD_WIDTH, teamRowWidth, repsRowWidth);
+  }
+
+  // توزيع المدراء أفقيًا في منتصف المخطط
   const managers = hierarchy.managers;
-  const managerRow = 1;
-  managers.forEach((manager: any, i: number) => {
-    positions.push({ id: manager.id, top: managerRow * rowHeight, left: 200 + i * colWidth * 2 });
+  const subtreeWidths = managers.map(getSubtreeWidth);
+  const totalWidth = subtreeWidths.reduce((a: number, b: number) => a + b, 0) + (managers.length - 1) * H_GAP;
+  let x = (CHART_WIDTH - totalWidth) / 2;
+
+  // مدير النظام في الأعلى
+  if (hierarchy.admin) {
+    positions.push({
+      id: `admin-${hierarchy.admin.id}`,
+      top: ROOT_TOP,
+      left: (CHART_WIDTH - CARD_WIDTH) / 2,
+    });
+  }
+
+  // لكل مدير: ضع بطاقته، ثم فرقه تحته، ثم مندوبيه تحت كل فريق
+  managers.forEach((manager: any, mIdx: number) => {
+    const subtreeWidth = subtreeWidths[mIdx];
+    // مدير
+    const managerLeft = x + (subtreeWidth - CARD_WIDTH) / 2;
+    const managerTop = ROOT_TOP + CARD_HEIGHT + V_GAP;
+    positions.push({
+      id: `manager-${manager.id}`,
+      top: managerTop,
+      left: managerLeft,
+    });
     // الفرق
-    const teamRow = 2;
-    manager.teams.forEach((team: any, j: number) => {
-      positions.push({ id: team.id, top: teamRow * rowHeight, left: 120 + i * colWidth * 2 + j * colWidth });
-      // المندوبين
-      const repRow = 3;
-      team.reps.forEach((rep: any, k: number) => {
-        positions.push({ id: rep.id, top: repRow * rowHeight, left: 100 + i * colWidth * 2 + j * colWidth + k * 120 });
+    const teams = manager.teams;
+    const teamsCount = teams.length;
+    const teamsRowWidth = teamsCount * CARD_WIDTH + (teamsCount - 1) * H_GAP;
+    let teamX = x + (subtreeWidth - teamsRowWidth) / 2;
+    const teamTop = managerTop + CARD_HEIGHT + V_GAP;
+    teams.forEach((team: any, tIdx: number) => {
+      positions.push({
+        id: `team-${team.id}`,
+        top: teamTop,
+        left: teamX + tIdx * (CARD_WIDTH + H_GAP),
       });
     });
+    // مندوبي كل فريق
+    teams.forEach((team: any, tIdx: number) => {
+      const reps = team.reps;
+      const repsCount = reps.length;
+      if (repsCount === 0) return;
+      const repsRowWidth = repsCount * CARD_WIDTH + (repsCount - 1) * H_GAP;
+      const repsX = teamX + tIdx * (CARD_WIDTH + H_GAP) + (CARD_WIDTH - repsRowWidth) / 2;
+      const repsTop = teamTop + CARD_HEIGHT + V_GAP;
+      reps.forEach((rep: any, rIdx: number) => {
+        positions.push({
+          id: `rep-${rep.id}`,
+          top: repsTop,
+          left: repsX + rIdx * (CARD_WIDTH + H_GAP),
+        });
+      });
+    });
+    x += subtreeWidth + H_GAP;
   });
   return positions;
 }
@@ -137,28 +201,8 @@ export const OrganizationChart: React.FC = () => {
     ...hierarchy.managers.flatMap((m: any) => [m, ...m.teams, ...m.teams.flatMap((t: any) => t.reps)])
   ], [hierarchy]);
 
-  // حفظ أماكن كل عنصر
-  const [positions, setPositions] = useState<NodePosition[]>(() => {
-    // توزيع أولي يبدأ من left/top صغيرة
-    const positions: NodePosition[] = [];
-    const rowHeight = 180;
-    const colWidth = 180;
-    positions.push({ id: `admin-${hierarchy.admin!.id}`, top: 40, left: 400 });
-    const managers = hierarchy.managers;
-    const managerRow = 1;
-    managers.forEach((manager: any, i: number) => {
-      positions.push({ id: `manager-${manager.id}`, top: managerRow * rowHeight + 40, left: 100 + i * colWidth * 2 });
-      const teamRow = 2;
-      manager.teams.forEach((team: any, j: number) => {
-        positions.push({ id: `team-${team.id}`, top: teamRow * rowHeight + 40, left: 80 + i * colWidth * 2 + j * colWidth });
-        const repRow = 3;
-        team.reps.forEach((rep: any, k: number) => {
-          positions.push({ id: `rep-${rep.id}`, top: repRow * rowHeight + 40, left: 60 + i * colWidth * 2 + j * colWidth + k * 120 });
-        });
-      });
-    });
-    return positions;
-  });
+  // استبدال توزيع المواقع القديم
+  const [positions] = useState<NodePosition[]>(() => getHierarchicalPositions(hierarchy));
 
   // refs لكل عنصر (تهيئة آمنة داخل useEffect)
   const nodeRefs = useRef<{ [id: string]: React.RefObject<HTMLDivElement> }>({});
@@ -169,10 +213,6 @@ export const OrganizationChart: React.FC = () => {
     });
     // eslint-disable-next-line
   }, [allNodes]);
-
-  // drag state
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // خطوط بين العناصر
   const [lines, setLines] = useState<{ from: string; to: string }[]>([]);
@@ -195,26 +235,6 @@ export const OrganizationChart: React.FC = () => {
     // eslint-disable-next-line
   }, [positions]);
 
-  // drag events
-  const handleMouseDown = (id: string, e: React.MouseEvent) => {
-    setDragId(id);
-    const pos = positions.find(p => p.id === id);
-    if (pos) {
-      setOffset({ x: e.clientX - pos.left, y: e.clientY - pos.top });
-    }
-  };
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragId) return;
-    setPositions(positions =>
-      positions.map(p =>
-        p.id === dragId
-          ? { ...p, left: e.clientX - offset.x, top: e.clientY - offset.y }
-          : p
-      )
-    );
-  };
-  const handleMouseUp = () => setDragId(null);
-
   // حساب مراكز العناصر لرسم الخطوط
   const getCenter = (id: string) => {
     const pos = positions.find(p => p.id === id)!;
@@ -227,25 +247,33 @@ export const OrganizationChart: React.FC = () => {
     };
   };
 
+  // رسم الخطوط بزوايا قائمة (L-shape)
+  const getLShapePath = (from: { x: number; y: number }, to: { x: number; y: number }) => {
+    // خط عمودي من النقطة الأولى لنصف المسافة، ثم أفقي للنقطة الثانية
+    const midY = (from.y + to.y) / 2;
+    return `M${from.x},${from.y} L${from.x},${midY} L${to.x},${midY} L${to.x},${to.y}`;
+  };
+
+  // تحسين مظهر الخلفية والبطاقات
   return (
     <div
-      className="relative w-full min-h-screen bg-gray-900"
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      style={{ minWidth: 1200 }}
+      className="relative w-full min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-900"
+      style={{ minWidth: CHART_WIDTH }}
     >
-      {/* خطوط SVG */}
+      {/* خطوط بين الصفوف (اختياري) */}
+      <div className="absolute left-0 w-full" style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: 'rgba(255,255,255,0.04)' }} />
+      <div className="absolute left-0 w-full" style={{ top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(255,255,255,0.04)' }} />
+      <div className="absolute left-0 w-full" style={{ top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: 'rgba(255,255,255,0.04)' }} />
+      {/* خطوط SVG بزوايا قائمة */}
       <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
         {lines.map((line, idx) => {
           const from = getCenter(line.from);
           const to = getCenter(line.to);
           return (
-            <line
+            <path
               key={idx}
-              x1={from.x}
-              y1={from.y}
-              x2={to.x}
-              y2={to.y}
+              d={getLShapePath(from, to)}
+              fill="none"
               stroke="#94a3b8"
               strokeWidth={2}
               markerEnd="url(#arrowhead)"
@@ -273,11 +301,14 @@ export const OrganizationChart: React.FC = () => {
                 position: 'absolute',
                 top: pos.top,
                 left: pos.left,
-                cursor: 'grab',
+                width: CARD_WIDTH,
+                height: CARD_HEIGHT,
                 zIndex: 10,
                 userSelect: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-              onMouseDown={e => handleMouseDown(refKey, e)}
             >
               <NodeCard node={node} />
             </div>
