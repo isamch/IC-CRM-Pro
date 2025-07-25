@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useRef, useLayoutEffect, useState, useMemo, useEffect, useCallback } from "react"
 import { Building2 } from "lucide-react"
 import { mockUsers, mockTeams } from "../data/mockData"
