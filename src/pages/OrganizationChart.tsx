@@ -37,7 +37,7 @@ const Avatar: React.FC<AvatarProps> = ({ name, avatar }) => (
 )
 
 // بطاقة مستخدم أو فريق
-const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?: boolean; isAdmin?: boolean }> = ({ node, highlighted = true, isCurrentUser = false, isAdmin = false }) => {
+const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?: boolean; isAdmin?: boolean; isManagerView?: boolean }> = ({ node, highlighted = true, isCurrentUser = false, isAdmin = false, isManagerView = false }) => {
   if (!highlighted) return null;
   return (
     <div className={
@@ -53,8 +53,8 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
       )}
       <div className="mt-2 text-center">
         <div className="font-bold text-white">
-          {/* إذا كان المستخدم الحالي مدير النظام، اجعل الاسم دائماً كرابط حسب نوع البطاقة */}
-          {isAdmin ? (
+          {/* إذا كان المستخدم الحالي مدير النظام أو مدير مبيعات (لعناصره فقط)، اجعل الاسم كرابط حسب نوع البطاقة */}
+          {(isAdmin || isManagerView) ? (
             <Link
               to={
                 node.type === "admin"
@@ -712,6 +712,8 @@ export const OrganizationChart: React.FC = () => {
                 }
                 // تحقق هل المستخدم الحالي مدير النظام
                 const isAdmin = !!(currentUser && currentUser.role === 'admin');
+                // تحقق هل المستخدم الحالي مدير مبيعات وهذه البطاقة ضمن عناصره
+                const isManagerView = !!(currentUser && currentUser.role === 'sales_manager' && highlightedIds.has(refKey));
                 return (
                   <div
                     key={refKey}
@@ -729,7 +731,7 @@ export const OrganizationChart: React.FC = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <NodeCard node={node} highlighted={true} isCurrentUser={isCurrentUser} isAdmin={isAdmin} />
+                    <NodeCard node={node} highlighted={true} isCurrentUser={isCurrentUser} isAdmin={isAdmin} isManagerView={isManagerView} />
                   </div>
                 )
               })}
