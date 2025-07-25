@@ -36,46 +36,49 @@ const Avatar: React.FC<AvatarProps> = ({ name, avatar }) => (
 )
 
 // بطاقة مستخدم أو فريق
-const NodeCard: React.FC<NodeCardProps> = ({ node }) => (
-  <div className="flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px]">
-    {node.type === "team" ? (
-      <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
-        <Building2 className="w-6 h-6" />
-      </div>
-    ) : (
-      <Avatar name={node.name} avatar={node.avatar} />
-    )}
-    <div className="mt-2 text-center">
-      <div className="font-bold text-white">{node.name}</div>
-      {node.email && <div className="text-xs text-[#cbd5e1]">{node.email}</div>}
-      {node.region && <div className="text-xs text-[#cbd5e1]">{node.region}</div>}
-      <div className="text-xs mt-1">
-        <span
-          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-            node.type === "admin"
-              ? "bg-[#7c3aed] text-white"
-              : node.type === "manager"
-                ? "bg-[#2563eb] text-white"
-                : node.type === "team"
-                  ? "bg-[#334155] text-[#a5b4fc]"
-                  : "bg-[#22c55e] text-white"
-          }`}
-        >
-          {node.type === "admin"
-            ? "مدير النظام"
-            : node.type === "manager"
-              ? "مدير المبيعات"
-              : node.type === "team"
-                ? "فريق"
-                : "مندوب المبيعات"}
-        </span>
-      </div>
-      {typeof node.isActive === "boolean" && (
-        <div className="text-xs text-[#a3e635]">{node.isActive ? "نشط" : "غير نشط"}</div>
+const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean }> = ({ node, highlighted = true }) => {
+  if (!highlighted) return null;
+  return (
+    <div className="flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px] transition-all duration-200">
+      {node.type === "team" ? (
+        <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
+          <Building2 className="w-6 h-6" />
+        </div>
+      ) : (
+        <Avatar name={node.name} avatar={node.avatar} />
       )}
+      <div className="mt-2 text-center">
+        <div className="font-bold text-white">{node.name}</div>
+        {node.email && <div className="text-xs text-[#cbd5e1]">{node.email}</div>}
+        {node.region && <div className="text-xs text-[#cbd5e1]">{node.region}</div>}
+        <div className="text-xs mt-1">
+          <span
+            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+              node.type === "admin"
+                ? "bg-[#7c3aed] text-white"
+                : node.type === "manager"
+                  ? "bg-[#2563eb] text-white"
+                  : node.type === "team"
+                    ? "bg-[#334155] text-[#a5b4fc]"
+                    : "bg-[#22c55e] text-white"
+            }`}
+          >
+            {node.type === "admin"
+              ? "مدير النظام"
+              : node.type === "manager"
+                ? "مدير المبيعات"
+                : node.type === "team"
+                  ? "فريق"
+                  : "مندوب المبيعات"}
+          </span>
+        </div>
+        {typeof node.isActive === "boolean" && (
+          <div className="text-xs text-[#a3e635]">{node.isActive ? "نشط" : "غير نشط"}</div>
+        )}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 // بناء الشجرة الهرمية حسب دور المستخدم
 function buildHierarchy(currentUser: any) {
@@ -84,39 +87,15 @@ function buildHierarchy(currentUser: any) {
   const teams = mockTeams
   const reps = mockUsers.filter((u) => u.role === "sales_representative")
 
-  if (!currentUser) return { admin: null, managers: [] }
-
-  if (currentUser.role === "admin") {
-    // يرى كل شيء
-    const managersWithTeams = managers
-      .filter((manager) => !!manager.id)
-      .map((manager) => ({
-        ...manager,
-        type: "manager",
-        teams: teams
-          .filter((team) => team.managerId === manager.id && !!team.id)
-          .map((team) => ({
-            ...team,
-            type: "team",
-            reps: reps
-              .filter((rep) => rep.teamId === team.id && !!rep.id)
-              .map((rep) => ({
-                ...rep,
-                type: "rep",
-              })),
-          })),
-      }))
-    return { admin: admin && admin.id ? { ...admin, type: "admin" } : null, managers: managersWithTeams }
-  }
-
-  if (currentUser.role === "sales_manager") {
-    // يرى فقط نفسه، فرقه، ومندوبيهم
-    const myTeams = teams.filter((team) => team.managerId === currentUser.id && !!team.id)
-    const managersWithTeams = [
-      {
-        ...currentUser,
-        type: "manager",
-        teams: myTeams.map((team) => ({
+  // للجميع: أرجع كل شيء كما يرى الادمن
+  const managersWithTeams = managers
+    .filter((manager) => !!manager.id)
+    .map((manager) => ({
+      ...manager,
+      type: "manager",
+      teams: teams
+        .filter((team) => team.managerId === manager.id && !!team.id)
+        .map((team) => ({
           ...team,
           type: "team",
           reps: reps
@@ -126,39 +105,8 @@ function buildHierarchy(currentUser: any) {
               type: "rep",
             })),
         })),
-      },
-    ]
-    return { admin: null, managers: managersWithTeams }
-  }
-
-  if (currentUser.role === "sales_representative") {
-    // يرى فقط فريقه، زملاءه، ومديرهم
-    const myTeam = teams.find((team) => team.id === currentUser.teamId)
-    if (!myTeam) return { admin: null, managers: [] }
-    const myManager = managers.find((m) => m.id === myTeam.managerId)
-    const myTeammates = reps.filter((rep) => rep.teamId === myTeam.id)
-    const managersWithTeams = myManager
-      ? [
-          {
-            ...myManager,
-            type: "manager",
-            teams: [
-              {
-                ...myTeam,
-                type: "team",
-                reps: myTeammates.map((rep) => ({
-                  ...rep,
-                  type: "rep",
-                })),
-              },
-            ],
-          },
-        ]
-      : []
-    return { admin: null, managers: managersWithTeams }
-  }
-
-  return { admin: null, managers: [] }
+    }))
+  return { admin: admin && admin.id ? { ...admin, type: "admin" } : null, managers: managersWithTeams }
 }
 
 // إعداد متغيرات الأبعاد والمسافات
@@ -278,6 +226,27 @@ export const OrganizationChart: React.FC = () => {
     [hierarchy],
   )
 
+  // --- تحديد البطاقات المسموح بها لمدير المبيعات ---
+  let highlightedIds = new Set<string>()
+  if (currentUser && currentUser.role === 'sales_manager') {
+    highlightedIds.add(`manager-${currentUser.id}`)
+    hierarchy.managers.forEach((manager: any) => {
+      if (manager.id === currentUser.id) {
+        const teams = Array.isArray(manager.teams) ? manager.teams : [];
+        teams.forEach((team: any) => {
+          highlightedIds.add(`team-${team.id}`);
+          const reps = Array.isArray(team.reps) ? team.reps : [];
+          reps.forEach((rep: any) => {
+            highlightedIds.add(`rep-${rep.id}`);
+          });
+        });
+      }
+    });
+  } else {
+    // كل شيء مسموح للأدوار الأخرى
+    allNodes.forEach((node: any) => highlightedIds.add(`${node.type}-${node.id}`));
+  }
+
   // استبدال توزيع المواقع القديم
   const [positions] = useState<NodePosition[]>(() => getHierarchicalPositions(hierarchy))
 
@@ -297,17 +266,29 @@ export const OrganizationChart: React.FC = () => {
   // بناء الخطوط (من كل عنصر إلى أبوه) بناءً على positions فقط
   useLayoutEffect(() => {
     const newLines: { from: string; to: string }[] = []
-    hierarchy.managers.forEach((manager: any) => {
-      if (hierarchy.admin && hierarchy.admin.id) {
-        newLines.push({ from: `admin-${hierarchy.admin.id}`, to: `manager-${manager.id}` })
-      }
-      manager.teams.forEach((team: any) => {
-        newLines.push({ from: `manager-${manager.id}`, to: `team-${team.id}` })
-        team.reps.forEach((rep: any) => {
-          newLines.push({ from: `team-${team.id}`, to: `rep-${rep.id}` })
+    const adminId = hierarchy.admin?.id;
+    if (adminId) {
+      hierarchy.managers.forEach((manager: any) => {
+        newLines.push({ from: `admin-${adminId}`, to: `manager-${manager.id}` })
+        manager.teams.forEach((team: any) => {
+          newLines.push({ from: `manager-${manager.id}`, to: `team-${team.id}` })
+          team.reps.forEach((rep: any) => {
+            newLines.push({ from: `team-${team.id}`, to: `rep-${rep.id}` })
+          })
         })
       })
-    })
+    } else {
+      // لا يوجد admin: لكل مدير، خط رأسي من نقطة فوقه مباشرة
+      hierarchy.managers.forEach((manager: any) => {
+        newLines.push({ from: `root-${manager.id}`, to: `manager-${manager.id}` })
+        manager.teams.forEach((team: any) => {
+          newLines.push({ from: `manager-${manager.id}`, to: `team-${team.id}` })
+          team.reps.forEach((rep: any) => {
+            newLines.push({ from: `team-${team.id}`, to: `rep-${rep.id}` })
+          })
+        })
+      })
+    }
     setLines(newLines)
     // eslint-disable-next-line
   }, [positions])
@@ -324,6 +305,23 @@ export const OrganizationChart: React.FC = () => {
   // حساب مراكز العناصر لرسم الخطوط
   const getCenter = useCallback(
     (id: string) => {
+      if (id.startsWith('root-')) {
+        // نقطة فوق المدير مباشرة
+        const managerId = id.replace('root-', '')
+        const pos = positions.find((p) => p.id === `manager-${managerId}`)
+        if (!pos) return { x: 0, y: 0 }
+        return {
+          x: pos.left + offsetX + CARD_WIDTH / 2,
+          y: Math.max(pos.top - 40, 0), // 40px فوق البطاقة
+        }
+      }
+      if (id === 'root') {
+        // نقطة وهمية في أعلى المخطط، منتصف العرض (احتياط)
+        return {
+          x: chartWidth / 2,
+          y: 0,
+        }
+      }
       const pos = positions.find((p) => p.id === id)!
       const ref = nodeRefs.current[id]
       if (!pos || !ref?.current) return { x: 0, y: 0 }
@@ -333,7 +331,7 @@ export const OrganizationChart: React.FC = () => {
         y: pos.top + CARD_HEIGHT / 2,
       }
     },
-    [positions, offsetX],
+    [positions, offsetX, chartWidth],
   )
 
   // رسم الخطوط بزوايا قائمة (L-shape)
@@ -474,22 +472,140 @@ export const OrganizationChart: React.FC = () => {
                 background: "rgba(120,130,180,0.04)",
               }}
             />
-            {/* خطوط SVG بزوايا قائمة */}
+            {/* خطوط SVG احترافية بين المستويات */}
             <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-              {lines.map((line, idx) => {
-                const from = getCenter(line.from)
-                const to = getCenter(line.to)
+              {/* خطوط بين المدير والفرق */}
+              {hierarchy.managers.map((manager: any) => {
+                const managerPos = positions.find((p) => p.id === `manager-${manager.id}`)
+                if (!managerPos) return null
+                const teams = manager.teams || []
+                // فقط الفرق المسموح بها
+                const teamPositions = teams
+                  .map((team: any) => positions.find((p) => p.id === `team-${team.id}`))
+                  .filter(tp => tp && highlightedIds.has(`team-${tp.id}`))
+                if (teamPositions.length < 1 || !highlightedIds.has(`manager-${manager.id}`)) return null
+                // خط رأسي من أسفل المدير إلى الخط الأفقي (إذا كان هناك أكثر من فريق)
+                const mx = managerPos.left + offsetX + CARD_WIDTH / 2
+                const my1 = managerPos.top + CARD_HEIGHT
+                // الخط الأفقي بين الفرق
+                const tx1 = Math.min(...teamPositions.map((tp: any) => tp.left + offsetX + CARD_WIDTH / 2))
+                const tx2 = Math.max(...teamPositions.map((tp: any) => tp.left + offsetX + CARD_WIDTH / 2))
+                const ty = teamPositions[0].top - V_GAP / 2
                 return (
-                  <path
-                    key={idx}
-                    d={getLShapePath(from, to)}
-                    fill="none"
-                    stroke="#7b8bbd"
-                    strokeWidth={2}
-                    markerEnd="url(#arrowhead)"
-                  />
+                  <g key={`manager-teams-${manager.id}`}>
+                    {/* خط رأسي من المدير إلى الخط الأفقي */}
+                    {teamPositions.length > 1 && (
+                      <line x1={mx} y1={my1} x2={mx} y2={ty} stroke="#7b8bbd" strokeWidth={2} />
+                    )}
+                    {/* خط أفقي بين الفرق */}
+                    {teamPositions.length > 1 && (
+                      <line x1={tx1} y1={ty} x2={tx2} y2={ty} stroke="#7b8bbd" strokeWidth={2} />
+                    )}
+                    {/* خطوط رأسية من الخط الأفقي إلى كل فريق */}
+                    {teamPositions.length > 1 && teamPositions.map((tp: any, idx: number) => (
+                      <line
+                        key={`team-vertical-${tp.id}`}
+                        x1={tp.left + offsetX + CARD_WIDTH / 2}
+                        y1={ty}
+                        x2={tp.left + offsetX + CARD_WIDTH / 2}
+                        y2={tp.top}
+                        stroke="#7b8bbd"
+                        strokeWidth={2}
+                      />
+                    ))}
+                    {/* إذا كان هناك فريق واحد فقط، خط رأسي مباشر */}
+                    {teamPositions.length === 1 && (
+                      <line
+                        x1={mx}
+                        y1={my1}
+                        x2={teamPositions[0].left + offsetX + CARD_WIDTH / 2}
+                        y2={teamPositions[0].top}
+                        stroke="#7b8bbd"
+                        strokeWidth={2}
+                      />
+                    )}
+                  </g>
                 )
               })}
+              {/* خطوط بين الفرق والمندوبين */}
+              {hierarchy.managers.flatMap((manager: any) =>
+                (manager.teams || []).map((team: any) => {
+                  const teamPos = positions.find((p) => p.id === `team-${team.id}`)
+                  if (!teamPos || !highlightedIds.has(`team-${team.id}`)) return null
+                  const reps = team.reps || []
+                  // فقط المندوبين المسموح بهم
+                  const repPositions = reps
+                    .map((rep: any) => positions.find((p) => p.id === `rep-${rep.id}`))
+                    .filter(rp => rp && highlightedIds.has(`rep-${rp.id}`))
+                  if (repPositions.length < 1) return null
+                  // خط رأسي من أسفل الفريق إلى الخط الأفقي (إذا كان هناك أكثر من مندوب)
+                  const tx = teamPos.left + offsetX + CARD_WIDTH / 2
+                  const ty1 = teamPos.top + CARD_HEIGHT
+                  // الخط الأفقي بين المندوبين
+                  const rx1 = Math.min(...repPositions.map((rp: any) => rp.left + offsetX + CARD_WIDTH / 2))
+                  const rx2 = Math.max(...repPositions.map((rp: any) => rp.left + offsetX + CARD_WIDTH / 2))
+                  const ry = repPositions[0].top - V_GAP / 2
+                  return (
+                    <g key={`team-reps-${team.id}`}>
+                      {/* خط رأسي من الفريق إلى الخط الأفقي */}
+                      {repPositions.length > 1 && (
+                        <line x1={tx} y1={ty1} x2={tx} y2={ry} stroke="#7b8bbd" strokeWidth={2} />
+                      )}
+                      {/* خط أفقي بين المندوبين */}
+                      {repPositions.length > 1 && (
+                        <line x1={rx1} y1={ry} x2={rx2} y2={ry} stroke="#7b8bbd" strokeWidth={2} />
+                      )}
+                      {/* خطوط رأسية من الخط الأفقي إلى كل مندوب */}
+                      {repPositions.length > 1 && repPositions.map((rp: any, idx: number) => (
+                        <line
+                          key={`rep-vertical-${rp.id}`}
+                          x1={rp.left + offsetX + CARD_WIDTH / 2}
+                          y1={ry}
+                          x2={rp.left + offsetX + CARD_WIDTH / 2}
+                          y2={rp.top}
+                          stroke="#7b8bbd"
+                          strokeWidth={2}
+                        />
+                      ))}
+                      {/* إذا كان هناك مندوب واحد فقط، خط رأسي مباشر */}
+                      {repPositions.length === 1 && (
+                        <line
+                          x1={tx}
+                          y1={ty1}
+                          x2={repPositions[0].left + offsetX + CARD_WIDTH / 2}
+                          y2={repPositions[0].top}
+                          stroke="#7b8bbd"
+                          strokeWidth={2}
+                        />
+                      )}
+                    </g>
+                  )
+                })
+              )}
+              {/* خطوط L-shape القديمة (احتياط أو admin فقط) */}
+              {lines
+                .filter(line => {
+                  // إذا كان مدير مبيعات، اعرض فقط الخطوط التي تربط بين عناصر مسموح بها
+                  if (currentUser && currentUser.role === 'sales_manager') {
+                    return highlightedIds.has(line.from) && highlightedIds.has(line.to);
+                  }
+                  // للأدوار الأخرى، اعرض كل الخطوط
+                  return true;
+                })
+                .map((line, idx) => {
+                  const from = getCenter(line.from)
+                  const to = getCenter(line.to)
+                  return (
+                    <path
+                      key={idx}
+                      d={getLShapePath(from, to)}
+                      fill="none"
+                      stroke="#7b8bbd"
+                      strokeWidth={2}
+                      markerEnd="url(#arrowhead)"
+                    />
+                  )
+                })}
               <defs>
                 <marker
                   id="arrowhead"
@@ -511,6 +627,7 @@ export const OrganizationChart: React.FC = () => {
                 const refKey = `${node.type}-${node.id}`
                 const pos = positions.find((p) => p.id === refKey)
                 if (!pos) return null
+                if (!highlightedIds.has(refKey)) return null;
                 return (
                   <div
                     key={refKey}
@@ -528,7 +645,7 @@ export const OrganizationChart: React.FC = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <NodeCard node={node} />
+                    <NodeCard node={node} highlighted={true} />
                   </div>
                 )
               })}
