@@ -36,10 +36,13 @@ const Avatar: React.FC<AvatarProps> = ({ name, avatar }) => (
 )
 
 // بطاقة مستخدم أو فريق
-const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean }> = ({ node, highlighted = true }) => {
+const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?: boolean }> = ({ node, highlighted = true, isCurrentUser = false }) => {
   if (!highlighted) return null;
   return (
-    <div className="flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px] transition-all duration-200">
+    <div className={
+      `flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px] transition-all duration-200 ` +
+      (isCurrentUser ? 'ring-4 ring-green-400 shadow-[0_0_16px_4px_rgba(34,197,94,0.5)] z-50' : '')
+    }>
     {node.type === "team" ? (
       <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
         <Building2 className="w-6 h-6" />
@@ -349,20 +352,13 @@ export const OrganizationChart: React.FC = () => {
     [positions, offsetX, chartWidth],
   )
 
-  // رسم الخطوط بزوايا قائمة (L-shape)
-  const getLShapePath = (from: { x: number; y: number }, to: { x: number; y: number }) => {
-    // خط عمودي من النقطة الأولى لنصف المسافة، ثم أفقي للنقطة الثانية
-    const midY = (from.y + to.y) / 2
-    return `M${from.x},${from.y} L${from.x},${midY} L${to.x},${midY} L${to.x},${to.y}`
-  }
-
   // حالة التكبير/التصغير
   const [scale, setScale] = useState(0.6) // القيمة الافتراضية مصغرة
   // حالة السحب (pan)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
   const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const panStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const panStart = useRef<{ x: number; y: number }>({ ...pan })
 
   // أحداث السحب
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -382,17 +378,43 @@ export const OrganizationChart: React.FC = () => {
 
   const handleMouseUp = () => setDragging(false)
 
-  // منع تحديد النص أثناء السحب
+  // --- تركيز البطاقة الخاصة بالمستخدم الحالي في وسط مساحة العمل عند فتح الصفحة ---
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (dragging) {
-      document.body.style.userSelect = "none"
-    } else {
-      document.body.style.userSelect = ""
-    }
-    return () => {
-      document.body.style.userSelect = ""
-    }
-  }, [dragging])
+    if (!currentUser) return;
+    // حدد id البطاقة الخاصة بالمستخدم الحالي
+    let myCardId = '';
+    if (currentUser.role === 'admin') myCardId = `admin-${currentUser.id}`;
+    else if (currentUser.role === 'sales_manager') myCardId = `manager-${currentUser.id}`;
+    else if (currentUser.role === 'sales_representative') myCardId = `rep-${currentUser.id}`;
+    else myCardId = '';
+    if (!myCardId) return;
+    const myPos = positions.find((p) => p.id === myCardId);
+    if (!myPos) return;
+    const container = containerRef.current;
+    if (!container) return;
+    // أبعاد مساحة العمل
+    const containerRect = container.getBoundingClientRect();
+    // مركز البطاقة
+    const cardCenterX = myPos.left + offsetX + CARD_WIDTH / 2;
+    const cardCenterY = myPos.top + CARD_HEIGHT / 2;
+    // مركز مساحة العمل
+    const containerCenterX = containerRect.width / 2;
+    const containerCenterY = containerRect.height / 2;
+    // احسب pan المطلوب (مع مراعاة scale)
+    setPan({
+      x: (containerCenterX - cardCenterX * scale),
+      y: (containerCenterY - cardCenterY * scale),
+    });
+    // eslint-disable-next-line
+  }, [currentUser, positions, scale, offsetX]);
+
+  // رسم الخطوط بزوايا قائمة (L-shape)
+  const getLShapePath = (from: { x: number; y: number }, to: { x: number; y: number }) => {
+    // خط عمودي من النقطة الأولى لنصف المسافة، ثم أفقي للنقطة الثانية
+    const midY = (from.y + to.y) / 2
+    return `M${from.x},${from.y} L${from.x},${midY} L${to.x},${midY} L${to.x},${to.y}`
+  }
 
   // معالج أحداث عجلة الماوس/لوحة اللمس للتكبير/التصغير
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -425,10 +447,22 @@ export const OrganizationChart: React.FC = () => {
     }
   }, [])
 
+  // منع تحديد النص أثناء السحب
+  useEffect(() => {
+    if (dragging) {
+      document.body.style.userSelect = "none"
+    } else {
+      document.body.style.userSelect = ""
+    }
+    return () => {
+      document.body.style.userSelect = ""
+    }
+  }, [dragging])
+
   // تحسين مظهر الخلفية والبطاقات
   return (
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] overflow-hidden">
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full" ref={containerRef}>
         {/* أزرار التحكم في التكبير/التصغير مثبتة دائماً في الزاوية العليا اليمنى من مساحة العمل */}
         <div className="absolute top-6 right-6 z-[9999] flex gap-2 bg-white/80 rounded shadow p-2">
           <button
@@ -646,6 +680,13 @@ export const OrganizationChart: React.FC = () => {
                 const pos = positions.find((p) => p.id === refKey)
                 if (!pos) return null
                 if (!highlightedIds.has(refKey)) return null;
+                // تحقق هل هذه بطاقة المستخدم الحالي
+                let isCurrentUser = false;
+                if (currentUser) {
+                  if (currentUser.role === 'admin' && refKey === `admin-${currentUser.id}`) isCurrentUser = true;
+                  if (currentUser.role === 'sales_manager' && refKey === `manager-${currentUser.id}`) isCurrentUser = true;
+                  if (currentUser.role === 'sales_representative' && refKey === `rep-${currentUser.id}`) isCurrentUser = true;
+                }
                 return (
                   <div
                     key={refKey}
@@ -663,7 +704,7 @@ export const OrganizationChart: React.FC = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <NodeCard node={node} highlighted={true} />
+                    <NodeCard node={node} highlighted={true} isCurrentUser={isCurrentUser} />
                   </div>
                 )
               })}
