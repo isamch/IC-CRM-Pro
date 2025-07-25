@@ -66,7 +66,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-1">
       <div className="flex items-center justify-between">
         {/* Left Side - Menu Button and Page Title */}
         <div className="flex items-center space-x-4">

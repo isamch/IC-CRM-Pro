@@ -10,7 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
-  Building2
+  Building2,
+  GitMerge // استبدل BarChart بـ GitMerge
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { CanView } from '../auth/PermissionGuard';
@@ -37,7 +38,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'users', label: 'Users', icon: Shield, requiresPermission: 'users' },
   { id: 'teams', label: 'Teams', icon: Building2, requiresPermission: 'teams' },
-  { id: 'organization-chart', label: 'المخطط', icon: Building2 },
+  { id: 'organization-chart', label: 'Hierarchy', icon: GitMerge }, // غيّرنا الأيقونة إلى GitMerge
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
