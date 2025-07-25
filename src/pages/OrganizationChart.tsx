@@ -52,8 +52,8 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
       ) : (
         <Avatar name={node.name} avatar={node.avatar} />
       )}
-      <div className="mt-2 text-center">
-        <div className="font-bold text-gray-900 dark:text-white">
+      <div className="mt-2 text-center w-full">
+        <div className="font-bold text-gray-900 dark:text-white w-full truncate">
           {(isAdmin || isManagerView) ? (
             <Link
               to={
@@ -67,16 +67,16 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
                         ? `/teams/${node.id}`
                         : `#`
               }
-              className="hover:underline text-green-500 dark:text-green-400 cursor-pointer transition-colors duration-150"
+              className="hover:underline text-green-500 dark:text-green-400 cursor-pointer transition-colors duration-150 w-full truncate inline-block"
             >
               {node.name}
             </Link>
           ) : (
-            node.name
+            <span className="w-full truncate inline-block">{node.name}</span>
           )}
         </div>
-        {node.email && <div className="text-xs text-gray-500 dark:text-gray-300">{node.email}</div>}
-        {node.region && <div className="text-xs text-gray-500 dark:text-gray-300">{node.region}</div>}
+        {node.email && <div className="text-xs text-gray-500 dark:text-gray-300 w-full truncate">{node.email}</div>}
+        {node.region && <div className="text-xs text-gray-500 dark:text-gray-300 w-full truncate">{node.region}</div>}
         <div className="text-xs mt-1">
           <span
             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
