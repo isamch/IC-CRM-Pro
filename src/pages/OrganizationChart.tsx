@@ -4,6 +4,7 @@ import React, { useRef, useLayoutEffect, useState, useMemo, useEffect, useCallba
 import { Building2 } from "lucide-react"
 import { mockUsers, mockTeams } from "../data/mockData"
 import { useAuth } from "../contexts/AuthContext"
+import { Link } from "react-router-dom";
 
 // أنواع البيانات
 interface AvatarProps {
@@ -36,51 +37,73 @@ const Avatar: React.FC<AvatarProps> = ({ name, avatar }) => (
 )
 
 // بطاقة مستخدم أو فريق
-const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?: boolean }> = ({ node, highlighted = true, isCurrentUser = false }) => {
+const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?: boolean; isAdmin?: boolean }> = ({ node, highlighted = true, isCurrentUser = false, isAdmin = false }) => {
   if (!highlighted) return null;
   return (
     <div className={
       `flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px] transition-all duration-200 ` +
       (isCurrentUser ? 'ring-4 ring-green-400 shadow-[0_0_16px_4px_rgba(34,197,94,0.5)] z-50' : '')
     }>
-    {node.type === "team" ? (
-      <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
-        <Building2 className="w-6 h-6" />
-      </div>
-    ) : (
-      <Avatar name={node.name} avatar={node.avatar} />
-    )}
-    <div className="mt-2 text-center">
-      <div className="font-bold text-white">{node.name}</div>
-      {node.email && <div className="text-xs text-[#cbd5e1]">{node.email}</div>}
-      {node.region && <div className="text-xs text-[#cbd5e1]">{node.region}</div>}
-      <div className="text-xs mt-1">
-        <span
-          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-            node.type === "admin"
-              ? "bg-[#7c3aed] text-white"
-              : node.type === "manager"
-                ? "bg-[#2563eb] text-white"
-                : node.type === "team"
-                  ? "bg-[#334155] text-[#a5b4fc]"
-                  : "bg-[#22c55e] text-white"
-          }`}
-        >
-          {node.type === "admin"
-            ? "مدير النظام"
-            : node.type === "manager"
-              ? "مدير المبيعات"
-              : node.type === "team"
-                ? "فريق"
-                : "مندوب المبيعات"}
-        </span>
-      </div>
-      {typeof node.isActive === "boolean" && (
-        <div className="text-xs text-[#a3e635]">{node.isActive ? "نشط" : "غير نشط"}</div>
+      {node.type === "team" ? (
+        <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
+          <Building2 className="w-6 h-6" />
+        </div>
+      ) : (
+        <Avatar name={node.name} avatar={node.avatar} />
       )}
+      <div className="mt-2 text-center">
+        <div className="font-bold text-white">
+          {/* إذا كان المستخدم الحالي مدير النظام، اجعل الاسم دائماً كرابط حسب نوع البطاقة */}
+          {isAdmin ? (
+            <Link
+              to={
+                node.type === "admin"
+                  ? `/users/${node.id}`
+                  : node.type === "manager"
+                    ? `/sales-managers/${node.id}`
+                    : node.type === "rep"
+                      ? `/sales-reps/${node.id}`
+                      : node.type === "team"
+                        ? `/teams/${node.id}`
+                        : `#`
+              }
+              className="hover:underline text-green-400 cursor-pointer transition-colors duration-150"
+            >
+              {node.name}
+            </Link>
+          ) : (
+            node.name
+          )}
+        </div>
+        {node.email && <div className="text-xs text-[#cbd5e1]">{node.email}</div>}
+        {node.region && <div className="text-xs text-[#cbd5e1]">{node.region}</div>}
+        <div className="text-xs mt-1">
+          <span
+            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+              node.type === "admin"
+                ? "bg-[#7c3aed] text-white"
+                : node.type === "manager"
+                  ? "bg-[#2563eb] text-white"
+                  : node.type === "team"
+                    ? "bg-[#334155] text-[#a5b4fc]"
+                    : "bg-[#22c55e] text-white"
+            }`}
+          >
+            {node.type === "admin"
+              ? "مدير النظام"
+              : node.type === "manager"
+                ? "مدير المبيعات"
+                : node.type === "team"
+                  ? "فريق"
+                  : "مندوب المبيعات"}
+          </span>
+        </div>
+        {typeof node.isActive === "boolean" && (
+          <div className="text-xs text-[#a3e635]">{node.isActive ? "نشط" : "غير نشط"}</div>
+        )}
+      </div>
     </div>
-  </div>
-)
+  )
 }
 
 // بناء الشجرة الهرمية حسب دور المستخدم
@@ -687,6 +710,8 @@ export const OrganizationChart: React.FC = () => {
                   if (currentUser.role === 'sales_manager' && refKey === `manager-${currentUser.id}`) isCurrentUser = true;
                   if (currentUser.role === 'sales_representative' && refKey === `rep-${currentUser.id}`) isCurrentUser = true;
                 }
+                // تحقق هل المستخدم الحالي مدير النظام
+                const isAdmin = !!(currentUser && currentUser.role === 'admin');
                 return (
                   <div
                     key={refKey}
@@ -704,7 +729,7 @@ export const OrganizationChart: React.FC = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <NodeCard node={node} highlighted={true} isCurrentUser={isCurrentUser} />
+                    <NodeCard node={node} highlighted={true} isCurrentUser={isCurrentUser} isAdmin={isAdmin} />
                   </div>
                 )
               })}
