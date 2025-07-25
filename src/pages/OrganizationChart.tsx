@@ -3,6 +3,7 @@ import { Building2 } from "lucide-react"
 import { mockUsers, mockTeams } from "../data/mockData"
 import { useAuth } from "../contexts/AuthContext"
 import { Link } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 
 // أنواع البيانات
 interface AvatarProps {
@@ -39,19 +40,20 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
   if (!highlighted) return null;
   return (
     <div className={
-      `flex flex-col items-center p-2 bg-[#1e293b] rounded-xl shadow border border-[#334155] min-w-[120px] max-w-[160px] transition-all duration-200 ` +
-      (isCurrentUser ? 'ring-4 ring-green-400 shadow-[0_0_16px_4px_rgba(34,197,94,0.5)] z-50' : '')
+      `flex flex-col items-center p-2 rounded-xl shadow border min-w-[120px] max-w-[160px] transition-all duration-200
+       bg-white dark:bg-slate-800
+       border-gray-300 dark:border-slate-700
+       ${isCurrentUser ? 'ring-4 ring-green-400 shadow-[0_0_16px_4px_rgba(34,197,94,0.5)] z-50' : ''}`
     }>
       {node.type === "team" ? (
-        <div className="w-12 h-12 bg-gradient-to-r from-[#22c55e] to-[#2563eb] rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
+        <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-600 dark:from-green-500 dark:to-blue-800 rounded-full flex items-center justify-center text-xl font-bold text-white shadow">
           <Building2 className="w-6 h-6" />
         </div>
       ) : (
         <Avatar name={node.name} avatar={node.avatar} />
       )}
       <div className="mt-2 text-center">
-        <div className="font-bold text-white">
-          {/* إذا كان المستخدم الحالي مدير النظام أو مدير مبيعات (لعناصره فقط)، اجعل الاسم كرابط حسب نوع البطاقة */}
+        <div className="font-bold text-gray-900 dark:text-white">
           {(isAdmin || isManagerView) ? (
             <Link
               to={
@@ -65,7 +67,7 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
                         ? `/teams/${node.id}`
                         : `#`
               }
-              className="hover:underline text-green-400 cursor-pointer transition-colors duration-150"
+              className="hover:underline text-green-500 dark:text-green-400 cursor-pointer transition-colors duration-150"
             >
               {node.name}
             </Link>
@@ -73,18 +75,18 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
             node.name
           )}
         </div>
-        {node.email && <div className="text-xs text-[#cbd5e1]">{node.email}</div>}
-        {node.region && <div className="text-xs text-[#cbd5e1]">{node.region}</div>}
+        {node.email && <div className="text-xs text-gray-500 dark:text-gray-300">{node.email}</div>}
+        {node.region && <div className="text-xs text-gray-500 dark:text-gray-300">{node.region}</div>}
         <div className="text-xs mt-1">
           <span
             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
               node.type === "admin"
-                ? "bg-[#7c3aed] text-white"
+                ? "bg-purple-600 text-white dark:bg-purple-700"
                 : node.type === "manager"
-                  ? "bg-[#2563eb] text-white"
+                  ? "bg-blue-600 text-white dark:bg-blue-800"
                   : node.type === "team"
-                    ? "bg-[#334155] text-[#a5b4fc]"
-                    : "bg-[#22c55e] text-white"
+                    ? "bg-slate-200 text-blue-700 dark:bg-slate-700 dark:text-blue-200"
+                    : "bg-green-400 text-white dark:bg-green-600"
             }`}
           >
             {node.type === "admin"
@@ -97,7 +99,7 @@ const NodeCard: React.FC<NodeCardProps & { highlighted?: boolean; isCurrentUser?
           </span>
         </div>
         {typeof node.isActive === "boolean" && (
-          <div className="text-xs text-[#a3e635]">{node.isActive ? "نشط" : "غير نشط"}</div>
+          <div className="text-xs text-lime-500 dark:text-lime-400">{node.isActive ? "نشط" : "غير نشط"}</div>
         )}
       </div>
     </div>
@@ -227,6 +229,7 @@ function getHierarchicalPositions(hierarchy: any) {
 
 export const OrganizationChart: React.FC = () => {
   const { user: currentUser, loading } = useAuth()
+  const { theme } = useTheme();
   if (loading) {
     return <div className="p-8 text-center text-gray-500 bg-gray-900 min-h-screen flex items-center justify-center">جاري التحميل...</div>
   }
@@ -482,19 +485,19 @@ export const OrganizationChart: React.FC = () => {
 
   // تحسين مظهر الخلفية والبطاقات
   return (
-    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#2563eb] overflow-hidden">
+    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-white via-gray-100 to-blue-100 dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#2563eb] overflow-hidden">
       <div className="relative w-full h-full" ref={containerRef}>
         {/* أزرار التحكم في التكبير/التصغير مثبتة دائماً في الزاوية العليا اليمنى من مساحة العمل */}
-        <div className="absolute top-6 right-6 z-[9999] flex gap-2 bg-white/80 rounded shadow p-2">
+        <div className="absolute top-6 right-6 z-[9999] flex gap-2 bg-white/80 dark:bg-slate-800/80 rounded shadow p-2">
           <button
-            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-lg font-bold"
             onClick={() => setScale((s) => Math.max(0.3, s - 0.1))}
           >
             -
           </button>
-          <span className="px-2 font-mono">{(scale * 100).toFixed(0)}%</span>
+          <span className="px-2 font-mono text-gray-700 dark:text-gray-200">{(scale * 100).toFixed(0)}%</span>
           <button
-            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-lg font-bold"
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-lg font-bold"
             onClick={() => setScale((s) => Math.min(2, s + 0.1))}
           >
             +
@@ -507,7 +510,7 @@ export const OrganizationChart: React.FC = () => {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onWheel={handleWheel} // إضافة معالج أحداث عجلة الماوس/لوحة اللمس
+          onWheel={handleWheel}
         >
           <div
             style={{
@@ -524,23 +527,15 @@ export const OrganizationChart: React.FC = () => {
             {/* خطوط بين الصفوف (اختياري) */}
             <div
               className="absolute left-0 w-full"
-              style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: "rgba(120,130,180,0.04)" }}
+              style={{ top: CARD_HEIGHT + 40 + V_GAP / 2, height: 2, background: theme === 'dark' ? 'rgba(120,130,180,0.10)' : 'rgba(120,130,180,0.04)' }}
             />
             <div
               className="absolute left-0 w-full"
-              style={{
-                top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2,
-                height: 2,
-                background: "rgba(120,130,180,0.04)",
-              }}
+              style={{ top: 2 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: theme === 'dark' ? 'rgba(120,130,180,0.10)' : 'rgba(120,130,180,0.04)' }}
             />
             <div
               className="absolute left-0 w-full"
-              style={{
-                top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2,
-                height: 2,
-                background: "rgba(120,130,180,0.04)",
-              }}
+              style={{ top: 3 * (CARD_HEIGHT + V_GAP) + 40 + V_GAP / 2, height: 2, background: theme === 'dark' ? 'rgba(120,130,180,0.10)' : 'rgba(120,130,180,0.04)' }}
             />
             {/* خطوط SVG احترافية بين المستويات */}
             <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
@@ -561,15 +556,16 @@ export const OrganizationChart: React.FC = () => {
                 const tx1 = Math.min(...teamPositions.map((tp: any) => tp.left + offsetX + CARD_WIDTH / 2))
                 const tx2 = Math.max(...teamPositions.map((tp: any) => tp.left + offsetX + CARD_WIDTH / 2))
                 const ty = teamPositions[0].top - V_GAP / 2
+                const lineColor = theme === 'dark' ? '#7b8bbd' : '#64748b';
                 return (
-                  <g key={`manager-teams-${manager.id}`}>
+                  <g key={`manager-teams-${manager.id}`}> 
                     {/* خط رأسي من المدير إلى الخط الأفقي */}
                     {teamPositions.length > 1 && (
-                      <line x1={mx} y1={my1} x2={mx} y2={ty} stroke="#7b8bbd" strokeWidth={2} />
+                      <line x1={mx} y1={my1} x2={mx} y2={ty} stroke={lineColor} strokeWidth={2} />
                     )}
                     {/* خط أفقي بين الفرق */}
                     {teamPositions.length > 1 && (
-                      <line x1={tx1} y1={ty} x2={tx2} y2={ty} stroke="#7b8bbd" strokeWidth={2} />
+                      <line x1={tx1} y1={ty} x2={tx2} y2={ty} stroke={lineColor} strokeWidth={2} />
                     )}
                     {/* خطوط رأسية من الخط الأفقي إلى كل فريق */}
                     {teamPositions.length > 1 && teamPositions.map((tp: any, idx: number) => (
@@ -579,7 +575,7 @@ export const OrganizationChart: React.FC = () => {
                         y1={ty}
                         x2={tp.left + offsetX + CARD_WIDTH / 2}
                         y2={tp.top}
-                        stroke="#7b8bbd"
+                        stroke={lineColor}
                         strokeWidth={2}
                       />
                     ))}
@@ -590,95 +586,39 @@ export const OrganizationChart: React.FC = () => {
                         y1={my1}
                         x2={teamPositions[0].left + offsetX + CARD_WIDTH / 2}
                         y2={teamPositions[0].top}
-                        stroke="#7b8bbd"
+                        stroke={lineColor}
                         strokeWidth={2}
                       />
                     )}
                   </g>
                 )
               })}
-              {/* خطوط بين الفرق والمندوبين */}
-              {hierarchy.managers.flatMap((manager: any) =>
-                (manager.teams || []).map((team: any) => {
-                  const teamPos = positions.find((p) => p.id === `team-${team.id}`)
-                  if (!teamPos || !highlightedIds.has(`team-${team.id}`)) return null
-                  const reps = team.reps || []
-                  // فقط المندوبين المسموح بهم
-                  const repPositions = reps
-                    .map((rep: any) => positions.find((p) => p.id === `rep-${rep.id}`))
-                    .filter((rp: any) => rp && highlightedIds.has(`rep-${rp.id}`))
-                  if (repPositions.length < 1) return null
-                  // خط رأسي من أسفل الفريق إلى الخط الأفقي (إذا كان هناك أكثر من مندوب)
-                  const tx = teamPos.left + offsetX + CARD_WIDTH / 2
-                  const ty1 = teamPos.top + CARD_HEIGHT
-                  // الخط الأفقي بين المندوبين
-                  const rx1 = Math.min(...repPositions.map((rp: any) => rp.left + offsetX + CARD_WIDTH / 2))
-                  const rx2 = Math.max(...repPositions.map((rp: any) => rp.left + offsetX + CARD_WIDTH / 2))
-                  const ry = repPositions[0].top - V_GAP / 2
-                  return (
-                    <g key={`team-reps-${team.id}`}>
-                      {/* خط رأسي من الفريق إلى الخط الأفقي */}
-                      {repPositions.length > 1 && (
-                        <line x1={tx} y1={ty1} x2={tx} y2={ry} stroke="#7b8bbd" strokeWidth={2} />
-                      )}
-                      {/* خط أفقي بين المندوبين */}
-                      {repPositions.length > 1 && (
-                        <line x1={rx1} y1={ry} x2={rx2} y2={ry} stroke="#7b8bbd" strokeWidth={2} />
-                      )}
-                      {/* خطوط رأسية من الخط الأفقي إلى كل مندوب */}
-                      {repPositions.length > 1 && repPositions.map((rp: any, idx: number) => (
-                        <line
-                          key={`rep-vertical-${rp.id}`}
-                          x1={rp.left + offsetX + CARD_WIDTH / 2}
-                          y1={ry}
-                          x2={rp.left + offsetX + CARD_WIDTH / 2}
-                          y2={rp.top}
-                          stroke="#7b8bbd"
-                          strokeWidth={2}
-                        />
-                      ))}
-                      {/* إذا كان هناك مندوب واحد فقط، خط رأسي مباشر */}
-                      {repPositions.length === 1 && (
-                        <line
-                          x1={tx}
-                          y1={ty1}
-                          x2={repPositions[0].left + offsetX + CARD_WIDTH / 2}
-                          y2={repPositions[0].top}
-                          stroke="#7b8bbd"
-                          strokeWidth={2}
-                        />
-                      )}
-                    </g>
-                  )
-                })
-              )}
               {/* خطوط L-shape القديمة (احتياط أو admin فقط) */}
               {lines
                 .filter(line => {
-                  // إذا كان مدير مبيعات أو مندوب مبيعات، اعرض فقط الخطوط التي تربط بين عناصر مسموح بها
                   if (
                     currentUser &&
                     (currentUser.role === 'sales_manager' || currentUser.role === 'sales_representative')
                   ) {
                     return highlightedIds.has(line.from) && highlightedIds.has(line.to);
                   }
-                  // للأدوار الأخرى، اعرض كل الخطوط
                   return true;
                 })
                 .map((line, idx) => {
-                const from = getCenter(line.from)
-                const to = getCenter(line.to)
-                return (
-                  <path
-                    key={idx}
-                    d={getLShapePath(from, to)}
-                    fill="none"
-                    stroke="#7b8bbd"
-                    strokeWidth={2}
-                    markerEnd="url(#arrowhead)"
-                  />
-                )
-              })}
+                  const from = getCenter(line.from)
+                  const to = getCenter(line.to)
+                  const lineColor = theme === 'dark' ? '#7b8bbd' : '#64748b';
+                  return (
+                    <path
+                      key={idx}
+                      d={getLShapePath(from, to)}
+                      fill="none"
+                      stroke={lineColor}
+                      strokeWidth={2}
+                      markerEnd="url(#arrowhead)"
+                    />
+                  )
+                })}
               <defs>
                 <marker
                   id="arrowhead"
@@ -689,7 +629,7 @@ export const OrganizationChart: React.FC = () => {
                   orient="auto"
                   markerUnits="strokeWidth"
                 >
-                  <path d="M0,0 L0,6 L8,3 z" fill="#7b8bbd" />
+                  <path d="M0,0 L0,6 L8,3 z" fill={theme === 'dark' ? '#7b8bbd' : '#64748b'} />
                 </marker>
               </defs>
             </svg>
